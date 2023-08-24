@@ -2,20 +2,21 @@ import {
   LAYOUT,
 } from '@/router/constant'
 
-const home = {
+const team = {
   path: '/',
   name: 'Root',
+  redirect: '/team',
   component: LAYOUT,
   children: [
     {
-      path: '',
-      name: 'Home',
+      path: 'team',
+      name: 'Team',
       component: () => import('@/views/home/Home.vue'),
       meta: {
-        title: 'Home',
+        title: 'Team',
       },
     }
   ],
 }
 
-export default home
+export default team

@@ -4,12 +4,14 @@ import Sider from '@/layouts/components/sider/Project.vue'
 </script>
 
 <template>
-  <Header></Header>
   <el-container>
     <Sider></Sider>
-    <el-main>
-      <router-view></router-view>
-    </el-main>
+    <el-container>
+      <Header></Header>
+      <el-main>
+        <router-view></router-view>
+      </el-main>
+    </el-container>
   </el-container>
 </template>
 

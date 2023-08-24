@@ -1,6 +1,16 @@
+<script setup>
+import DefaultHome from './Default.vue'
+import NoOrgHome from './NoOrg.vue'
+
+const noOrg = false // TODO: useStore needed
+</script>
+
 <template>
-  <div class="container">
-    Home
+  <div v-if="noOrg" class="container">
+    <NoOrgHome />
+  </div>
+  <div v-else class="container">
+    <DefaultHome />
   </div>
 </template>
 
@@ -11,7 +21,7 @@ export default {
 </script>
 
 <style scoped>
-  .container {
-    text-align: center;
-  }
+.container {
+  text-align: center;
+}
 </style>
