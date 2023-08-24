@@ -1,20 +1,20 @@
 <script setup>
-import Header from './header/index.vue'
-import Footer from './footer/index.vue'
+import Header from '@/layouts/components/header/index.vue'
+import Sider from '@/layouts/components/sider/Basic.vue'
 </script>
 
 <template>
   <Header></Header>
   <el-container>
+    <Sider></Sider>
     <el-main>
       <router-view></router-view>
     </el-main>
   </el-container>
-  <Footer></Footer>
 </template>
 
 <script>
 export default {
-  name: 'DefaultLayout',
+  name: 'BasicLayout',
 }
 </script>
