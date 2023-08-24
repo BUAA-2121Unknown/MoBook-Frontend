@@ -8,7 +8,7 @@ COPY . .
 RUN npm run build
 
 FROM nginx:1.21.5-alpine as serve
-COPY --from=build /usr/moshu-frontend/dist /usr/share/nginx/html
+COPY --from=build /usr/MoBook-Frontend/dist /usr/share/nginx/html
 COPY ./default.conf /etc/nginx/conf.d
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
