@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="header-wrapper">
     团队
   </div>
 
@@ -80,6 +80,10 @@ export default {
 </script>
 
 <style scoped>
+.header-wrapper {
+  padding-top: 12px;
+  border-top: #777777 solid 1px;
+}
 .row-wrapper {
   padding: 10px;
 }
