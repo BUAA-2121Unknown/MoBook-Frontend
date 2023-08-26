@@ -50,7 +50,7 @@ export default {
 
 <script setup>
 import { ref } from 'vue'
-import { useUserStore } from '@/store/modules/user'
+import { useUserStore } from '@/stores/modules/user'
 const drawer = ref(false)
 const direction = ref('rtl')
 

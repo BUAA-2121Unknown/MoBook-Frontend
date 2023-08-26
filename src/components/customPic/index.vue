@@ -22,7 +22,7 @@ export default {
 
 <script setup>
 import noAvatarPng from '@/assets/noBody.png'
-import { useUserStore } from '@/store/modules/user'
+import { useUserStore } from '@/stores/modules/user'
 import { computed, ref } from 'vue'
 
 const props = defineProps({

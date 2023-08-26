@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import routers from './routers/index'
 import { setTitle } from '@/utils/common.js'
-import { useUserStore } from '@/store/modules/user'
+import { useUserStore } from '@/stores/modules/user'
 import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
 

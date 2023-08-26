@@ -52,11 +52,11 @@ export default {
 // import { checkDB } from '@/api/initdb'
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useUserStore } from '@/store/modules/user'
+import { useUserStore } from '@/stores/modules/user'
 import emitter from '@/utils/emitter'
 import { ElLoading, ElMessage } from 'element-plus'
 
-import store from '@/store'
+import pinia from '@/stores'
 
 const router = useRouter()
 

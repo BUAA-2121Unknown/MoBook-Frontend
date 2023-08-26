@@ -42,8 +42,8 @@ import AsideComponent from './asideComponent/index.vue'
 import emitter from '@/utils/emitter'
 import { ref, watch, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useUserStore } from '@/store/modules/user'
-import { useRouterStore } from '@/store/modules/router'
+import { useUserStore } from '@/stores/modules/user'
+import { useRouterStore } from '@/stores/modules/router'
 
 const route = useRoute()
 const router = useRouter()

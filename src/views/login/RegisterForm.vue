@@ -63,7 +63,7 @@ import { register } from '@/api/user'
 // import { checkDB } from '@/api/initdb'
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useUserStore } from '@/store/modules/user'
+import { useUserStore } from '@/stores/modules/user'
 import emitter from '@/utils/emitter'
 
 const router = useRouter()

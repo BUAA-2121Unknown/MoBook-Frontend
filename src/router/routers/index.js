@@ -122,6 +122,14 @@ const routers = [
       },
     ],
   },
+  {
+    path: '/prototype',
+    name: 'prototype',
+    component: () => import('@/views/design/Home.vue'),
+    meta: {
+      title: '原型设计',
+    },
+  },
   ERROR_LOG_ROUTE,
   PAGE_NOT_FOUND_ROUTE,
 ]

@@ -58,7 +58,7 @@ export default {
 import emitter from '@/utils/emitter'
 import { computed, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useUserStore } from '@/store/modules/user'
+import { useUserStore } from '@/stores/modules/user'
 import { fmtTitle } from '@/utils/fmtRouterTitle'
 
 const route = useRoute()

@@ -33,8 +33,8 @@ export default {
 <script setup>
 import { reactive, ref, watch } from 'vue'
 import { useRouter,useRoute } from 'vue-router'
-import { useRouterStore } from '@/store/modules/router'
-import { useUserStore } from '@/store/modules/user'
+import { useRouterStore } from '@/stores/modules/router'
+import { useUserStore } from '@/stores/modules/user'
 
 const router = useRouter()
 const route = useRouter()

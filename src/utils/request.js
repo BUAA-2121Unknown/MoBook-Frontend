@@ -2,7 +2,7 @@ import axios from 'axios'
 import emitter from '@/utils/emitter'
 import settings from '@/settings/basic'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { useUserStore } from '@/store/modules/user'
+import { useUserStore } from '@/stores/modules/user'
 
 const service = axios.create({
   baseURL: settings.apiURL,

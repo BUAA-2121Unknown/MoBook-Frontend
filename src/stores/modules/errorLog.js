@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { formatToDateTime } from '@/utils/date'
-import store from '@/store'
+import pinia from '@/stores'
 import { ErrorTypeEnum } from '@/enums/errorEnum'
 import settings from '@/settings/basic'
 
@@ -60,5 +60,5 @@ export const useErrorLogStore = defineStore({
 
 // Need to be used outside the setup
 export function useErrorLogStoreWithOut() {
-  return useErrorLogStore(store)
+  return useErrorLogStore(pinia)
 }
