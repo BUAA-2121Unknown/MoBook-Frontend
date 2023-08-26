@@ -10,10 +10,10 @@ const team = {
   children: [
     {
       path: 'team',
-      name: 'Team',
-      component: () => import('@/views/home/Home.vue'),
+      name: 'team',
+      component: () => import('@/views/team/Team.vue'),
       meta: {
-        title: 'Team',
+        title: '团队',
       },
     }
   ],

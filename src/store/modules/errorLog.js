@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia'
 import { formatToDateTime } from '@/utils/date'
 import store from '@/store'
-import projSetting from '@/settings/projSetting'
 import { ErrorTypeEnum } from '@/enums/errorEnum'
+import settings from '@/settings/basic'
 
 export const useErrorLogStore = defineStore({
   id: 'app-error-log',
@@ -10,6 +10,7 @@ export const useErrorLogStore = defineStore({
     errorLogInfoList: null,
     errorLogListCount: 0,
   }),
+
   getters: {
     getErrorLogInfoList(state) {
       return state.errorLogInfoList || []
@@ -18,6 +19,7 @@ export const useErrorLogStore = defineStore({
       return state.errorLogListCount
     },
   },
+
   actions: {
     addErrorLogInfo(info) {
       const item = {
@@ -25,10 +27,6 @@ export const useErrorLogStore = defineStore({
         time: formatToDateTime(new Date()),
       }
       this.errorLogInfoList = [item, ...(this.errorLogInfoList || [])]
-      // if (!this.errorLogInfoList) {
-        // this.errorLogInfoList = []
-      // }
-      // this.errorLogInfoList.unshift(item)
       this.errorLogListCount += 1
     },
 
@@ -37,8 +35,7 @@ export const useErrorLogStore = defineStore({
     },
 
     addAjaxErrorInfo(error) {
-      const { useErrorHandle } = projSetting
-      if (!useErrorHandle) {
+      if (!settings.useErrorHandle) {
         return
       }
       const errInfo = {

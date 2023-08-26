@@ -1,6 +1,6 @@
 import { useErrorLogStoreWithOut } from '@/store/modules/errorLog'
 import { ErrorTypeEnum } from '@/enums/errorEnum'
-import projSetting from '@/settings/projSetting'
+import settings from '@/settings/basic'
 
 /**
  * Handling error stack information
@@ -151,8 +151,7 @@ function registerResourceErrorHandler() {
  * @param app
  */
 export function setupErrorHandle(app) {
-  const { useErrorHandle } = projSetting
-  if (!useErrorHandle) {
+  if (!settings.useErrorHandle) {
     return
   }
   // Vue exception monitoring

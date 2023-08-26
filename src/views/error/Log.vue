@@ -1,19 +1,3 @@
-<script setup>
-import { watch } from 'vue'
-import { useErrorLogStore } from '@/store/modules/errorLog'
-
-function testVueError() {
-  throw new Error('fire vue error!')
-}
-
-const errorLogStore = useErrorLogStore()
-
-watch(
-  () => errorLogStore,
-  () => {},
-)
-</script>
-
 <template>
   <div class="container">
     <h1 class="error-info">Error Logs</h1>
@@ -31,6 +15,22 @@ watch(
     </el-table>
   </div>
 </template>
+
+<script setup>
+import { watch } from 'vue'
+import { useErrorLogStore } from '@/store/modules/errorLog'
+
+function testVueError() {
+  throw new Error('fire vue error!')
+}
+
+const errorLogStore = useErrorLogStore()
+
+watch(
+  () => errorLogStore,
+  () => {},
+)
+</script>
 
 <style scoped>
 .container {

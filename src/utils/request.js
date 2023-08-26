@@ -1,14 +1,14 @@
 import axios from 'axios'
-import siteSetting from '@/settings/siteSetting'
 import emitter from '@/utils/emitter'
+import settings from '@/settings/basic'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { useUserStore } from '@/store/modules/user'
 
 const service = axios.create({
-  baseURL: siteSetting.apiURL,
+  baseURL: settings.apiURL,
   timeout: 10000,
-  headers: {'Content-Type': 'application/json'},
+  headers: { 'Content-Type': 'application/json' },
   withCredentials: true,
-  xsrfCookieName: 'csrftoken',
-  xsrfHeaderName: 'X-CSRFToken',
 })
 
 let acitveAxios = 0
@@ -39,12 +39,19 @@ service.interceptors.request.use(
     if (!config.doNotShowLoading) {
       showLoading()
     }
+    const userStore = useUserStore()
+    config.headers.Authorization = userStore.token
     return config
   },
   error => {
     if (!error.config.doNotShowLoading) {
       closeLoading()
     }
+    ElMessage({
+      showClose: true,
+      message: error,
+      type: 'error'
+    })
     return error
   },
 )
@@ -54,7 +61,28 @@ service.interceptors.response.use(
     if (!response.config.doNotShowLoading) {
       closeLoading()
     }
-    return response
+    const userStore = useUserStore()
+    if (response.headers['new-token']) {
+      userStore.setToken(response.headers['new-token'])
+    }
+    if (response.data.meta.status == 0 || response.headers.success === 'true') {
+      if (response.headers.msg) {
+        response.data.msg = decodeURI(response.headers.msg)
+      }
+      return response.data
+    } else {
+      ElMessage({
+        showClose: true,
+        message: response.data.meta.msg || decodeURI(response.headers.msg),
+        type: 'error'
+      })
+      if (response.data.data && response.data.data.reload) {
+        userStore.token = ''
+        localStorage.clear()
+        router.push({ name: 'login', replace: true })
+      }
+      return response.data ? response.data : response
+    }
   },
   error => {
     if (!error.config.doNotShowLoading) {
@@ -63,5 +91,9 @@ service.interceptors.response.use(
     return error
   },
 )
+
+export const isError = (response) => {
+  return response.status < 200 || response.status >= 300;
+}
 
 export default service
