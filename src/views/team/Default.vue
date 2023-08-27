@@ -13,7 +13,7 @@
             {{ orgName }}
           </span>
         </el-row>
-        <el-row>
+        <el-row class="row-wrapper">
           <span class="orgDesc">
             {{ orgDesc }}
           </span>
@@ -23,6 +23,18 @@
 
     <div class="gva-table-box" style="margin-top: 2%;">
       <div class="gva-btn-list">
+        <el-col :span="16"></el-col>
+        <div class="flex-grow"></div>
+
+        <el-input
+          v-model="searchedInput"
+          placeholder="搜索成员"
+          class="input-with-select"
+        >
+          <template #append>
+            <el-button :icon="Search" @click="searchTeamMember" />
+          </template>
+        </el-input>
         <el-button type="primary" icon="plus" @click="inviteUser">邀请成员</el-button>
       </div>
       <el-table
@@ -105,8 +117,9 @@ import { getOrgInfo, getOrgAllMemberInfo } from '@/api/org'
 import { useUserStore } from '@/stores/modules/user'
 import { getInviteLink } from '@/api/org'
 import settings from '@/settings/basic'
+import { Search } from '@element-plus/icons-vue'
 
-const searchedInput = ''
+const searchedInput = ref('')
 const orgMemberList = ref([
   {
     "user": {
@@ -184,6 +197,7 @@ const GetOrgInfo = async () => {
       console.log(orgInfo)
     }
     const orgMembers = await getOrgAllMemberInfo({ orgId: userStore.orgId })
+    console.log(orgMembers)
     if (orgMembers.meta.status == 0) {
       orgMemberList.value = orgMembers.data.members
     } else {
@@ -192,6 +206,14 @@ const GetOrgInfo = async () => {
   } catch(e) {
     console.log(e)
   }
+}
+
+const searchTeamMember = () => {
+  if (!searchedInput.value) {
+    GetOrgInfo()
+    return
+  }
+  orgMemberList.value = orgMemberList.value.filter(item => item.member.nickname.includes(searchedInput.value))
 }
 </script>
 
@@ -218,6 +240,7 @@ const GetOrgInfo = async () => {
 .orgDesc {
   font-size: 16px;
   font-weight: bold;
+  color: #999999;
 }
 
 .invite-msg-wrapper {

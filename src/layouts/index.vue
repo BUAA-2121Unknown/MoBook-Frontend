@@ -300,7 +300,7 @@ const changeShadow = () => {
 }
 
 const goToChangeTeam = () => {
-  console.log('need go to change team')
+  router.push({ name: 'myteam' })
 }
 </script>
 
