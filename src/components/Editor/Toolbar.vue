@@ -1,5 +1,6 @@
 <template>
   <div>
+    <!-- 预览链接 -->
     <el-dialog v-model="dialogVisible" title="生成预览链接" width="30%">
       <div>
         预览链接：<br />
@@ -16,6 +17,30 @@
         </span>
       </template>
     </el-dialog>
+
+    <!-- 生成代码 -->
+    <el-dialog v-model="codeDialogVisible" title="导出代码">
+      <el-form :model="form">
+        <el-form-item label="Promotion name" :label-width="formLabelWidth">
+          <el-input v-model="form.name" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="Zones" :label-width="formLabelWidth">
+          <el-select v-model="form.region" placeholder="Please select a zone">
+            <el-option label="Zone No.1" value="shanghai" />
+            <el-option label="Zone No.2" value="beijing" />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="dialogFormVisible = false">Cancel</el-button>
+          <el-button type="primary" @click="dialogFormVisible = false">
+            Confirm
+          </el-button>
+        </span>
+      </template>
+    </el-dialog>
+
     <div class="toolbar">
       <el-button v-if="!isPreview" @click="toLast">返回上一级</el-button>
       <el-button @click="undo">撤消</el-button>
@@ -51,7 +76,7 @@
         @click="unlock"
         >解锁</el-button
       >
-      <el-button @click="preview(true)">截图</el-button>
+      <el-button @click="preview(true)">预览图</el-button>
       <el-button
         v-if="!isPreview"
         @click="generatePreview(), (dialogVisible = true)"
@@ -123,6 +148,7 @@ export default {
       previewLink: "",
       dialogVisible: false,
       previewing: this.isPreviewing,
+      codeDialogVisible: false,
     };
   },
   computed: mapState([

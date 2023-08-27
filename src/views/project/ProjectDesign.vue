@@ -16,9 +16,9 @@
     <!--  -->
     <!-- 卡片列表 -->
     <div class="design-list">
-      <el-row :gutter="20">
+      <el-row :gutter="15">
         <el-col v-for="item in designList" :key="item.id" :span="8">
-          <DesignCard :design="item"></DesignCard>
+          <DesignCard :design="item" :delHandler="delHandler"></DesignCard>
         </el-col>
       </el-row>
     </div>
@@ -28,7 +28,7 @@
 <script>
 import DesignCard from '../../components/project/DesignCard.vue';
 import designImg from '@/assets/project/projectDesignImg.png'
-import DesignCreateButton from '../../components/project/DesignCreateButton.vue';
+import DesignCreateButton from '../../components/project/button/DesignCreateButton.vue';
 import SearchBar from '../../components/project/SearchBar.vue';
 
 export default {
@@ -77,14 +77,19 @@ export default {
   methods: {
     handleSearch(input) {
       console.log('原型设计页面搜索：' + input)
-    }
+    },
+    delHandler(id) {
+      this.designList = this.designList.filter(function(itemId) {
+        return itemId != id
+      })
+    },
   },
 };
 </script>
   
 <style scoped>
 .design-list {
-  margin: 5px 40px;
+  margin: 5px 60px;
 }
 
 .header-container {

@@ -95,60 +95,62 @@ export default {
     "canvasStyleData",
     "editor",
   ]),
-  mounted() {},
-  // created() {
-  //   this.restore();
-  //   this.initCollaboration();
-  //   // 全局监听按键事件
-  //   listenGlobalKeyDown();
-  //   $on(eventBus, "updateCanvas", (newComponentData) => {
-  //     console.log("updateCanvas", newComponentData);
-  //     this.dataArray.delete(0, this.dataArray.length);
-  //     this.dataArray.insert(0, [
-  //       JSON.stringify(newComponentData),
-  //       JSON.stringify(this.canvasStyleData),
-  //     ]);
-  //   });
-  // },
+  mounted() {
+    console.log(this.$route.query.prototype_id);
+  },
+  created() {
+    // this.restore();
+    // this.initCollaboration();
+    // 全局监听按键事件
+    listenGlobalKeyDown();
+    $on(eventBus, "updateCanvas", (newComponentData) => {
+      console.log("updateCanvas", newComponentData);
+      this.dataArray.delete(0, this.dataArray.length);
+      this.dataArray.insert(0, [
+        JSON.stringify(newComponentData),
+        JSON.stringify(this.canvasStyleData),
+      ]);
+    });
+  },
   methods: {
-    // // TODO 1.初始化在线协作
-    // initCollaboration() {
-    //   this.doc = new Y.Doc();
-    //   this.provider = new WebsocketProvider(
-    //     // 后端端口
-    //     "ws://101.42.173.97:1235",
-    //     // 后端房间号
-    //     `newproto${this.$route.params.id}`,
-    //     // 对应doc文档
-    //     this.doc
-    //   );
-    //   // 设置共享数组
-    //   this.dataArray = this.doc.getArray("dataArray");
-    //   // 监听数据变化
-    //   this.dataArray.observe((event) => {
-    //     // TODO 3.将变化数据发送给画布
-    //     // e.g. this.XXX = this.dataArray.toArray();
-    //     if (this.dataArray.toArray().length > 0) {
-    //       console.log("OBSERVE");
-    //       this.$store.commit(
-    //         "setComponentData",
-    //         JSON.parse(this.dataArray.get(0))
-    //       );
-    //       this.$store.commit(
-    //         "setCanvasStyle",
-    //         JSON.parse(this.dataArray.get(1))
-    //       );
-    //     }
-    //   });
-    //   this.provider.on("status", (event) => {
-    //     console.log("event.status: ", event.status); // 'connected' or 'disconnected'
-    //   });
-    // },
+    // TODO 1.初始化在线协作
+    initCollaboration() {
+      this.doc = new Y.Doc();
+      this.provider = new WebsocketProvider(
+        // 后端端口
+        "ws://101.42.173.97:1235",
+        // 后端房间号
+        `newproto${this.$route.params.id}`,
+        // 对应doc文档
+        this.doc
+      );
+      // 设置共享数组
+      this.dataArray = this.doc.getArray("dataArray");
+      // 监听数据变化
+      this.dataArray.observe((event) => {
+        // TODO 3.将变化数据发送给画布
+        // e.g. this.XXX = this.dataArray.toArray();
+        if (this.dataArray.toArray().length > 0) {
+          console.log("OBSERVE");
+          this.$store.commit(
+            "setComponentData",
+            JSON.parse(this.dataArray.get(0))
+          );
+          this.$store.commit(
+            "setCanvasStyle",
+            JSON.parse(this.dataArray.get(1))
+          );
+        }
+      });
+      this.provider.on("status", (event) => {
+        console.log("event.status: ", event.status); // 'connected' or 'disconnected'
+      });
+    },
     // TODO 2.dataArray获取画布数据
     setDocArray() {
       // e.g. this.dataArray = XXX;
-      if(!this.dataArray){
-        return
+      if (!this.dataArray) {
+        return;
       }
       this.dataArray.delete(0, this.dataArray.length);
       this.dataArray.insert(0, [
@@ -160,6 +162,7 @@ export default {
       const route = useRoute();
       const data = new FormData();
       data.append("protoId", route.params.id);
+      console.log(route.params, route.query);
       Project.getProto(data)
         .then((res) => {
           console.log("res", res);
