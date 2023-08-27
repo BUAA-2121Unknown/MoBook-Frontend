@@ -79,6 +79,7 @@ export default {
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { onActivated } from 'vue'
 import { onBeforeRouteUpdate } from 'vue-router'
 import { getOrgInfo, getOrgAllMemberInfo } from '@/api/org'
 import { useUserStore } from '@/stores/modules/user'
@@ -110,12 +111,10 @@ const inviteUser = () => {
 }
 
 onMounted(() => {
-  console.log('onMounted')
   GetOrgInfo()
 })
 
-onBeforeRouteUpdate(() => {
-  console.log('onBeforeRouteUpdate')
+onActivated(() => {
   GetOrgInfo()
 })
 

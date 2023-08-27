@@ -96,6 +96,11 @@ export default {
   mounted() {
     this.createWebSocket();
   },
+  /* activated() {
+    console.log('activated')
+    this.createWebSocket()
+    register()
+  }, */
   methods: {
     //建立http链接 请求当前房间聊天记录
     requestMessages() {
