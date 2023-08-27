@@ -4,14 +4,20 @@
       <div class="col-span-3 h-full">
         <div class="w-full h-full bg-white px-4 py-8 rounded-lg shadow-lg box-border">
           <div class="user-card px-6 text-center bg-white shrink-0">
-          <!--  TODO: upload avatar
             <div class="flex justify-center">
-              <SelectImage v-model="userStore.userInfo.headerImg" />
+              <el-upload
+                class="avatar-uploader"
+                action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
+                :show-file-list="false"
+                :on-success="uploadAvatar"
+              >
+                <img v-if="userStore.userInfo.avatarUrl" :src="userStore.userInfo.avatarUrl" class="avatar" />
+                <img v-else class="avatar" src="@/assets/logo.png" />
+              </el-upload>
             </div>
-          -->
             <div class="py-6 text-center">
               <p v-if="!editFlag" class="text-3xl flex justify-center items-center gap-4">
-                {{ userStore.userInfo.nickName }}
+                {{ userStore.userInfo.username }}
                 <el-icon class="cursor-pointer text-sm" color="#66b1ff" @click="openEdit">
                   <edit />
                 </el-icon>
@@ -33,7 +39,7 @@
                   <el-icon>
                     <user />
                   </el-icon>
-                  {{ userStore.userInfo.username }}
+                  {{ userStore.userInfo.nickName }}
                 </li>
                 <el-tooltip
                   class="item"
@@ -211,7 +217,7 @@
 
 <script>
 export default {
-  name: 'Profile',
+  name: 'Person',
 }
 </script>
 
@@ -220,6 +226,7 @@ import { updateUserInfo, changePassword } from '@/api/user.js'
 import { reactive, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/modules/user'
+// import SelectImage from '@/components/selectImage/selectImage.vue'
 
 const activeName = ref('second')
 const rules = reactive({
@@ -280,10 +287,10 @@ const clearPassword = () => {
   modifyPwdForm.value.clearValidate()
 }
 
-watch(() => userStore.userInfo.headerImg, async(val) => {
-  const res = await updateUserInfo({ headerImg: val })
+watch(() => userStore.userInfo.avatarUrl, async(val) => {
+  const res = await updateUserInfo({ avatarUrl: val })
   if (res.code === 0) {
-    userStore.resetUserInfo({ headerImg: val })
+    userStore.ResetUserInfo({ headerImg: val })
     ElMessage({
       type: 'success',
       message: '设置成功',
@@ -306,7 +313,7 @@ const enterEdit = async() => {
     nickName: nickName.value
   })
   if (res.code === 0) {
-    userStore.resetUserInfo({ nickName: nickName.value })
+    userStore.ResetUserInfo({ nickName: nickName.value })
     ElMessage({
       type: 'success',
       message: '设置成功',
@@ -348,7 +355,7 @@ const changePhone = async() => {
   const res = await updateUserInfo({ phone: phoneForm.phone })
   if (res.code === 0) {
     ElMessage.success('修改成功')
-    userStore.resetUserInfo({ phone: phoneForm.phone })
+    userStore.ResetUserInfo({ phone: phoneForm.phone })
     closeChangePhone()
   }
 }
@@ -381,11 +388,14 @@ const changeEmail = async() => {
   const res = await updateUserInfo({ email: emailForm.email })
   if (res.code === 0) {
     ElMessage.success('修改成功')
-    userStore.resetUserInfo({ email: emailForm.email })
+    userStore.ResetUserInfo({ email: emailForm.email })
     closeChangeEmail()
   }
 }
 
+const uploadAvatar = async() => {
+
+}
 </script>
 
 <style lang="scss">
@@ -400,4 +410,22 @@ const changeEmail = async() => {
   @apply w-full whitespace-nowrap overflow-hidden text-ellipsis py-3 text-lg text-gray-700
 }
 
+.avatar-uploader .avatar {
+  width: 178px;
+  height: 178px;
+  display: block;
+}
+
+.avatar-uploader .el-upload {
+  border: 1px dashed var(--el-border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: var(--el-transition-duration-fast);
+}
+
+.avatar-uploader .el-upload:hover {
+  border-color: var(--el-color-primary);
+}
 </style>

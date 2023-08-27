@@ -35,48 +35,53 @@
             <el-button :icon="Search" @click="searchTeamMember" />
           </template>
         </el-input>
-        <el-button type="primary" icon="plus" @click="inviteUser">邀请成员</el-button>
+        <el-button type="primary" icon="plus" @click="inviteUser" v-if="userStore.auth <= 1">邀请成员</el-button>
       </div>
       <el-table
         :data="orgMemberList"
         :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
-        row-key="authorityId"
+        row-key="user.id"
         style="width: 100%"
       >
-        <el-table-column label="姓名" min-width="180" prop="user.username" />
-        <el-table-column label="昵称" min-width="180" prop="member.nickname" />
-        <el-table-column align="left" label="操作" width="460">
+        <el-table-column label="昵称" min-width="180">
           <template #default="scope">
-            <el-button
+            <img v-if="scope.row.user.avatarUrl" src="scope.row.user.avatarUrl" style="width: 24px; height: 24px; margin-right: 10px; border-radius: 50%" />
+            <img v-else src="@/assets/logo.png" style="width: 24px; height: 24px; margin-right: 10px; border-radius: 50%" />
+            <span>{{ scope.row.member.nickname }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="邮箱" min-width="180" prop="user.email" />
+        <el-table-column label="角色" min-width="180">
+          <template #default="scope">
+            <span>{{ authToRole(scope.row) }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column align="left" label="操作" width="460" v-if="userStore.auth <= 1">
+          <template #default="scope">
+            <el-button v-if="scope.row.member.auth == 1 && userStore.auth == 0"
               icon="setting"
               type="primary"
               link
-              @click="opdendrawer(scope.row)"
-            >设置权限</el-button>
-            <el-button
-              icon="plus"
+              @click="changeAuth(scope.row, 2)"
+            >设为普通用户</el-button>
+            <el-button v-if="scope.row.member.auth == 2"
+              icon="setting"
               type="primary"
               link
-              @click="addAuthority(scope.row.authorityId)"
-            >新增子角色</el-button>
-            <el-button
-              icon="copy-document"
-              type="primary"
-              link
-              @click="copyAuthorityFunc(scope.row)"
-            >拷贝</el-button>
+              @click="changeAuth(scope.row, 1)"
+            >设为管理员</el-button>
             <el-button
               icon="edit"
               type="primary"
               link
-              @click="editAuthority(scope.row)"
+              @click="changeProfile(scope.row)"
             >编辑</el-button>
-            <el-button
+            <!-- <el-button
               icon="delete"
               type="primary"
               link
               @click="deleteAuth(scope.row)"
-            >删除</el-button>
+            >删除</el-button> -->
           </template>
         </el-table-column>
       </el-table>
@@ -101,6 +106,26 @@
       </span>
     </template>
   </el-dialog>
+
+  <el-dialog
+    v-model="changeProfileVisible"
+    title="修改信息"
+    width="30%"
+  >
+    <div class="nickname-wrapper">
+      <span>昵称</span>
+      <el-input v-model="changingMemberNickname" placeholder="{{ changingMemberNickname}}">
+      </el-input>
+    </div>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="changeProfileVisible = false">关闭</el-button>
+        <el-button type="primary" @click="confirmChangeProfile">
+          确定
+        </el-button>
+      </span>
+    </template>
+  </el-dialog>
 </template>
 
 <script>
@@ -118,6 +143,7 @@ import { useUserStore } from '@/stores/modules/user'
 import { getInviteLink } from '@/api/org'
 import settings from '@/settings/basic'
 import { Search } from '@element-plus/icons-vue'
+import { updateOrgMemberInfo } from '@/api/org'
 
 const searchedInput = ref('')
 const orgMemberList = ref([
@@ -157,6 +183,20 @@ const inviteUser = async () => {
     }
   } catch(e) {
     console.log(e)
+  }
+}
+
+const authToRole = (row) => {
+  const auth = row.member.auth
+  switch (auth) {
+    case 2:
+      return '成员'
+    case 1:
+      return '管理员'
+    case 0:
+      return '创建者'
+    default:
+      return '未知'
   }
 }
 
@@ -215,6 +255,69 @@ const searchTeamMember = () => {
   }
   orgMemberList.value = orgMemberList.value.filter(item => item.member.nickname.includes(searchedInput.value))
 }
+
+const changeUserChoose = ref()
+
+const changeAuth = async (row, auth) => {
+  try {
+    const res = await updateOrgMemberInfo({
+      orgId: userStore.orgId,
+      userId: row.user.id,
+      auth: auth,
+    })
+    console.log(res)
+    if (res.meta.status == 0) {
+      ElMessage({
+        type: 'success',
+        message: '修改成功',
+      })
+      row.member.auth = auth
+    } else {
+      ElMessage({
+        type: 'error',
+        message: '修改失败',
+      })
+      console.log(res)
+    }
+  } catch(e) {
+    console.log(e)
+  }
+}
+
+const changeProfileVisible = ref(false)
+const changingMemberNickname = ref('')
+const changeProfile = (row) => {
+  changeProfileVisible.value = true
+  changeUserChoose.value = row
+  changingMemberNickname.value = row.member.nickname
+}
+const confirmChangeProfile = async () => {
+  try {
+    const res = await updateOrgMemberInfo({
+      orgId: userStore.orgId,
+      userId: changeUserChoose.value.user.id,
+      profile: {
+        nickname: changingMemberNickname.value,
+      }
+    })
+    if (res.meta.status == 0) {
+      ElMessage({
+        type: 'success',
+        message: '修改成功',
+      })
+      changeUserChoose.value.member.nickname = changingMemberNickname.value
+    } else {
+      ElMessage({
+        type: 'error',
+        message: '修改失败',
+      })
+      console.log(res)
+    }
+  } catch (e) {
+    console.log(e)
+  }
+  changeProfileVisible.value = false
+}
 </script>
 
 <style scoped>
@@ -247,5 +350,42 @@ const searchTeamMember = () => {
   margin-top: 10px;
   font-size: 14px;
   color: #999999;
+}
+
+.nickname-wrapper {
+  margin-top: 10px;
+  display: flex;
+}
+
+.nickname-wrapper span {
+  width: 80px;
+  line-height: 32px;
+}
+
+.avatar-uploader .avatar {
+  width: 178px;
+  height: 178px;
+  display: block;
+}
+
+.avatar-uploader .el-upload {
+  border: 1px dashed var(--el-border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: var(--el-transition-duration-fast);
+}
+
+.avatar-uploader .el-upload:hover {
+  border-color: var(--el-color-primary);
+}
+
+.el-icon.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 178px;
+  height: 178px;
+  text-align: center;
 }
 </style>
