@@ -45,7 +45,7 @@
       <el-button
         class="shadow shadow-blue-600 h-11 w-full"
         size="large"
-        @click="emitter.emit('setCurrentOption', 'register')"
+        @click="emitter.emit('setCurrentOption', 'login')"
       >返 回</el-button>
 
     </el-form-item>
@@ -158,6 +158,9 @@ const submitForm = () => {
       if (!flag) {
         registerVerify()
       }
+      router.push({
+        name: 'login',
+      })
     } else {
       ElMessage({
         type: 'error',

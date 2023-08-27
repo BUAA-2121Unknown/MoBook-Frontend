@@ -257,7 +257,7 @@ watch(() => contextMenuVisible.value, () => {
 })
 
 watch(() => route, (to, now) => {
-  if (to.name === 'Login' || to.name === 'Reload') {
+  if (to.name === 'login' || to.name === 'reload') {
     return
   }
   historys.value = historys.value.filter((item) => !item.meta.closeTab)

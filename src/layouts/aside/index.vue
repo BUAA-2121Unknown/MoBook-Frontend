@@ -134,7 +134,6 @@ const selectMenuItem = (index, _, ele, aaa) => {
 </script>
 
 <style lang="scss">
-
 .el-sub-menu__title:hover,
 .el-menu-item:hover {
   background: transparent;
@@ -152,5 +151,22 @@ const selectMenuItem = (index, _, ele, aaa) => {
     display: table-cell;
     vertical-align: middle;
   }
+}
+
+.vertical-grow {
+  flex: 1 1 auto; /* Content grows to fill available vertical space */
+  overflow-y: auto; /* Enable scrolling if content overflows */
+  padding: 20px;
+}
+
+.bottom-menu {
+  position: fixed;
+  bottom: 0;
+  transform: translateY(-100%) !important; /* Move submenu upward */
+}
+
+.popup .el-submenu__popper {
+  bottom: 0 !important;
+  top: auto !important;
 }
 </style>
