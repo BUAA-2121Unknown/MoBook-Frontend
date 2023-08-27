@@ -23,18 +23,18 @@
       </template>
 
       <div class="form-container">
-        <el-form :model="form" label-width="120px">
+        <el-form :model="projectFormData" label-width="120px">
           <el-form-item label="项目封面">
-            <el-input v-model="form.name" />
+            <el-input />
           </el-form-item>
           <el-form-item label="项目名字">
-            <el-input v-model="form.name" />
+            <el-input v-model="projectForm.name" />
           </el-form-item>
           <el-form-item label="项目简介">
-            <el-input v-model="form.desc" type="textarea" />
+            <el-input v-model="projectForm.description" type="textarea" />
           </el-form-item>
           <el-form-item>
-            <el-button type="primary" @click="onSubmit">创建</el-button>
+            <el-button type="primary" @click="submitForm">创建</el-button>
             <el-button>取消</el-button>
           </el-form-item>
         </el-form>
@@ -52,8 +52,10 @@ import { ElButton, ElDrawer } from 'element-plus'
 import { CircleCloseFilled } from '@element-plus/icons-vue'
 import { reactive } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+
+import { createProject } from '@/api/project'
 // do not use same name with ref
-const form = reactive({
+const projectFormData = reactive({
   name: '',
   region: '',
   date1: '',
@@ -69,8 +71,21 @@ export default {
     ProjectCard
   },
   methods: {
-    onSubmit() {
-      console.log('submit!')
+    submitForm() {
+      projectFormData.org
+      createProject(projectFormData).then(res => {
+        console.log(res)
+        ElMessage({
+          message: '创建成功',
+          type: 'success'
+        })
+      }).catch(err => {
+        console.log(err)
+        ElMessage({
+          message: '创建失败',
+          type: 'error'
+        })
+      }
     }
   },
   setup() {

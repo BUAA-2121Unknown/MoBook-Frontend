@@ -114,11 +114,15 @@ const routers = [
       },
       {
         path: 'doc',
-        name: 'doc',
+        name: 'docs',
         component: () => import('@/views/project/ProjectDoc.vue'),
         meta: {
           title: '项目文档',
         },
+        props: (route) => ({
+          project_id: route.query.project_id,
+          team_id: route.query.team_id,
+        }),
       },
     ],
   },
@@ -129,6 +133,17 @@ const routers = [
     meta: {
       title: '原型设计',
     },
+  },
+  {
+    path: '/doc',
+    name: 'doc',
+    component: () => import('@/views/doc/Doc.vue'),
+    meta: {
+      title: '文档',
+    },
+    props: (route) => ({
+      doc_id: route.query.doc_id,
+    }),
   },
   ERROR_LOG_ROUTE,
   PAGE_NOT_FOUND_ROUTE,

@@ -1,101 +1,114 @@
-<!-- 项目文档页面 -->
 <template>
-  <div class="container">
-    <el-row :gutter="20" class="header-container">
-      <el-col :span="12">
-        <h1 class="header-title">项目文档</h1>
-      </el-col>
-      <el-col :span="8">
-        <SearchBar :handler="handleSearch"></SearchBar>
-      </el-col>
-      <el-col :span="4">
-        <DocCreateButton class="header-button"></DocCreateButton>
-      </el-col>
-    </el-row>
-    <!-- 卡片列表 -->
-    <div class="doc-list">
-      <el-row :gutter="20">
-        <el-col v-for="item in docList" :key="item.id" :span="6">
-          <DocCard :doc="item"></DocCard>
-        </el-col>
-      </el-row>
+  <div class="main-wrapper">
+    <div class="gva-table-box" style="margin-top: 2%;">
+      <div class="gva-btn-list">
+        <el-button type="primary" icon="plus" @click="centerDialogVisible = true">新建文档</el-button>
+      </div>
+      <el-table
+        :data="coWorkerList"
+        :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
+        row-key="authorityId"
+        style="width: 100%"
+      >
+        <el-table-column label="名称" min-width="180" prop="name" />
+        <el-table-column label="创建者" min-width="180" prop="creator" />
+      </el-table>
     </div>
+
+    <el-dialog v-model="centerDialogVisible" title="输入你的文档名" width="30%" center>
+      <span>
+        <el-input v-model="input" placeholder="" />
+      </span>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="centerDialogVisible = false">取消</el-button>
+            <el-button type="primary" @click="createDoc(); centerDialogVisible = false">
+            确认
+          </el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
-  
-<script>
-import DocCard from '../../components/project/DocCard.vue';
-import docImg from '@/assets/project/projectDocImg.jpg'
-import DocCreateButton from '../../components/project/DocCreateButton.vue';
-import SearchBar from '../../components/project/SearchBar.vue';
 
+<script setup>
+import { ref } from 'vue'
+const centerDialogVisible = ref(false)
+const input = ref('')
+</script>
+
+<script>
 export default {
-  name: "ProjectDoc",
-  components: {
-    DocCard,
-    DocCreateButton,
-    SearchBar,
+  name: 'ProjectDoc',
+  props: {
+    project_id: {
+      type: String,
+      required: true,
+    },
+    team_id: {
+      type: String,
+      required: true,
+    },
   },
   data() {
     return {
-      docList: [
+      searchedInput: "",
+      coWorkerList: [
         {
-          id: 1,
-          name: '无标题文档a',
-          intro: 'asdgmerioioioioioioioiof',
-          img: docImg,
-        },
-        {
-          id: 2,
-          name: '无标题文档b',
-          intro: 'asdgmerioioioioioioioiof',
-          img: docImg,
-        },
-        {
-          id: 3,
-          name: '无标题文档c',
-          intro: 'asdgmerioioioioioioioiof',
-          img: docImg,
-        },
-        {
-          id: 4,
-          name: '无标题文档d',
-          intro: 'asdgmerioioioioioioioiof',
-          img: docImg,
-        },
-        {
-          id: 5,
-          name: '无标题文档e',
-          intro: '123',
-          img: docImg,
-        },
+          name: '文档1',
+          creator: '张三',
+        }
       ],
+      teamName:  '团队名',
+      teamIntro: '团队简介 BlaBla...',
     }
   },
+
   methods: {
-    handleSearch(input) {
-      console.log('项目文档页面搜索：' + input)
+    createDoc(){
+      //这里调用后端接口，先设置为：先确定标题再进入文档
+      const doc_id = '1'
+      this.$router.push({
+        path: '/doc',
+        query: { doc_id: doc_id }
+      })
     }
   },
-};
+}
 </script>
-  
+
 <style scoped>
-.doc-list {
-  margin: 5px 30px;
+.main-wrapper {
+  padding-top: 1%;
+}
+.header-wrapper {
+  padding-top: 12px;
+  border-top: #777777 solid 1px;
 }
 
-.header-container {
-  background-color: rgba(243, 243, 243, 0.8);
-  align-items: center;
+.row-wrapper {
+  padding: 10px;
 }
 
-.header-title {
-  padding: 0 30px;
+.avatar-wrapper {
+  height: 96px;
+  line-height: 96px;
+  color: var(--el-text-color-primary);
+  text-align: center;
 }
 
-.header-button {
-  margin: 0 auto;
+.teamName {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.teamIntro {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+/* 弹出框 */
+.dialog-footer button:first-child {
+  margin-right: 10px;
 }
 </style>
-  
