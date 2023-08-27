@@ -3,7 +3,8 @@
     <el-row>
       <el-col :span="4">
         <div class="avatar-wrapper">
-          <img src="@/assets/logo.png" style="height: 100%" />
+          <img v-if="orgAvatarUrl" :src="orgAvatarUrl" style="height: 100%" />
+          <img v-else src="@/assets/logo.png" style="height: 100%" />
         </div>
       </el-col>
       <el-col :span="20">
@@ -69,6 +70,25 @@
       </el-table>
     </div>
   </div>
+
+  <el-dialog
+    v-model="dialogVisible"
+    title="邀请链接"
+    width="30%"
+  >
+    <span>{{ inviteLink }}</span>
+    <div class="invite-msg-wrapper">
+      有效期 3 天，请及时使用
+    </div>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="dialogVisible = false">关闭</el-button>
+        <el-button type="primary" @click="copyInviteLink">
+          复制链接
+        </el-button>
+      </span>
+    </template>
+  </el-dialog>
 </template>
 
 <script>
@@ -80,9 +100,11 @@ export default {
 <script setup>
 import { ref, onMounted } from 'vue'
 import { onActivated } from 'vue'
-import { onBeforeRouteUpdate } from 'vue-router'
+import { ElMessage } from 'element-plus'
 import { getOrgInfo, getOrgAllMemberInfo } from '@/api/org'
 import { useUserStore } from '@/stores/modules/user'
+import { getInviteLink } from '@/api/org'
+import settings from '@/settings/basic'
 
 const searchedInput = ''
 const orgMemberList = ref([
@@ -105,9 +127,41 @@ const orgDesc = ref('团队简介 BlaBla...')
 const orgAvatarUrl = ref('')
 const userStore = useUserStore()
 
-const inviteUser = () => {
-  // TODO
-  console.log('inviteUser')
+const dialogVisible = ref(false)
+const inviteLink = ref('')
+const inviteUser = async () => {
+  try {
+    const res = await getInviteLink({
+      orgId: userStore.orgId,
+      expires: 3,
+      review: false,
+    })
+    if (res.meta.status == 0) {
+      inviteLink.value = settings.appURL + 'org/member/auth/activate?token=' + res.data.token
+      dialogVisible.value = true
+    } else {
+      console.log(res)
+    }
+  } catch(e) {
+    console.log(e)
+  }
+}
+
+const copyInviteLink = () => {
+  const input = document.createElement('input')
+  input.setAttribute('readonly', 'readonly')
+  input.setAttribute('value', inviteLink.value)
+  document.body.appendChild(input)
+  input.select()
+  if (document.execCommand('copy')) {
+    document.execCommand('copy')
+    ElMessage({
+      type: 'success',
+      message: '复制成功',
+    })
+  }
+  document.body.removeChild(input)
+  dialogVisible.value = false
 }
 
 onMounted(() => {
@@ -121,7 +175,6 @@ onActivated(() => {
 const GetOrgInfo = async () => {
   try {
     const orgInfo = await getOrgInfo({ orgId: userStore.orgId })
-    console.log(orgInfo)
     if (orgInfo.meta.status == 0) {
       orgName.value = orgInfo.data.org.name
       orgDesc.value = orgInfo.data.org.description
@@ -146,11 +199,6 @@ const GetOrgInfo = async () => {
 .main-wrapper {
   padding-top: 1%;
 }
-.header-wrapper {
-  padding-top: 12px;
-  border-top: #777777 solid 1px;
-}
-
 .row-wrapper {
   padding: 10px;
 }
@@ -170,5 +218,11 @@ const GetOrgInfo = async () => {
 .orgDesc {
   font-size: 16px;
   font-weight: bold;
+}
+
+.invite-msg-wrapper {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #999999;
 }
 </style>
