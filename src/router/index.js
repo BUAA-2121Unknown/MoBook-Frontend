@@ -34,7 +34,7 @@ router.beforeEach((to, from, next) => {
   next()
 })
 
-router.afterEach(() => {
+router.afterEach((to, from, next) => {
   document.getElementsByClassName('main-cont main-right')[0]?.scrollTo(0, 0)
   NProgress.done()
 })

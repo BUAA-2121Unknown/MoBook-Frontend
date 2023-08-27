@@ -1,15 +1,16 @@
 <template>
-  <div class="window-container">
-    <vue-advanced-chat height="calc(80vh - 20px)" :current-user-id="currentUserId" :rooms="JSON.stringify(rooms)"
-      :load-first-room="false" :rooms-loaded="true" :messages="JSON.stringify(messages)" :messages-loaded="messagesLoaded"
-      :show-new-messages-divider="false" @send-message="sendMessage($event.detail[0])"
-      @fetch-messages="fetchMessages($event.detail[0])" />
+  <div class="window-container" v-if="showComponent">
+    <div v-if="showComponent">
+      <vue-advanced-chat v-if="showComponent" height="calc(80vh - 20px)" :current-user-id="currentUserId" :rooms="JSON.stringify(rooms)"
+        :load-first-room="false" :rooms-loaded="true" :messages="JSON.stringify(messages)" :messages-loaded="messagesLoaded"
+        :show-new-messages-divider="false" @send-message="sendMessage($event.detail[0])"
+        @fetch-messages="fetchMessages($event.detail[0])" />
+    </div>
   </div>
 </template>
 
 <script>
 import { register } from 'vue-advanced-chat'
-// import { register } from '../../vue-advanced-chat/dist/vue-advanced-chat.es.js'
 register()
 
 export default {
@@ -96,11 +97,6 @@ export default {
   mounted() {
     this.createWebSocket();
   },
-  /* activated() {
-    console.log('activated')
-    this.createWebSocket()
-    register()
-  }, */
   methods: {
     //建立http链接 请求当前房间聊天记录
     requestMessages() {
@@ -256,6 +252,21 @@ export default {
     }
   }
 }
+</script>
+
+<script setup>
+import { ref } from 'vue';
+import { onActivated, onDeactivated } from 'vue';
+
+const showComponent = ref(true);
+
+onActivated(() => {
+  showComponent.value = true;
+})
+
+onDeactivated(() => {
+  showComponent.value = false;
+})
 </script>
 
 <style lang="scss" scoped>
