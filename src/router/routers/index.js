@@ -17,7 +17,6 @@ Object.keys(modules).forEach((key) => {
 })
 
 const routers = [
-  // ...routeModuleList,
   {
     path: '/login',
     name: 'login',
@@ -83,7 +82,7 @@ const routers = [
           {
             path: 'myteam',
             name: 'myteam',
-            component: () => import('@/views/user/Profile.vue'),
+            component: () => import('@/views/user/MyTeam.vue'),
             meta: {
               title: '我的团队',
             },
@@ -121,6 +120,13 @@ const routers = [
         },
       },
     ],
+  },
+  {
+    path: '/org/member/auth/activate',
+    component: () => import('@/views/team/InvitePage.vue'),
+    meta: {
+      title: '成员邀请'
+    }
   },
   {
     path: '/prototype',
