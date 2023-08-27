@@ -1,22 +1,11 @@
 <template>
-  <el-form
-    ref="loginForm"
-    :model="loginFormData"
-    :rules="rules"
-    :validate-on-rule-change="false"
-    @keyup.enter="submitForm"
-  >
+  <el-form ref="loginForm" :model="loginFormData" :rules="rules" :validate-on-rule-change="false"
+    @keyup.enter="submitForm">
     <el-form-item prop="username" class="mb-6">
       <el-input v-model="loginFormData.username" size="large" placeholder="请输入用户名" suffix-icon="user" />
     </el-form-item>
     <el-form-item prop="password" class="mb-6">
-      <el-input
-        v-model="loginFormData.password"
-        show-password
-        size="large"
-        type="password"
-        placeholder="请输入密码"
-      />
+      <el-input v-model="loginFormData.password" show-password size="large" type="password" placeholder="请输入密码" />
     </el-form-item>
     <el-form-item v-if="loginFormData.openCaptcha" prop="captcha" class="mb-6">
       <div class="flex w-full justify-between">
@@ -27,15 +16,12 @@
       </div>
     </el-form-item>
     <el-form-item class="mb-6">
-      <el-button class="shadow shadow-blue-600 h-11 w-full" type="primary" size="large" @click="submitForm">登 录</el-button>
+      <el-button class="shadow shadow-blue-600 h-11 w-full" type="primary" size="large" @click="submitForm">登
+        录</el-button>
     </el-form-item>
     <el-form-item class="mb-6">
-      <el-button
-        class="shadow shadow-blue-600 h-11 w-full"
-        type="primary"
-        size="large"
-        @click="emitter.emit('setCurrentOption', 'register')"
-      >注 册</el-button>
+      <el-button class="shadow shadow-blue-600 h-11 w-full" type="primary" size="large"
+        @click="emitter.emit('setCurrentOption', 'register')">注 册</el-button>
 
     </el-form-item>
   </el-form>
@@ -79,7 +65,7 @@ const checkPassword = (rule, value, callback) => {
 
 // 获取验证码
 const loginVerify = () => {
-  captcha({}).then(async(ele) => {
+  captcha({}).then(async (ele) => {
     rules.captcha.push({
       max: ele.data.captchaLength,
       min: ele.data.captchaLength,
@@ -117,12 +103,12 @@ const rules = reactive({
 
 const userStore = useUserStore()
 
-const login = async() => {
+const login = async () => {
   return await userStore.loginIn(loginFormData)
 }
 
 const submitForm = () => {
-  loginForm.value.validate(async(v) => {
+  loginForm.value.validate(async (v) => {
     if (v) {
       const loadingInstance = ElLoading.service({
         fullscreen: true,

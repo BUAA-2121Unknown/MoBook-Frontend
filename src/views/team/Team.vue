@@ -18,6 +18,7 @@ import DefaultHome from './Default.vue'
 import NoOrgHome from './NoOrg.vue'
 
 const noOrg = false // TODO: useStore needed
+
 </script>
 
 <style scoped>
