@@ -219,7 +219,7 @@ export default {
 import { updateUserInfo, changePassword } from '@/api/user.js'
 import { reactive, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
-import { useUserStore } from '@/store/modules/user'
+import { useUserStore } from '@/stores/modules/user'
 
 const activeName = ref('second')
 const rules = reactive({

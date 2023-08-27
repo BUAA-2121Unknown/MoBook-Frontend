@@ -22,6 +22,7 @@ export const useUserStore = defineStore({
     },
     token: window.localStorage.getItem('token') || '',
     orgId: 6,
+    auth: '',
   }),
 
   getters: {
@@ -69,6 +70,10 @@ export const useUserStore = defineStore({
 
     setOrgId(val) {
       this.orgId = val
+    },
+  
+    setAuth(val) {
+      this.auth = val
     },
   
     resetUserInfo(value = {}) {

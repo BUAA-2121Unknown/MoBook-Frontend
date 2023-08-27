@@ -69,7 +69,7 @@ import { ref } from 'vue'
 import emitter from '@/utils/emitter'
 import { createOrg } from '@/api/org'
 import { ElMessage } from 'element-plus'
-import { useUserStore } from '@/store/modules/user' 
+import { useUserStore } from '@/stores/modules/user' 
 import { useRouter } from 'vue-router'
 
 const form = ref({

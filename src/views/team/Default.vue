@@ -79,8 +79,9 @@ export default {
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { onBeforeRouteUpdate } from 'vue-router'
 import { getOrgInfo, getOrgAllMemberInfo } from '@/api/org'
-import { useUserStore } from '@/store/modules/user'
+import { useUserStore } from '@/stores/modules/user'
 
 const searchedInput = ''
 const orgMemberList = ref([
@@ -109,23 +110,28 @@ const inviteUser = () => {
 }
 
 onMounted(() => {
+  console.log('onMounted')
+  GetOrgInfo()
+})
+
+onBeforeRouteUpdate(() => {
+  console.log('onBeforeRouteUpdate')
   GetOrgInfo()
 })
 
 const GetOrgInfo = async () => {
   try {
-    console.log('orgId', userStore.orgId)
     const orgInfo = await getOrgInfo({ orgId: userStore.orgId })
+    console.log(orgInfo)
     if (orgInfo.meta.status == 0) {
-      orgName.value = orgInfo.data.name
-      orgDesc.value = orgInfo.data.description
-      orgAvatarUrl.value = orgInfo.data.avatarUrl
-      console.log(orgName, orgDesc, orgAvatarUrl)
+      orgName.value = orgInfo.data.org.name
+      orgDesc.value = orgInfo.data.org.description
+      orgAvatarUrl.value = orgInfo.data.org.avatarUrl
+      userStore.setAuth(orgInfo.data.auth.auth)
     } else {
       console.log(orgInfo)
     }
     const orgMembers = await getOrgAllMemberInfo({ orgId: userStore.orgId })
-    console.log(orgMembers)
     if (orgMembers.meta.status == 0) {
       orgMemberList.value = orgMembers.data.members
     } else {

@@ -17,7 +17,7 @@ export default {
 import { onMounted, ref } from 'vue';
 import DefaultHome from './Default.vue'
 import NoOrgHome from './NoOrg.vue'
-import { useUserStore } from '@/store/modules/user'
+import { useUserStore } from '@/stores/modules/user'
 
 const noOrg = ref(false)
 

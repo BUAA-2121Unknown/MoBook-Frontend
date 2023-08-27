@@ -44,7 +44,7 @@ import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import emitter from '@/utils/emitter'
 import CreateTeam from '@/components/team/CreateTeam.vue'
-import { useUserStore } from '@/store/modules/user'
+import { useUserStore } from '@/stores/modules/user'
 
 const router = useRouter()
 const userStore = useUserStore()
