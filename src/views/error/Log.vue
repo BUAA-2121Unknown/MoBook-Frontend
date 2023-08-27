@@ -18,7 +18,7 @@
 
 <script setup>
 import { watch } from 'vue'
-import { useErrorLogStore } from '@/store/modules/errorLog'
+import { useErrorLogStore } from '@/stores/modules/errorLog'
 
 function testVueError() {
   throw new Error('fire vue error!')

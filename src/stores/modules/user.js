@@ -1,7 +1,9 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { login, getUserInfo } from '@/api/user'
-import { ElMessage } from 'element-plus'
+// import { useRouterStore } from '@/stores/modules/router'
+import { ElLoading, ElMessage } from 'element-plus'
+import { useRouter } from 'vue-router'
 import router from '@/router/index'
 
 export const useUserStore = defineStore({

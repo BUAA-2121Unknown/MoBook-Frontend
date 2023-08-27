@@ -1,4 +1,4 @@
-import { useErrorLogStoreWithOut } from '@/store/modules/errorLog'
+import { useErrorLogStoreWithOut } from '@/stores/modules/errorLog'
 import { ErrorTypeEnum } from '@/enums/errorEnum'
 import settings from '@/settings/basic'
 

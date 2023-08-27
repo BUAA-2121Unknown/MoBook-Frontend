@@ -138,8 +138,8 @@ import Setting from '@/layouts/setting/index.vue'
 import emitter from '@/utils/emitter'
 import { computed, ref, onMounted, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useRouterStore } from '@/store/modules/router'
-import { useUserStore } from '@/store/modules/user'
+import { useRouterStore } from '@/stores/modules/router'
+import { useUserStore } from '@/stores/modules/user'
 import { fmtTitle } from '@/utils/fmtRouterTitle'
 
 const router = useRouter()
