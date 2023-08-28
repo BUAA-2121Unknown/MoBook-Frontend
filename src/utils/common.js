@@ -18,6 +18,8 @@ export function fmtForm(object, keys) {
   for (const key of keys) {
     if (object.hasOwnProperty(key)) {
       subset[key] = object[key];
+    } else {
+      subset[key] = null
     }
   }
   return subset;

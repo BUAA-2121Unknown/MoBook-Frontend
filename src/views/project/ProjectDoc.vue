@@ -5,24 +5,43 @@
         <el-button type="primary" icon="plus" @click="centerDialogVisible = true">新建文档</el-button>
       </div>
       <el-table
-        :data="coWorkerList"
+        :data="docList"
         :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
         row-key="authorityId"
         style="width: 100%"
+        @row-click="clickRow"
       >
-        <el-table-column label="名称" min-width="180" prop="name" />
-        <el-table-column label="创建者" min-width="180" prop="creator" />
+        <el-table-column label="名称" min-width="100" prop="name" />
+        <el-table-column label="创建者" :formatter="formatUsername" />
+        <el-table-column label="操作">
+          <template #default="scope">
+            <el-button 
+              type="primary" size="small"
+              @click.stop="handleShareView(scope.$index, scope.row)"
+              >分享（仅查看）</el-button
+            >
+            <el-button
+              type="primary" size="small"
+              @click.stop="handleShareEdit(scope.$index, scope.row)"
+              >分享（可编辑）</el-button
+            >
+            <el-button
+              type="danger" size="small"
+              >删除</el-button
+            >
+          </template>
+        </el-table-column>
       </el-table>
     </div>
 
     <el-dialog v-model="centerDialogVisible" title="输入你的文档名" width="30%" center>
       <span>
-        <el-input v-model="input" placeholder="" />
+        <el-input v-model="form.name" placeholder="" />
       </span>
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="centerDialogVisible = false">取消</el-button>
-            <el-button type="primary" @click="createDoc(); centerDialogVisible = false">
+            <el-button type="primary" @click="createDocument(); centerDialogVisible = false">
             确认
           </el-button>
         </span>
@@ -32,46 +51,114 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
+import { useUserStore } from '@/stores/modules/user'
+import { createDoc, updateDocStatus } from '@/api/artifact.js'
+import { ElMessage } from 'element-plus'
+import { useRouter } from 'vue-router'
+import { getDocList } from '../../api/artifact'
+
 const centerDialogVisible = ref(false)
-const input = ref('')
+
+const userStore = useUserStore()
+const router = useRouter()
+
+const form = ref({
+  projId: '',
+  name: '',
+  type: '',
+  live: ''
+})
+const projectIdFormData = ref({
+  projId: ''
+})
+
+
+const createDocument = async () => {
+  // TODO
+  try {
+    form.value.projId = userStore.projectId
+    form.value.type = 'Doc'
+    form.value.live = true
+    const res = await createDoc(form.value)
+    if (res.meta.status == 0) {
+      ElMessage({
+        type: 'success',
+        message: '创建成功'
+      })
+      router.push({
+        path: '/doc',
+        query: {
+          doc_id: res.data.id
+        }
+      })
+      return res
+    }
+  } catch (e) {
+    console.log(e)
+  }
+}
+
+const docList = ref([])
+
+onMounted(async () => {
+  projectIdFormData.value.projId = userStore.projectId
+  try {
+    console.log(projectIdFormData.value)
+    const res = await getDocList(projectIdFormData.value)
+    console.log(res)
+    if (res.meta.status == 0) {
+      docList.value = res.data.artifacts
+    }
+  } catch (e) {
+    console.log(e)
+  }
+});
 </script>
 
 <script>
+
 export default {
   name: 'ProjectDoc',
-  props: {
-    project_id: {
-      type: String,
-      required: true,
-    },
-    team_id: {
-      type: String,
-      required: true,
-    },
-  },
+  // props: {
+  //   project_id: {
+  //     type: String,
+  //     required: true,
+  //   },
+  //   team_id: {
+  //     type: String,
+  //     required: true,
+  //   },
+  // },
   data() {
     return {
       searchedInput: "",
-      coWorkerList: [
-        {
-          name: '文档1',
-          creator: '张三',
-        }
-      ],
-      teamName:  '团队名',
-      teamIntro: '团队简介 BlaBla...',
+      projectIdFormData: {
+        projId: ""
+      },
     }
   },
-
   methods: {
-    createDoc(){
-      //这里调用后端接口，先设置为：先确定标题再进入文档
-      const doc_id = '1'
+    async clickRow(row) {
+      console.log(row)
       this.$router.push({
         path: '/doc',
-        query: { doc_id: doc_id }
+        query: {
+          doc_id: row.id
+        }
       })
+    },
+    formatUsername(row) {
+      return row.creator.username
+    },
+    handleShareView(index, row){
+      console.log(index)
+      console.log(row)
+    },
+
+    handleShareEdit(index, row){
+      console.log(index)
+      console.log(row)
     }
   },
 }
@@ -110,5 +197,10 @@ export default {
 /* 弹出框 */
 .dialog-footer button:first-child {
   margin-right: 10px;
+}
+
+.el-table__row:hover {
+  background-color: #f5f7fa;
+  cursor: pointer
 }
 </style>

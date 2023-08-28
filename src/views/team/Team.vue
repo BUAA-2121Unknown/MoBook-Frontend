@@ -14,10 +14,22 @@ export default {
 </script>
 
 <script setup>
+import { onMounted, ref } from 'vue';
 import DefaultHome from './Default.vue'
 import NoOrgHome from './NoOrg.vue'
+import { useUserStore } from '@/stores/modules/user'
 
-const noOrg = false // TODO: useStore needed
+const noOrg = ref(false)
+
+const userStore = useUserStore()
+
+onMounted(() => {
+  if (userStore.orgId) {
+    noOrg.value = false
+  } else {
+    noOrg.value = true
+  }
+})
 </script>
 
 <style scoped>

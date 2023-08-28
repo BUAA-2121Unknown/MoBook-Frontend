@@ -168,7 +168,9 @@
   import { Editor, EditorContent } from '@tiptap/vue-3';
   import StarterKit from '@tiptap/starter-kit';
   import Underline from '@tiptap/extension-underline';
-  
+  import Mention from '@tiptap/extension-mention'
+  import suggestion from './suggestion.js'
+
   import { useUserStore } from '@/stores/modules/user'
   const userStore = useUserStore()
   const userName = userStore.userInfo.username
@@ -238,13 +240,16 @@
       console.log(userStore)
       // 创建时，后端会创建一个新的文档，拿到文档的id，传给js后端
       const ydoc = new Y.Doc()
+      
+      const tmp_token = "2"
+
       this.provider = new HocuspocusProvider({
         url: 'ws://127.0.0.1:80',
         name: "test",
         document: ydoc,
-        token: this.doc_id + '-' + userName,
+        token: tmp_token + '-' + this.doc_id + '-' + userName,
       })
-  
+      
       this.provider.on('status', event => {
         this.status = event.status
       })
@@ -267,6 +272,12 @@
           }),
           CharacterCount.configure({
             limit: 10000,
+          }),
+          Mention.configure({
+            HTMLAttributes: {
+              class: 'mention',
+            },
+            suggestion,
           }),
         ],
       })
@@ -413,6 +424,12 @@
       top: -1.4em;
       user-select: none;
       white-space: nowrap;
+    }
+    .mention {
+      border: 1px solid #000;
+      border-radius: 0.4rem;
+      padding: 0.1rem 0.3rem;
+      box-decoration-break: clone;
     }
   </style>
   

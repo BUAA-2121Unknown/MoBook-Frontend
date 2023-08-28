@@ -7,6 +7,7 @@
           <div v-if="expanded" class="doc-intro">{{ project.description }}</div>
       </div>
       <div class="delete-button" @click.stop="open"><el-icon><Delete /></el-icon></div>
+      <div class="shift-button" @click.stop="shift"><el-icon><Switch /></el-icon></div>
       <transition name="slide-up">
           <el-row class="mb-4 doc-buttom-group" v-if="expanded">
           </el-row>
@@ -16,13 +17,13 @@
 
 
 <script>
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { updateStatus } from '@/api/project'
 import { useUserStore } from '@/stores/modules/user'
 import { ref } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { updateStatus } from '@/api/project'
 const userStore = useUserStore()
 export default {
-  name: "ProjectCard",
+  name: "TrashProjectCard",
   props: ["project"],
   data() {
       return {
@@ -54,15 +55,20 @@ export default {
             name: "info"
         });
       },
-      shallowDelete(){
+      deepDelete(){
         // console.log(this.project.id)
-        this.projectFormData.status = 1
+        this.projectFormData.status = 2
         this.projectFormData.projects.push(this.project.id);
         updateStatus(this.projectFormData)
       },
-      async open(){
+      shiftProject(){
+        this.projectFormData.status = 0
+        this.projectFormData.projects.push(this.project.id);
+        updateStatus(this.projectFormData)
+      },
+      async open() {
         ElMessageBox.confirm(
-          '删除的文件会进入回收站，确认删除吗?',
+          '删除的文件会彻底删除，确认删除吗?',
           'Warning',
           {
             confirmButtonText: '确认',
@@ -71,8 +77,33 @@ export default {
           }
         )
           .then(() => {
-            this.shallowDelete()
+            this.deepDelete()
             //假删除
+            this.$emit('delete', this.project.id)
+            ElMessage({
+              type: 'success',
+              message: '已删除',
+            })
+          })
+          .catch(() => {
+            ElMessage({
+              type: 'info',
+              message: '取消删除',
+            })
+          })
+      },
+      async shift() {
+        ElMessageBox.confirm(
+          '确认把回收站的文件放回吗?',
+          'Warning',
+          {
+            confirmButtonText: '确认',
+            cancelButtonText: '取消',
+            type: 'warning',
+          }
+        )
+          .then(() => {
+            this.shiftProject()
             this.$emit('delete', this.project.id)
             ElMessage({
               type: 'success',
@@ -87,9 +118,6 @@ export default {
           })
       }
   },
-  mounted(){
-    
-  }
 };
 </script>
 
@@ -172,8 +200,20 @@ export default {
   display:none; /* Initially, the delete button is hidden */
 }
 
+.shift-button {
+  position: absolute; /* 添加绝对定位 */
+  top: 10px;
+  right: 50px;
+  font-size: 24px;
+  color: blue;
+  cursor: pointer;
+  display:none; /* Initially, the delete button is hidden */
+}
 /* When mouse hovers over the box, the delete button is displayed */
 .doc-card:hover .delete-button {
+  display: block;
+}
+.doc-card:hover .shift-button {
   display: block;
 }
 </style>

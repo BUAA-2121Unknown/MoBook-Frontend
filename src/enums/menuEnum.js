@@ -52,7 +52,45 @@ export const menuList = [
       "icon": "Document",
     },
     "authoritys": null,
-    "children": null,
+    "children": [
+      {
+        "ID": 7,
+        "parentId": 3,
+        "path": "list",
+        "name": "list",
+        "hidden": false,
+        "meta": {
+          "activeName": "",
+          "keepAlive": false,
+          "defaultMenu": false,
+          "title": "项目列表",
+          "icon": "Document",
+        },
+        "authoritys": null,
+        "children": null,
+        "parameters": [],
+        "btns": null
+      },
+      {
+        "ID": 8,
+        "parentId": 3,
+        "path": "trash",
+        "name": "trash",
+        "hidden": false,
+        "meta": {
+          "activeName": "",
+          "keepAlive": false,
+          "defaultMenu": false,
+          "title": "项目回收站",
+          "icon": "Document",
+        },
+        "authoritys": null,
+        "children": null,
+        "parameters": [],
+        "btns": null
+      },
+
+    ],
     "parameters": [],
     "btns": null
   },
@@ -108,6 +146,28 @@ export const menuList = [
         "btns": null
       },
     ],
+    "parameters": [],
+    "btns": null
+  },
+]
+
+export const projectMenuList = [
+  {
+    "ID": 1,
+    "parentId": "0",
+    "path": "doc",
+    "name": "doc",
+    "hidden": false,
+    "component": "views/team/Team.vue",
+    "meta": {
+      "activeName": "",
+      "keepAlive": false,
+      "defaultMenu": false,
+      "title": "团队",
+      "icon": "User",
+    },
+    "authoritys": null,
+    "children": null,
     "parameters": [],
     "btns": null
   },

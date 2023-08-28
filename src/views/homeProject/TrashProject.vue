@@ -1,49 +1,21 @@
 <template>
   <div class="container">
     <div class="search-container">
-      <div class="section-title">团队项目</div>
+      <div class="section-title">回收站</div>
       <div class="right-elements">
         <input type="text" placeholder="搜索">
-        <el-button type="primary" @click="visible = true">创建项目</el-button>
       </div>
     </div>
     <div class="project-container">
-      <ProjectCard v-for="project in projectList" :key="project.id" @delete="handleDelete" :project="project" />
+      <TrashProjectCard v-for="project in projectList" :key="project.id" @delete="handleDelete" :project="project" />
     </div>
-
-    <el-drawer v-model="visible" :show-close="false" direction="rtl" size="80%">
-      <template #header="{ close }">
-        <div class="form-title">填写项目信息</div>
-        <el-button type="danger" @click="close">
-          <el-icon class="el-icon--left">
-            <CircleCloseFilled />
-          </el-icon>
-          关闭
-        </el-button>
-      </template>
-
-      <div class="form-container">
-        <el-form :model="projectFormData" label-width="120px">
-          <el-form-item label="项目名字">
-            <el-input v-model="projectFormData.name" />
-          </el-form-item>
-          <el-form-item label="项目简介">
-            <el-input v-model="projectFormData.description" type="textarea" />
-          </el-form-item>
-          <el-form-item>
-            <el-button type="primary" @click="submitForm">创建</el-button>
-            <el-button>取消</el-button>
-          </el-form-item>
-        </el-form>
-      </div>
-    </el-drawer>
 
   </div>
 </template>
 
 <script>
 import project_bg from '@/assets/homeProject/project_bg.png'
-import ProjectCard from '@/components/homeProject/ProjectCard.vue'
+import TrashProjectCard from '@/components/homeProject/TrashProjectCard.vue'
 import { ref } from 'vue'
 import { ElButton, ElDrawer } from 'element-plus'
 import { CircleCloseFilled } from '@element-plus/icons-vue'
@@ -62,42 +34,9 @@ const projectFormData = reactive({
   description: '',
 })
 export default {
-  name: "Project",
+  name: "TrashProject",
   components: {
-    ProjectCard
-  },
-  data(){
-    return {
-      projectList: [
-      ]
-    }
-  },
-  methods: {
-    handleDelete(id) {
-      this.projectList = this.projectList.filter(project => project.id !== id);
-    },
-    async submitForm() {
-      try {
-        projectFormData.orgId = userStore.orgId
-        console.log(userStore.orgId)
-        console.log(projectFormData)
-        const res = await createProject(projectFormData)
-        console.log(res)
-        if (res.meta.status == 0) {
-          ElMessage({
-            type: 'success',
-            message: '创建成功'
-          })
-          this.$router.push({
-              name: "info"
-          });
-          userStore.setProjectId(this.project.id)
-          return res
-        }
-      } catch (e) {
-        console.log(e)
-      }
-    }
+    TrashProjectCard
   },
   setup() {
     const visible = ref(false)
@@ -111,8 +50,19 @@ export default {
       projectFormData
     };
   },
+  data() {
+    return {
+      projectList: [
+      ]
+    }
+  },
+  methods: {
+    handleDelete(id) {
+      this.projectList = this.projectList.filter(project => project.id !== id);
+    },
+  },
   async mounted(){
-    const res = await getProjects({ orgId: userStore.orgId, status: 0 })
+    const res = await getProjects({ orgId: userStore.orgId, status: 1 })
     if (res.meta.status == 0) {
       this.projectList = res.data.projects
     } else {

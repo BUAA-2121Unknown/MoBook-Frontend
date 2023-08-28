@@ -32,17 +32,15 @@
             'undo',
             'redo',
           ]"
-          @update="test"
-          @save="save"
         />
       </div>
     </div>
-    <!-- 如果编辑器中的内容有更新，就执行test函数，后续可在这里写自动保存 -->
   </template>
   
   <script>
   import Editor from '@/components/docEditor/Editor.vue';
-  
+  import { getDoc } from '@/api/artifact.js';
+
   export default {
     name: 'Doc',
     props: {
@@ -57,23 +55,20 @@
     data(){
       return {
         title: '',
+        form: {
+          artId: 8
+        }
       }
     },
-    created() {
-      //先调用后端接口，获取标题
-      this.title = '文档1'
-      document.title = '文档1';
-      
+    async mounted() {
+      this.form.artId = this.doc_id
+      console.log(this.doc_id)
+      const res = await getDoc(this.form)
+      console.log(res)
+      this.title = res.data.name
+      document.title = this.title;
     },
     methods: {
-      test(something) {
-        // eslint-disable-next-line no-console
-        // console.log(something);
-      },
-      save(something) {
-  
-        console.log(something)
-      }
     },
   };
   </script>

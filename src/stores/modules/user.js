@@ -16,11 +16,14 @@ export const useUserStore = defineStore({
       name: '',
       avatarUrl: '',
       authority: {},
-      sideMode: 'dark',
+      sideMode: window.localStorage.getItem('sideMode') || 'dark',
       activeColor: 'var(--el-color-primary)',
       baseColor: '#fff'
     },
     token: window.localStorage.getItem('token') || '',
+    orgId: 3,
+    projectId: -1,
+    auth: '',
   }),
 
   getters: {
@@ -50,7 +53,7 @@ export const useUserStore = defineStore({
 
     async GetUserInfo() {
       const res = await getUserInfo()
-      if (res.code === 0) {
+      if (res.data.meta.status == 0) {
         this.setUserInfo(res.data.userInfo)
       }
       return res
@@ -64,6 +67,17 @@ export const useUserStore = defineStore({
 
     setToken(val) {
       this.token = val
+    },
+
+    setOrgId(val) {
+      this.orgId = val
+    },
+    
+    setProjectId(val) {
+      this.projectId = val
+    },
+    setAuth(val) {
+      this.auth = val
     },
   
     resetUserInfo(value = {}) {
@@ -89,6 +103,7 @@ export const useUserStore = defineStore({
           return res
         }
       } catch (e) {
+        console.log(e)
       }
     },
 
@@ -104,14 +119,11 @@ export const useUserStore = defineStore({
     },
 
     async changeSideMode(data) {
-      const res = await setSelfInfo({ sideMode: data })
-      if (res.code === 0) {
-        this.userInfo.sideMode = data
-        ElMessage({
-          type: 'success',
-          message: '设置成功'
-        })
-      }
+      this.userInfo.sideMode = data
+      ElMessage({
+        type: 'success',
+        message: '设置成功'
+      })
     },
 
     watchTokenChange() {
