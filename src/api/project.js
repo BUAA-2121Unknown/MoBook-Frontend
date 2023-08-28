@@ -1,6 +1,13 @@
 import { fmtForm } from '@/utils/common'
 import service from '@/utils/request';
-
+// 获得项目基础字段
+export const getProjectInfo = (params) => {
+  return service({
+    url: 'proj/profile',
+    method: 'get',
+    params: params,
+  })
+}
 // 更新项目基础字段
 export const updateProjectInfo = (data) => {
   const form = [
