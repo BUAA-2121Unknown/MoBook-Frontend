@@ -21,6 +21,8 @@
 import { getOrgAllMemberInfo } from '@/api/org'
 import { useUserStore } from '@/stores/modules/user'
 import { onMounted, ref } from 'vue'
+import { mention } from '@/api/artifact'
+
 const userStore = useUserStore()
 export default {
   props: {
@@ -42,6 +44,11 @@ export default {
       members: [],
       formData: {
         orgId: '',
+      },
+      mentionFormData: {
+        projId: '',
+        artId: '',
+        users: []
       }
     }
   },
@@ -84,12 +91,21 @@ export default {
       this.selectItem(this.selectedIndex)
     },
 
-    selectItem(index) {
+    async selectItem(index) {
       const member = this.members[index]
       if (member) {
         this.command({ id: member.username })
       }
-      
+      this.mentionFormData.projId = userStore.projectId
+      this.mentionFormData.artId = parseInt(this.$route.query.doc_id)
+      this.mentionFormData.users.push(member.id)
+      console.log(this.mentionFormData)
+      const res = await mention(this.mentionFormData)
+      if (res.data.status == 0) {
+        console.log(res)
+      } else {
+        console.log(res)
+      }
     },
 
     async getAllMembers() {

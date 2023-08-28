@@ -298,6 +298,14 @@ export default {
 
     this.createWebSocket();
   },
+  activated() {
+    const userStore = useUserStore();
+    this.userId = userStore.userInfo.id;
+    this.orgId = userStore.orgId;
+    this.loadAllMessage();
+
+    this.createWebSocket();
+  }
 };
 </script>
   
