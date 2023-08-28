@@ -122,7 +122,7 @@ const closeAll = () => {
   ]
   router.push({ name: defaultRouter.value })
   contextMenuVisible.value = false
-  sessionStorage.setItem('historys', JSON.stringify(historys.value))
+  // sessionStorage.setItem('historys', JSON.stringify(historys.value))
 }
 
 const closeLeft = () => {
@@ -140,7 +140,7 @@ const closeLeft = () => {
   if (rightIndex > activeIndex) {
     router.push(right)
   }
-  sessionStorage.setItem('historys', JSON.stringify(historys.value))
+  // sessionStorage.setItem('historys', JSON.stringify(historys.value))
 }
 
 const closeRight = () => {
@@ -158,7 +158,7 @@ const closeRight = () => {
   if (leftIndex < activeIndex) {
     router.push(right)
   }
-  sessionStorage.setItem('historys', JSON.stringify(historys.value))
+  // sessionStorage.setItem('historys', JSON.stringify(historys.value))
 }
 
 const closeOther = () => {
@@ -170,7 +170,7 @@ const closeOther = () => {
     return getFmtString(item) === rightActive.value
   })
   router.push(right)
-  sessionStorage.setItem('historys', JSON.stringify(historys.value))
+  // sessionStorage.setItem('historys', JSON.stringify(historys.value))
 }
 
 const isSame = (route1, route2) => {
@@ -203,6 +203,8 @@ const setTab = (route) => {
     obj.params = route.params
     historys.value.push(obj)
   }
+  console.log(route)
+  console.log(getFmtString(route))
   window.sessionStorage.setItem('activeValue', getFmtString(route))
 }
 
@@ -262,12 +264,12 @@ watch(() => route, (to, now) => {
   }
   historys.value = historys.value.filter((item) => !item.meta.closeTab)
   setTab(to)
-  sessionStorage.setItem('historys', JSON.stringify(historys.value))
+  // sessionStorage.setItem('historys', JSON.stringify(historys.value))
   activeValue.value = window.sessionStorage.getItem('activeValue')
 }, { deep: true })
 
 watch(() => historys.value, () => {
-  sessionStorage.setItem('historys', JSON.stringify(historys.value))
+  // sessionStorage.setItem('historys', JSON.stringify(historys.value))
   historyMap.value = {}
   historys.value.forEach((item) => {
     historyMap.value[getFmtString(item)] = item

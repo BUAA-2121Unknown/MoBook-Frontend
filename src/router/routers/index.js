@@ -50,14 +50,14 @@ const routers = [
           title: '群聊',
         },
       },
-      {
+      /* {
         path: 'project',
         name: 'project',
         component: () => import('@/views/homeProject/HomeProject.vue'),
         meta: {
           title: '项目',
         },
-      },
+      }, */
     ]
   },
   {
@@ -96,6 +96,14 @@ const routers = [
     component: LAYOUT,
     children: [
       {
+        path: 'list',
+        name: 'list',
+        component: () => import('@/views/homeProject/HomeProject.vue'),
+        meta: {
+          title: '项目列表',
+        },
+      },
+      {
         path: 'info',
         name: 'info',
         component: () => import('@/views/project/ProjectInfo.vue'),
@@ -114,9 +122,17 @@ const routers = [
       {
         path: 'doc',
         name: 'doc',
-        component: () => import('@/views/project/ProjectDoc.vue'),
+        component: () => import('@/views/user/MyTeam.vue'),
         meta: {
           title: '项目文档',
+        },
+      },
+      {
+        path: 'trash',
+        name: 'trash',
+        component: () => import('@/views/user/Profile.vue'),
+        meta: {
+          title: '回收站',
         },
       },
     ],

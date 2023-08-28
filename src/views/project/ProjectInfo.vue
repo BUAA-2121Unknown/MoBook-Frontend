@@ -6,7 +6,7 @@
         <!-- 简介头栏 -->
         <div class="project-header-container">
             <!-- 背景头图 -->
-            <img :src="projectInfo.projectHeadUrl" class="header-background-image" />
+            <!-- <img :src="projectInfo.projectHeadUrl" class="header-background-image" /> -->
             <!-- 模糊背景 -->
             <div class="project-header-intro-container header-blur-container"></div>
             <div class="project-header-bk header-blur-container"></div>

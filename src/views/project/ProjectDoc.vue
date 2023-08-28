@@ -24,7 +24,7 @@
 </template>
   
 <script>
-import DocCard from '../../components/project/DocCard.vue';
+import DocCard from '@/components/project/DocCard.vue';
 import docImg from '@/assets/project/projectDocImg.jpg'
 import DocCreateButton from '../../components/project/button/DocCreateButton.vue';
 import SearchBar from '../../components/project/SearchBar.vue';

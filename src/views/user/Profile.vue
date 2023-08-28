@@ -4,15 +4,20 @@
       <div class="col-span-3 h-full">
         <div class="w-full h-full bg-white px-4 py-8 rounded-lg shadow-lg box-border">
           <div class="user-card px-6 text-center bg-white shrink-0">
-            <div class="flex justify-center">
-              <el-upload
-                class="avatar-uploader"
-                action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
-                :show-file-list="false"
-                :on-success="uploadAvatar"
+            <div class="justify-center">
+              <img v-if="userStore.userInfo.avatarUrl" :src="userStore.userInfo.avatarUrl" class="avatar" />
+              <img v-else class="avatar" src="@/assets/noBody.png" />
+              <el-upload :action="avatar.path" method="post"
+                :with-credentials="true" :show-file-list="false"
+                :headers="{'Authorization': userStore.token}"
+                :before-upload="beforeAvatarUpload"
+                :on-success="avatarSuccess" :on-error="avatarError"
+                accept=".jpg,.png" name="file" :disabled="avatar.loading"
               >
-                <img v-if="userStore.userInfo.avatarUrl" :src="userStore.userInfo.avatarUrl" class="avatar" />
-                <img v-else class="avatar" src="@/assets/logo.png" />
+                <el-button class="user-avatar-button" type="info"
+                  :loading="avatar.loading" plain>
+                  更新头像
+                </el-button>
               </el-upload>
             </div>
             <div class="py-6 text-center">
@@ -23,7 +28,7 @@
                 </el-icon>
               </p>
               <p v-if="editFlag" class="flex justify-center items-center gap-4">
-                <el-input v-model="nickName" />
+                <el-input v-model="changingUsername" />
                 <el-icon class="cursor-pointer" color="#67c23a" @click="enterEdit">
                   <check />
                 </el-icon>
@@ -39,7 +44,7 @@
                   <el-icon>
                     <user />
                   </el-icon>
-                  {{ userStore.userInfo.nickName }}
+                  {{ userStore.userInfo.username }}
                 </li>
                 <el-tooltip
                   class="item"
@@ -222,11 +227,13 @@ export default {
 </script>
 
 <script setup>
-import { updateUserInfo, changePassword } from '@/api/user.js'
+import { updateUserInfo, changePassword } from '@/api/user'
 import { reactive, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/modules/user'
 // import SelectImage from '@/components/selectImage/selectImage.vue'
+import { uploadUserAvatar } from '@/api/user'
+import settings from '@/settings/basic'
 
 const activeName = ref('second')
 const rules = reactive({
@@ -304,23 +311,29 @@ const openEdit = () => {
 }
 
 const closeEdit = () => {
-  nickName.value = ''
   editFlag.value = false
 }
 
+const changingUsername = ref(userStore.userInfo.username)
+
 const enterEdit = async() => {
-  const res = await updateUserInfo({
-    nickName: nickName.value
-  })
-  if (res.code === 0) {
-    userStore.ResetUserInfo({ nickName: nickName.value })
-    ElMessage({
-      type: 'success',
-      message: '设置成功',
+  console.log('enter')
+  try {
+    const res = await updateUserInfo({
+      username: changingUsername.value,
     })
+    console.log(res)
+    if (res.meta.status == 0) {
+      userStore.resetUserInfo({ username: changingUsername.value })
+      ElMessage({
+        type: 'success',
+        message: '修改成功',
+      })
+    }
+    editFlag.value = false
+  } catch(e) {
+    console.log(e)
   }
-  nickName.value = ''
-  editFlag.value = false
 }
 
 const handleClick = (tab, event) => {
@@ -393,7 +406,20 @@ const changeEmail = async() => {
   }
 }
 
-const uploadAvatar = async() => {
+const avatar = ref({
+  loading: false,
+  path: settings.apiURL + 'user/avatar/upload',
+})
+
+const beforeAvatarUpload = () => {
+
+}
+
+const avatarSuccess = () => {
+
+}
+
+const avatarError = () => {
 
 }
 </script>
@@ -427,5 +453,25 @@ const uploadAvatar = async() => {
 
 .avatar-uploader .el-upload:hover {
   border-color: var(--el-color-primary);
+}
+
+
+.user-avatar-update {
+  margin: 20px 0;
+}
+.user-avatar-button {
+  width: 100%;
+}
+
+.avatar {
+  width: 178px;
+  height: 178px;
+  border-radius: 50%;
+  border: 1px solid #ccc;
+  background-color: #fff;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  cursor: pointer;
 }
 </style>

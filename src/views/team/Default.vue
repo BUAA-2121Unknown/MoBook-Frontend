@@ -43,10 +43,10 @@
         row-key="user.id"
         style="width: 100%"
       >
-        <el-table-column label="昵称" min-width="180">
+        <el-table-column label="团队内昵称" min-width="180">
           <template #default="scope">
-            <img v-if="scope.row.user.avatarUrl" src="scope.row.user.avatarUrl" style="width: 24px; height: 24px; margin-right: 10px; border-radius: 50%" />
-            <img v-else src="@/assets/logo.png" style="width: 24px; height: 24px; margin-right: 10px; border-radius: 50%" />
+            <img v-if="scope.row.user.avatarUrl" :src="scope.row.user.avatarUrl" style="width: 24px; height: 24px; margin-right: 10px; border-radius: 50%" />
+            <img v-else src="@/assets/noBody.png" style="width: 24px; height: 24px; margin-right: 10px; border-radius: 50%" />
             <span>{{ scope.row.member.nickname }}</span>
           </template>
         </el-table-column>
@@ -161,6 +161,7 @@ const orgMemberList = ref([
     }
   },
 ])
+const orgMemberListCopy = ref([])
 const orgName = ref('团队名')
 const orgDesc = ref('团队简介 BlaBla...')
 const orgAvatarUrl = ref('')
@@ -237,9 +238,9 @@ const GetOrgInfo = async () => {
       console.log(orgInfo)
     }
     const orgMembers = await getOrgAllMemberInfo({ orgId: userStore.orgId })
-    console.log(orgMembers)
     if (orgMembers.meta.status == 0) {
       orgMemberList.value = orgMembers.data.members
+      orgMemberListCopy.value = orgMembers.data.members
     } else {
       console.log(orgMembers)
     }
@@ -249,6 +250,7 @@ const GetOrgInfo = async () => {
 }
 
 const searchTeamMember = () => {
+  orgMemberList.value = orgMemberListCopy.value
   if (!searchedInput.value) {
     GetOrgInfo()
     return

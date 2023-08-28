@@ -1,4 +1,5 @@
 import settings from '@/settings/basic'
+import { useRouterStore } from '@/stores/modules/router'
 
 export function setTitle(title) {
   document.title = title + ' | ' + settings.appName
@@ -23,4 +24,10 @@ export function fmtForm(object, keys) {
     }
   }
   return subset;
+}
+
+export function resetMenuList(list) {
+  const routerStore = useRouterStore()
+  routerStore.menuRouter = list
+  routerStore.formatRouter(routerStore.menuRouter, routerStore.routeMap)
 }
