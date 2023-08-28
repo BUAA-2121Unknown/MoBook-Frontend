@@ -167,11 +167,11 @@ export default {
       //   return
       // }
       // 是已保存的项目
-      const data = {
+      const params = {
         artId: this.$route.query.artId,
       };
       try {
-        const res = await getPrototype(data);
+        const res = await getPrototype(params);
         const val = JSON.parse(res.data.file)
         this.$store.commit(
           "setComponentData",

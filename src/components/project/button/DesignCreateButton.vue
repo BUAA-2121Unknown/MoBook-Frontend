@@ -37,7 +37,7 @@
 <script>
 import PictureUploader from "../PictureUploader.vue";
 import { useRouter } from "vue-router";
-
+import { useUserStore } from "../../../stores/modules/user";
 import { createPrototype } from "@/api/artifact";
 
 export default {
@@ -63,8 +63,9 @@ export default {
   methods: {
     // 创建原型设计
     async handleCreate() {
+      const userStore = useUserStore()
       const data = {
-        projId: 12,
+        projId: userStore.projectId,
         name: this.form.name,
         type: "prototype",
         live: false,

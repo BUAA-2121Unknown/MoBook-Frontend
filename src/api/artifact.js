@@ -1,20 +1,6 @@
 import service from '@/utils/request';
 import { fmtForm } from '@/utils/common'
 
-// 更新项目基础字段
-export const updateProjectInfo = (data) => {
-  const form = [
-    'projId',
-    'name',
-    'description'
-  ]
-  return service({
-    url: 'proj/profile/update',
-    method: 'post',
-    data: fmtForm(data, form)
-  })
-}
-
 // 更新原型设计基础字段
 export const updatePrototypeInfo = (data) => {
   const form = [
@@ -55,10 +41,10 @@ export const updatePrototypeStatus = (data) => {
     data: fmtForm(data, form)
   })
 }
-// 获取原型设计
+// 获取指定id的原型设计数据
 export const getPrototype = (params) => {
   return service({
-    url: 'proj/artifact/file/download',
+    url: 'proj/artifact/file/download/content',
     method: 'get',
     params: params,
   })
@@ -75,10 +61,11 @@ export const getPrototypeList = (params) => {
 export const savePrototype = (data) => {
   const form = [
     'artId',
-    'file',
+    'filename',
+    'content'
   ]
   return service({
-    url: 'proj/artifact/file/upload',
+    url: 'proj/artifact/file/upload/content',
     method: 'post',
     data: fmtForm(data, form)
   })

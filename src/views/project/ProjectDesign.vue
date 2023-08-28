@@ -110,13 +110,12 @@ export default {
         console.log(e);
       }
     }
-
   },
   mounted() {
-    // const userStore = useUserStore();
+    const userStore = useUserStore();
     // this.projId = this.$router.query.projId
     // console.log(this.projId)
-    this.projId = 12
+    this.projId = userStore.projectId
     this.getList()
   }
 };

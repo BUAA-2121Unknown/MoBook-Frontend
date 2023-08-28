@@ -93,6 +93,10 @@ export default {
     },
     methods: {
         handleEdit() {
+            const userStore = useUserStore();
+            const data = {
+                projId: userStore.projectId,
+            }
             // console.log('成功修改资料')
             this.$message({
                 message: '成功修改项目字段',

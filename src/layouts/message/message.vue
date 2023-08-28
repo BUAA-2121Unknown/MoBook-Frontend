@@ -293,7 +293,7 @@ export default {
   mounted() {
     const userStore = useUserStore();
     this.userId = userStore.userInfo.id;
-    this.orgId = 3;
+    this.orgId = userStore.orgId;
     this.loadAllMessage();
 
     this.createWebSocket();

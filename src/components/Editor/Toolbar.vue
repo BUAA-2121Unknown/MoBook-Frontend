@@ -341,27 +341,27 @@ export default {
       // });
       // console.log("新", val1, JSON.parse(val1), JSON.parse(val1).canvasStyle);
       // console.log("旧", val2, JSON.parse(val2));
-        if(!this.$route.query || !this.$route.query.artId){
-          console.log('未给出artId，无法保存')
-          return
-        }
-        const id = 1
-        const data = {
-          artId: this.$route.query.artId,
-          file: JSON.stringify(
-          {
-            canvasData: JSON.stringify({ array: this.componentData }),
-            canvasStyle: this.canvasStyleData,
-          })
-        }
-        try{
-          const res = await savePrototype(data)
-          console.log(res)
-          this.$message.success("保存成功");
-        } catch(e) {
-          console.log(e)
-          this.$message.error("保存失败");
-        }
+      if (!this.$route.query || !this.$route.query.artId) {
+        console.log("未给出artId，无法保存");
+        return;
+      }
+      const id = this.$route.query.artId;
+      const data = {
+        artId: this.$route.query.artId,
+        filename: "prototype_" + this.$route.query.artId + ".json",
+        content: JSON.stringify({
+          canvasData: JSON.stringify({ array: this.componentData }),
+          canvasStyle: this.canvasStyleData,
+        }),
+      };
+      try {
+        const res = await savePrototype(data);
+        console.log(res);
+        this.$message.success("保存成功");
+      } catch (e) {
+        console.log(e);
+        this.$message.error("保存失败");
+      }
     },
 
     // save() {
