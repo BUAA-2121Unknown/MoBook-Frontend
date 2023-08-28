@@ -1,11 +1,12 @@
 <!-- 项目文档的卡片组件 -->
 <template>
-  <div class="doc-card" @mouseenter="expandCard" @mouseleave="shrinkCard">
+  <div class="doc-card" @mouseenter="expandCard" @mouseleave="shrinkCard" @click="chooseProject">
       <div class="doc-image-container" :style="{ backgroundImage: `url(${project.img})`, height: imageHeight }"></div>
       <div class="doc-text-container" :style="{ height: textHeight }">
-          <div class="doc-title">{{ project.title }}</div>
-          <div v-if="expanded" class="doc-intro">{{ project.intro }}</div>
+          <div class="doc-title">{{ project.name }}</div>
+          <div v-if="expanded" class="doc-intro">{{ project.description }}</div>
       </div>
+      <div class="delete-button" @click.stop="open"><el-icon><Delete /></el-icon></div>
       <transition name="slide-up">
           <el-row class="mb-4 doc-buttom-group" v-if="expanded">
           </el-row>
@@ -13,14 +14,23 @@
   </div>
 </template>
 
-<script>
 
+<script>
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { updateStatus } from '@/api/project'
+import { useUserStore } from '@/stores/modules/user'
+import { ref } from 'vue'
+const userStore = useUserStore()
 export default {
   name: "ProjectCard",
   props: ["project"],
   data() {
       return {
           expanded: false,
+          projectFormData: {
+            status: '',
+            projects: [],
+          }
       };
   },
   computed: {
@@ -38,14 +48,55 @@ export default {
       shrinkCard() {
           this.expanded = false;
       },
+      chooseProject() {
+        userStore.setProjectId(this.project.id)
+        this.$router.push({
+            name: "info"
+        });
+      },
+      shallowDelete(){
+        // console.log(this.project.id)
+        this.projectFormData.status = 1
+        this.projectFormData.projects.push(this.project.id);
+        updateStatus(this.projectFormData)
+      },
+      async open(){
+        ElMessageBox.confirm(
+          '删除的文件会进入回收站，确认删除吗?',
+          'Warning',
+          {
+            confirmButtonText: '确认',
+            cancelButtonText: '取消',
+            type: 'warning',
+          }
+        )
+          .then(() => {
+            this.shallowDelete()
+            //假删除
+            this.$emit('delete', this.project.id)
+            ElMessage({
+              type: 'success',
+              message: '已删除',
+            })
+          })
+          .catch(() => {
+            ElMessage({
+              type: 'info',
+              message: '取消删除',
+            })
+          })
+      }
   },
+  mounted(){
+    
+  }
 };
 </script>
 
 <style scoped>
 .doc-card {
   margin: 10px;
-  width: 23%;
+  width: 22%;
   height: 200px;
   overflow: hidden;
   border: 2px solid rgba(255, 255, 255, 0.8);
@@ -108,5 +159,21 @@ export default {
 .slide-up-enter-from,
 .slide-up-leave-to {
   transform: translateY(150%);
+}
+
+/* 删除按钮 */
+.delete-button {
+  position: absolute; /* 添加绝对定位 */
+  top: 10px;
+  right: 10px;
+  font-size: 24px;
+  color: red;
+  cursor: pointer;
+  display:none; /* Initially, the delete button is hidden */
+}
+
+/* When mouse hovers over the box, the delete button is displayed */
+.doc-card:hover .delete-button {
+  display: block;
 }
 </style>

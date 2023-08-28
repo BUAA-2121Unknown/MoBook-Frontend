@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { login, getUserInfo } from '@/api/user'
+import { getOrgInfo, getAllOrgs } from '@/api/org'
 // import { useRouterStore } from '@/stores/modules/router'
 import { ElLoading, ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
@@ -22,7 +23,9 @@ export const useUserStore = defineStore({
       baseColor: '#fff'
     },
     token: window.localStorage.getItem('token') || '',
-    orgId: 6,
+    projectId: -1,
+    orgId: 0,
+    orgInfo: { },
     auth: '',
   }),
 
@@ -72,6 +75,14 @@ export const useUserStore = defineStore({
     setOrgId(val) {
       this.orgId = val
     },
+    
+    setProjectId(val) {
+      this.projectId = val
+    },
+
+    setOrgInfo(val) {
+      this.orgInfo = val
+    },
   
     setAuth(val) {
       this.auth = val
@@ -90,7 +101,25 @@ export const useUserStore = defineStore({
         if (res.meta.status == 0) {
           this.resetUserInfo(res.data.user)
           this.setToken(res.data.token)
-  
+          console.log(res)
+          console.log(this.orgId)
+          if (this.orgId) {
+            const orgInfo = await getOrgInfo({ orgId: this.orgId })
+            console.log(orgInfo)
+            if (orgInfo.meta.status == 0) {
+              this.setOrgInfo(orgInfo.data.org)
+            }
+          } else {
+            const orgList = await getAllOrgs()
+            if (orgList.meta.status == 0) {
+              const lis = orgList.data.organizations
+              if (lis) {
+                this.setOrgId(lis[0].org.id)
+                this.setOrgInfo(lis[0].org)
+                this.setAuth(lis[0].auth.auth)
+              }
+            }
+          }
           const isWin = ref(/windows/i.test(navigator.userAgent))
           if (isWin.value) {
             window.localStorage.setItem('osType', 'WIN')

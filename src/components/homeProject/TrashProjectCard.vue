@@ -1,0 +1,219 @@
+<!-- 项目文档的卡片组件 -->
+<template>
+  <div class="doc-card" @mouseenter="expandCard" @mouseleave="shrinkCard" @click="chooseProject">
+      <div class="doc-image-container" :style="{ backgroundImage: `url(${project.img})`, height: imageHeight }"></div>
+      <div class="doc-text-container" :style="{ height: textHeight }">
+          <div class="doc-title">{{ project.name }}</div>
+          <div v-if="expanded" class="doc-intro">{{ project.description }}</div>
+      </div>
+      <div class="delete-button" @click.stop="open"><el-icon><Delete /></el-icon></div>
+      <div class="shift-button" @click.stop="shift"><el-icon><Switch /></el-icon></div>
+      <transition name="slide-up">
+          <el-row class="mb-4 doc-buttom-group" v-if="expanded">
+          </el-row>
+      </transition>
+  </div>
+</template>
+
+
+<script>
+import { useUserStore } from '@/stores/modules/user'
+import { ref } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { updateStatus } from '@/api/project'
+const userStore = useUserStore()
+export default {
+  name: "TrashProjectCard",
+  props: ["project"],
+  data() {
+      return {
+          expanded: false,
+          projectFormData: {
+            status: '',
+            projects: [],
+          }
+      };
+  },
+  computed: {
+      imageHeight() {
+          return this.expanded ? "40%" : "80%";
+      },
+      textHeight() {
+          return this.expanded ? "60%" : "20%";
+      },
+  },
+  methods: {
+      expandCard() {
+          this.expanded = true;
+      },
+      shrinkCard() {
+          this.expanded = false;
+      },
+      chooseProject() {
+        userStore.setProjectId(this.project.id)
+        this.$router.push({
+            name: "info"
+        });
+      },
+      deepDelete(){
+        // console.log(this.project.id)
+        this.projectFormData.status = 2
+        this.projectFormData.projects.push(this.project.id);
+        updateStatus(this.projectFormData)
+      },
+      shiftProject(){
+        this.projectFormData.status = 0
+        this.projectFormData.projects.push(this.project.id);
+        updateStatus(this.projectFormData)
+      },
+      async open() {
+        ElMessageBox.confirm(
+          '删除的文件会彻底删除，确认删除吗?',
+          'Warning',
+          {
+            confirmButtonText: '确认',
+            cancelButtonText: '取消',
+            type: 'warning',
+          }
+        )
+          .then(() => {
+            this.deepDelete()
+            //假删除
+            this.$emit('delete', this.project.id)
+            ElMessage({
+              type: 'success',
+              message: '已删除',
+            })
+          })
+          .catch(() => {
+            ElMessage({
+              type: 'info',
+              message: '取消删除',
+            })
+          })
+      },
+      async shift() {
+        ElMessageBox.confirm(
+          '确认把回收站的文件放回吗?',
+          'Warning',
+          {
+            confirmButtonText: '确认',
+            cancelButtonText: '取消',
+            type: 'warning',
+          }
+        )
+          .then(() => {
+            this.shiftProject()
+            this.$emit('delete', this.project.id)
+            ElMessage({
+              type: 'success',
+              message: '已删除',
+            })
+          })
+          .catch(() => {
+            ElMessage({
+              type: 'info',
+              message: '取消删除',
+            })
+          })
+      }
+  },
+};
+</script>
+
+<style scoped>
+.doc-card {
+  margin: 10px;
+  width: 22%;
+  height: 200px;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  border-radius: 6px;
+  box-shadow: 0px 2px 4px 0px rgba(52, 51, 51, 0.2);
+  position: relative;
+}
+
+.doc-image-container {
+  width: 100%;
+  background-size: cover;
+  background-position: center;
+  transition: height 0.3s ease;
+}
+
+.doc-text-container {
+  background-color: rgba(237, 244, 249, 0.7);
+  backdrop-filter: blur(6px);
+
+  width: 100%;
+  padding: 5px;
+  box-sizing: border-box;
+  overflow: hidden;
+  transition: height 0.5s ease, background-color 0.3s ease;
+}
+
+.doc-title {
+  margin: 10px;
+  font-size: 20px;
+  font-weight: bold;
+  color: rgba(5, 5, 5, 0.9);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.doc-intro {
+  margin: 10px;
+  font-size: 16px;
+  color: rgba(39, 39, 39, 0.9);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.doc-buttom-group {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+}
+
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: transform 0.5s ease;
+}
+
+.v-leave-from,
+.v-enter-to {
+  transform: translateY(0);
+}
+
+.slide-up-enter-from,
+.slide-up-leave-to {
+  transform: translateY(150%);
+}
+
+/* 删除按钮 */
+.delete-button {
+  position: absolute; /* 添加绝对定位 */
+  top: 10px;
+  right: 10px;
+  font-size: 24px;
+  color: red;
+  cursor: pointer;
+  display:none; /* Initially, the delete button is hidden */
+}
+
+.shift-button {
+  position: absolute; /* 添加绝对定位 */
+  top: 10px;
+  right: 50px;
+  font-size: 24px;
+  color: blue;
+  cursor: pointer;
+  display:none; /* Initially, the delete button is hidden */
+}
+/* When mouse hovers over the box, the delete button is displayed */
+.doc-card:hover .delete-button {
+  display: block;
+}
+.doc-card:hover .shift-button {
+  display: block;
+}
+</style>

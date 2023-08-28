@@ -52,7 +52,45 @@ export const menuList = [
       "icon": "Document",
     },
     "authoritys": null,
-    "children": null,
+    "children": [
+      {
+        "ID": 7,
+        "parentId": 3,
+        "path": "list",
+        "name": "list",
+        "hidden": false,
+        "meta": {
+          "activeName": "",
+          "keepAlive": false,
+          "defaultMenu": false,
+          "title": "项目列表",
+          "icon": "Document",
+        },
+        "authoritys": null,
+        "children": null,
+        "parameters": [],
+        "btns": null
+      },
+      {
+        "ID": 8,
+        "parentId": 3,
+        "path": "trash",
+        "name": "trash",
+        "hidden": false,
+        "meta": {
+          "activeName": "",
+          "keepAlive": false,
+          "defaultMenu": false,
+          "title": "项目回收站",
+          "icon": "Document",
+        },
+        "authoritys": null,
+        "children": null,
+        "parameters": [],
+        "btns": null
+      },
+
+    ],
     "parameters": [],
     "btns": null
   },
@@ -108,6 +146,63 @@ export const menuList = [
         "btns": null
       },
     ],
+    "parameters": [],
+    "btns": null
+  },
+]
+
+export const projectMenuList = [
+  {
+    "ID": 1,
+    "parentId": "0",
+    "path": "info",
+    "name": "info",
+    "hidden": false,
+    "meta": {
+      "activeName": "",
+      "keepAlive": false,
+      "defaultMenu": false,
+      "title": "项目信息",
+      "icon": "Document",
+    },
+    "authoritys": null,
+    "children": null,
+    "parameters": [],
+    "btns": null
+  },
+  {
+    "ID": 2,
+    "parentId": "0",
+    "path": "docs",
+    "name": "docs",
+    "hidden": false,
+    "meta": {
+      "activeName": "",
+      "keepAlive": false,
+      "defaultMenu": false,
+      "title": "项目文档",
+      "icon": "Document",
+    },
+    "authoritys": null,
+    "children": null,
+    "parameters": [],
+    "btns": null
+  },
+  {
+    "ID": 3,
+    "parentId": "0",
+    "path": "design",
+    "name": "design",
+    "hidden": false,
+    "meta": {
+      "activeName": "",
+      "keepAlive": false,
+      "defaultMenu": false,
+      "title": "原型设计",
+      "icon": "Document",
+    },
+    "authoritys": null,
+    "children": null,
     "parameters": [],
     "btns": null
   },

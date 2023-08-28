@@ -1,5 +1,6 @@
 <template>
   <div>
+    <!-- 预览链接 -->
     <el-dialog v-model="dialogVisible" title="生成预览链接" width="30%">
       <div>
         预览链接：<br />
@@ -16,6 +17,30 @@
         </span>
       </template>
     </el-dialog>
+
+    <!-- 生成代码 -->
+    <el-dialog v-model="codeDialogVisible" title="导出代码">
+      <el-form :model="form">
+        <el-form-item label="Promotion name" :label-width="formLabelWidth">
+          <el-input v-model="form.name" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="Zones" :label-width="formLabelWidth">
+          <el-select v-model="form.region" placeholder="Please select a zone">
+            <el-option label="Zone No.1" value="shanghai" />
+            <el-option label="Zone No.2" value="beijing" />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="dialogFormVisible = false">Cancel</el-button>
+          <el-button type="primary" @click="dialogFormVisible = false">
+            Confirm
+          </el-button>
+        </span>
+      </template>
+    </el-dialog>
+
     <div class="toolbar">
       <el-button v-if="!isPreview" @click="toLast">返回上一级</el-button>
       <el-button @click="undo">撤消</el-button>
@@ -51,7 +76,7 @@
         @click="unlock"
         >解锁</el-button
       >
-      <el-button @click="preview(true)">截图</el-button>
+      <el-button @click="preview(true)">预览图</el-button>
       <el-button
         v-if="!isPreview"
         @click="generatePreview(), (dialogVisible = true)"
@@ -99,6 +124,7 @@ import { ref } from "vue";
 import { ElMessageBox } from "element-plus";
 import Clipboard from "vue-clipboard3";
 
+import { savePrototype } from "../../api/artifact";
 // const dialogVisible = ref(false);
 
 export default {
@@ -123,6 +149,7 @@ export default {
       previewLink: "",
       dialogVisible: false,
       previewing: this.isPreviewing,
+      codeDialogVisible: false,
     };
   },
   computed: mapState([
@@ -302,28 +329,63 @@ export default {
       this.$store.commit("setEditMode", "preview");
     },
 
-    save() {
-      // TODO 保存
-      // localStorage.setItem("canvasData", JSON.stringify(this.componentData));
-      // localStorage.setItem("canvasStyle", JSON.stringify(this.canvasStyleData));
-      const data = new FormData();
-      data.append("protoId", this.$route.params.id);
-      console.log("protoId: ", this.$route.params.id);
-      data.append("canvasData", JSON.stringify({ array: this.componentData }));
-      data.append("canvasStyle", JSON.stringify(this.canvasStyleData));
-      Project.saveProto(data)
-        .then((res) => {
-          if (res.status === 200) {
-            this.$message.success("保存成功");
-          } else {
-            this.$message.error("保存失败");
-          }
-        })
-        .catch((err) => {
-          console.log(err);
+    // 保存项目
+    async save() {
+      // const val1 = JSON.stringify({
+      //   canvasData: { array: this.componentData },
+      //   canvasStyle: this.canvasStyleData,
+      // });
+      // const val2 = JSON.stringify({
+      //   canvasData: { array: this.componentData },
+      //   canvasStyle: JSON.stringify(this.canvasStyleData),
+      // });
+      // console.log("新", val1, JSON.parse(val1), JSON.parse(val1).canvasStyle);
+      // console.log("旧", val2, JSON.parse(val2));
+        if(!this.$route.query || !this.$route.query.artId){
+          console.log('未给出artId，无法保存')
+          return
+        }
+        const id = 1
+        const data = {
+          artId: this.$route.query.artId,
+          file: JSON.stringify(
+          {
+            canvasData: JSON.stringify({ array: this.componentData }),
+            canvasStyle: this.canvasStyleData,
+          })
+        }
+        try{
+          const res = await savePrototype(data)
+          console.log(res)
+          this.$message.success("保存成功");
+        } catch(e) {
+          console.log(e)
           this.$message.error("保存失败");
-        });
+        }
     },
+
+    // save() {
+    //   // TODO 保存
+    //   // localStorage.setItem("canvasData", JSON.stringify(this.componentData));
+    //   // localStorage.setItem("canvasStyle", JSON.stringify(this.canvasStyleData));
+    //   const data = new FormData();
+    //   data.append("protoId", this.$route.params.id);
+    //   console.log("protoId: ", this.$route.params.id);
+    //   data.append("canvasData", JSON.stringify({ array: this.componentData }));
+    //   data.append("canvasStyle", JSON.stringify(this.canvasStyleData));
+    //   Project.saveProto(data)
+    //     .then((res) => {
+    //       if (res.status === 200) {
+    //         this.$message.success("保存成功");
+    //       } else {
+    //         this.$message.error("保存失败");
+    //       }
+    //     })
+    //     .catch((err) => {
+    //       console.log(err);
+    //       this.$message.error("保存失败");
+    //     });
+    // },
 
     clearCanvas() {
       this.$store.commit("setCurComponent", { component: null, index: null });

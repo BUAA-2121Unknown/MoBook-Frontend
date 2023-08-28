@@ -37,6 +37,7 @@
                     </el-col>
                     <el-col :xs="12" :lg="9" :md="9" :sm="14" :xl="9" class="flex items-center justify-end">
                       <div class="mr-1.5 flex items-center">
+                        <Message class="message-container"/>
                         <Search />
                         <el-dropdown>
                           <div class="flex justify-center items-center h-full w-full">
@@ -71,10 +72,11 @@
                                 <el-button bg @click="goToChangeTeam">
                                   <div style="display: flex">
                                     <div style="text-align: center; vertical-align: center;">
-                                      <img src="@/assets/logo.png" style="height: 20px; width: 20px;"/>
+                                      <img v-if="userStore.orgInfo.avatarUrl" :src="userStore.orgInfo.avatarUrl" style="height: 20px; width: 20px;"/>
+                                      <img v-else src="@/assets/logo.png" style="height: 20px; width: 20px;"/>
                                     </div>
                                     <div style="margin-left: 8px">
-                                      <span style="width: 30px; margin-right: 10px;">团队名</span>
+                                      <span style="width: 30px; margin-right: 10px;">{{ userStore.orgInfo.name }}</span>
                                       <span class="change">切换</span>
                                     </div>
                                   </div>
@@ -134,6 +136,7 @@ import BottomInfo from '@/layouts/bottomInfo/bottomInfo.vue'
 import CustomPic from '@/components/customPic/index.vue'
 import CommandMenu from '@/components/commandMenu/index.vue'
 import Setting from '@/layouts/setting/index.vue'
+import Message from './message/message.vue'
 // import { setUserAuthority } from '@/api/user'
 import emitter from '@/utils/emitter'
 import { computed, ref, onMounted, nextTick } from 'vue'
@@ -332,5 +335,8 @@ const goToChangeTeam = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+.message-container{
+  margin: 4px 8px 0 0;
 }
 </style>

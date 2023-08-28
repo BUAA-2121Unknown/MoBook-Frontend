@@ -8,7 +8,7 @@
       </div>
     </div>
     <div class="project-container">
-      <ProjectCard v-for="item in items" :key="item.id" :project="item" />
+      <ProjectCard v-for="project in projectList" :key="project.id" @delete="handleDelete" :project="project" />
     </div>
 
     <el-drawer v-model="visible" :show-close="false" direction="rtl" size="80%">
@@ -23,18 +23,15 @@
       </template>
 
       <div class="form-container">
-        <el-form :model="form" label-width="120px">
-          <el-form-item label="项目封面">
-            <el-input v-model="form.name" />
-          </el-form-item>
+        <el-form :model="projectFormData" label-width="120px">
           <el-form-item label="项目名字">
-            <el-input v-model="form.name" />
+            <el-input v-model="projectFormData.name" />
           </el-form-item>
           <el-form-item label="项目简介">
-            <el-input v-model="form.desc" type="textarea" />
+            <el-input v-model="projectFormData.description" type="textarea" />
           </el-form-item>
           <el-form-item>
-            <el-button type="primary" @click="onSubmit">创建</el-button>
+            <el-button type="primary" @click="submitForm">创建</el-button>
             <el-button>取消</el-button>
           </el-form-item>
         </el-form>
@@ -52,25 +49,54 @@ import { ElButton, ElDrawer } from 'element-plus'
 import { CircleCloseFilled } from '@element-plus/icons-vue'
 import { reactive } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+
+import { createProject } from '@/api/project'
+import { getProjects } from '@/api/project'
+import { useUserStore } from '@/stores/modules/user'
+
+const userStore = useUserStore()
+
 // do not use same name with ref
-const form = reactive({
+const projectFormData = reactive({
   name: '',
-  region: '',
-  date1: '',
-  date2: '',
-  delivery: false,
-  type: [],
-  resource: '',
-  desc: '',
+  description: '',
 })
 export default {
   name: "Project",
   components: {
     ProjectCard
   },
+  data(){
+    return {
+      projectList: [
+      ]
+    }
+  },
   methods: {
-    onSubmit() {
-      console.log('submit!')
+    handleDelete(id) {
+      this.projectList = this.projectList.filter(project => project.id !== id);
+    },
+    async submitForm() {
+      try {
+        projectFormData.orgId = userStore.orgId
+        console.log(userStore.orgId)
+        console.log(projectFormData)
+        const res = await createProject(projectFormData)
+        console.log(res)
+        if (res.meta.status == 0) {
+          ElMessage({
+            type: 'success',
+            message: '创建成功'
+          })
+          this.$router.push({
+              name: "info"
+          });
+          userStore.setProjectId(this.project.id)
+          return res
+        }
+      } catch (e) {
+        console.log(e)
+      }
     }
   },
   setup() {
@@ -82,17 +108,15 @@ export default {
       CircleCloseFilled,
       ElButton,
       ElDrawer,
-      form,
+      projectFormData
     };
   },
-  data() {
-    return {
-      items: [
-        { id: 1, img: project_bg, title: "项目1", intro: "这是项目1的描述" },
-        { id: 2, img: project_bg, title: "项目2", intro: "这是项目2的描述" },
-        { id: 3, img: project_bg, title: "项目3", intro: "这是项目3的描述" },
-        { id: 4, img: project_bg, title: "项目4", intro: "这是项目4的描述" }
-      ]
+  async mounted(){
+    const res = await getProjects({ orgId: userStore.orgId, status: 0 })
+    if (res.meta.status == 0) {
+      this.projectList = res.data.projects
+    } else {
+      console.log(data)
     }
   }
 }

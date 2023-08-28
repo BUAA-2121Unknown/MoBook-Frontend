@@ -1,4 +1,88 @@
-import service from "@/http/request.js";
+import { fmtForm } from '@/utils/common'
+import service from '@/utils/request';
+// 获得项目基础字段
+export const getProjectInfo = (params) => {
+  return service({
+    url: 'proj/profile',
+    method: 'get',
+    params: params,
+  })
+}
+// 更新项目基础字段
+export const updateProjectInfo = (data) => {
+  const form = [
+    'projId',
+    'name',
+    'description'
+  ]
+  return service({
+    url: 'proj/profile/update',
+    method: 'post',
+    data: fmtForm(data, form)
+  })
+}
+// 创建原型设计
+export const createPrototype = (data) => {
+  const form = [
+    'projId',
+    'name',
+    'type',
+    'live',
+  ]
+  return service({
+    url: 'proj/artifact/create',
+    method: 'post',
+    data: fmtForm(data, form)
+  })
+}
+// 更新原型设计状态
+export const updatePrototypeStatus = (data) => {
+  const form = [
+    'status',
+    'artifacts',
+  ]
+  return service({
+    url: 'proj/artifact/status/update',
+    method: 'post',
+    data: fmtForm(data, form)
+  })
+}
+// 获取原型设计
+export const getPrototype = (data) => {
+  const form = [
+    'artId',
+  ]
+  return service({
+    url: 'proj/artifact/file/download',
+    method: 'get',
+    data: fmtForm(data, form)
+  })
+}
+// 获取原型设计列表
+export const getPrototypeList = (data) => {
+  const form = [
+    'projId',
+  ]
+  return service({
+    url: 'proj/artifacts',
+    method: 'get',
+    data: fmtForm(data, form)
+  })
+}
+// 保存原型设计
+export const savePrototype = (data) => {
+  const form = [
+    'artId',
+    'file',
+  ]
+  return service({
+    url: 'proj/artifact/file/upload',
+    method: 'post',
+    data: fmtForm(data, form)
+  })
+}
+
+
 
 const url = {
   getProjectList: "/project/list",
@@ -15,7 +99,7 @@ const url = {
   addUML: "/project/addUML",
   editUML: "/project/editUML",
   addProto: "/project/addProto",
-  createProject: "/project/create",
+  createProject: "/api/proj/create",
   deleteDoc: "/project/deleteDoc",
   deleteProto: "/project/deleteProto",
   deleteUML: "/project/deleteUML",
@@ -34,6 +118,43 @@ const url = {
   renameUML: '/project/renameUML',
   renameDoc: '/project/renameDoc',
 };
+
+// 创建项目
+export const createProject = (data) => {
+  const form = [
+    'orgId',
+    'name',
+    'description',
+  ]
+  return service({
+    url: 'proj/create',
+    method: 'post',
+    data: fmtForm(data, form)
+  })
+}
+
+// 获取全部项目
+export const getProjects = (params) => {
+  return service({
+    url: 'org/projects',
+    method: 'get',
+    params: params
+  })
+}
+
+// 改变项目状态
+export const updateStatus = (data) => {
+  const form = [
+    'status',
+    'projects'
+  ]
+  return service({
+    url: 'proj/status/update',
+    method: 'post',
+    data: fmtForm(data, form)
+  })
+}
+
 
 export class Project {
   static async recycleSortByTime(data) {
@@ -131,13 +252,6 @@ export class Project {
     });
   }
 
-  static async createProject(data) {
-    return service(url.createProject, {
-      method: "post",
-      responseType: "json",
-      data,
-    });
-  }
 
   static async addProto(data) {
     return service(url.addProto, {

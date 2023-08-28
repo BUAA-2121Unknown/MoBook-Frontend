@@ -2,7 +2,7 @@ import axios from "axios";
 import router from "../router";
 const service = axios.create({
   // `baseURL` 将自动加在 `url` 前面，除非 `url` 是一个绝对 URL。
-  baseURL: "http://101.42.173.97:8000/",
+  // baseURL: "http://101.42.173.97:8000/",
   // baseURL: 'http://localhost:8080/',
   // `timeout` 指定请求超时的毫秒数。
   // 如果请求时间超过 `timeout` 的值，则请求会被中断
