@@ -228,7 +228,9 @@ onActivated(() => {
 
 const GetOrgInfo = async () => {
   try {
+    console.log('start getOrgInfo', userStore.orgId)
     const orgInfo = await getOrgInfo({ orgId: userStore.orgId })
+    console.log(orgInfo)
     if (orgInfo.meta.status == 0) {
       orgName.value = orgInfo.data.org.name
       orgDesc.value = orgInfo.data.org.description

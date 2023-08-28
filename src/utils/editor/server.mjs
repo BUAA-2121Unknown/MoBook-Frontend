@@ -119,7 +119,7 @@ const server = Server.configure({
               if (error) {
                 reject(error);
               }
-              resolve(row[0]?.data);
+              resolve(row?.data);
             }
           );
         });

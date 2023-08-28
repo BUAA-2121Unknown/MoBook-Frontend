@@ -104,8 +104,9 @@ export default {
         const res = await getPrototypeList(params);
         console.log(res)
         this.designList = res.data.artifacts.filter(function(item){
-          return item.isLive === false
+          return item.isLive === true
         })
+        console.log(this.designList)
       } catch (e) {
         console.log(e);
       }
@@ -113,12 +114,19 @@ export default {
 
   },
   mounted() {
-    // const userStore = useUserStore();
+    const userStore = useUserStore();
     // this.projId = this.$router.query.projId
     // console.log(this.projId)
-    this.projId = 12
+    this.projId = userStore.projectId
     this.getList()
-  }
+  },
+  activated() {
+    const userStore = useUserStore();
+    // this.projId = this.$router.query.projId
+    // console.log(this.projId)
+    this.projId = userStore.projectId
+    this.getList()
+  },
 };
 </script>
   
