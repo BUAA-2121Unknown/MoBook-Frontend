@@ -3,7 +3,7 @@
     <div class="icon-container" @click="showSettingDrawer">
       <el-icon size="18"><Message /></el-icon>
       <div class="number-container">
-        {{ number }}
+        {{ unreadMessageCnt }}
       </div>
     </div>
     <el-drawer
@@ -63,6 +63,7 @@
 </template>
   
 <script>
+import { ElNotification } from 'element-plus'
 import messageItem from "../../components/messageCenter/messageItem.vue";
 
 import { editMessage, getMessage } from "../../api/message";
@@ -74,7 +75,6 @@ export default {
   },
   data() {
     return {
-      unreadNumber: 0,
       //   原始信息列表
       messageList: [],
 
@@ -101,18 +101,22 @@ export default {
     };
   },
   computed: {
-    number() {
-      return this.unreadNumber >= 100 ? "99+" : this.unreadNumber;
+    unreadMessageCnt() {
+      const cnt = this.messageList.filter(function (item) {
+        return item.status === 0;
+      }).length;
+      console.log("更新未读消息数量", cnt);
+      return cnt >= 100 ? "99+" : cnt;
     },
     list() {
       return this.messageList;
     },
     wsCfg() {
       const userStore = useUserStore();
-      const str = '' + userStore.userInfo.id + '/3/' 
+      const str = "" + userStore.userInfo.id + "/3/";
       // websocket地址
       return {
-        url: "ws://81.70.161.76:5000/ws/notif/" + str
+        url: "ws://81.70.161.76:5000/ws/notif/" + str,
       };
     },
   },
@@ -122,6 +126,10 @@ export default {
         status: 2,
         notifications: [id],
       };
+      // 前端假设置
+      this.messageList = this.messageList.filter(function (item) {
+        return item.id != id;
+      });
       try {
         const res = await editMessage(data);
         console.log(res);
@@ -136,9 +144,13 @@ export default {
     async delReadMessage() {
       const dataList = [];
       this.messageList.forEach((item, index, arr) => {
-        if(item.status == 1){
+        if (item.status == 1) {
           dataList.push(item.id);
         }
+      });
+      // 前端假设置
+      this.messageList = this.messageList.filter(function (item) {
+        return item.status == 0;
       });
       const data = {
         status: 2,
@@ -160,6 +172,12 @@ export default {
         status: 1,
         notifications: [id],
       };
+      // 前端假设置
+      this.messageList.forEach((item, index, arr) => {
+        if (item.id == id && item.status == 0) {
+          arr[index].status = 1;
+        }
+      });
       try {
         const res = await editMessage(data);
         console.log(res, data);
@@ -169,23 +187,22 @@ export default {
       }
     },
     async readAllMessage() {
-      const dataList = []
-      this.messageList.forEach((item, index, arr) => {
-        if(item.status == 0){
-          dataList.push(item.id)
-        }
-      });
+      const dataList = [];
       const data = {
         status: 1,
         notifications: dataList,
       };
+      // 前端假设置
+      this.messageList.forEach((item, index, arr) => {
+        if (item.status == 0) {
+          dataList.push(item.id);
+          arr[index].status = 1;
+        }
+      });
       try {
-        console.log(data)
+        console.log(data);
         const res = await editMessage(data);
         console.log(res);
-        // this.messageList = this.messageList.filter(function (item) {
-        //   item.msgId != id;
-        // });
         this.$message.success("已将全部消息设为已读");
       } catch (e) {
         console.log(e);
@@ -196,13 +213,12 @@ export default {
     async loadAllMessage() {
       const data = {
         orgId: this.orgId,
-        status: 0,
+        status: 1,
       };
       try {
         const res = await getMessage(data);
         console.log(res, data);
         this.messageList = res.data.notifications;
-        this.unreadNumber = res.data.unread;
         console.log("成功加载全部消息列表", this.messageList);
       } catch (e) {
         console.log(e);
@@ -217,9 +233,9 @@ export default {
         const socket = new WebSocket(this.wsCfg.url);
         // 初始化事件
         this.initEventHandle(socket);
-        console.log(socket)
+        console.log(socket);
       } catch (e) {
-        console.log(e)
+        console.log(e);
         // 出错时重新连接
         this.reconnect(this.wsCfg.url);
       }
@@ -238,7 +254,7 @@ export default {
       // 连接建立时触发
       socket.onopen = () => {
         console.log("连接成功");
-        this.newSocket = socket
+        this.newSocket = socket;
       };
       // 客户端接收服务端数据时触发
       socket.onmessage = (msg) => {
@@ -259,11 +275,19 @@ export default {
         this.createWebSocket(this.wsCfg.url);
       }, 2000);
     },
+
     //websocket接受回调函数
     receiveNewMessage(msg) {
       // this.newSocket.recv(JSON.stringify(message))
       // this.messageList.unshift(msg);
-      console.log("当前消息列表新增", msg);
+      const message = JSON.parse(msg.data);
+      this.messageList.unshift(message);
+      console.log("当前消息列表新增", message);
+      ElNotification({
+        title: "您收到了一条新消息",
+        message: "请点击消息列表查看",
+        type: "info",
+      });
     },
   },
   mounted() {
