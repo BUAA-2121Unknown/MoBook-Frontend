@@ -39,7 +39,6 @@ router.beforeEach((to, from, next) => {
   const userStore = useUserStore()
   const token = userStore.token
 
-  console.log(to.path)
   if (isProjectRouter(to.path)) {
     resetMenuList(projectMenuList)
   } else {
