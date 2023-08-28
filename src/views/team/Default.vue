@@ -238,7 +238,6 @@ const GetOrgInfo = async () => {
       console.log(orgInfo)
     }
     const orgMembers = await getOrgAllMemberInfo({ orgId: userStore.orgId })
-    console.log(orgMembers)
     if (orgMembers.meta.status == 0) {
       orgMemberList.value = orgMembers.data.members
       orgMemberListCopy.value = orgMembers.data.members

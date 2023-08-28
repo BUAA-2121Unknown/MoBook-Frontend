@@ -71,10 +71,11 @@
                                 <el-button bg @click="goToChangeTeam">
                                   <div style="display: flex">
                                     <div style="text-align: center; vertical-align: center;">
-                                      <img src="@/assets/logo.png" style="height: 20px; width: 20px;"/>
+                                      <img v-if="userStore.orgInfo.avatarUrl" :src="userStore.orgInfo.avatarUrl" style="height: 20px; width: 20px;"/>
+                                      <img v-else src="@/assets/logo.png" style="height: 20px; width: 20px;"/>
                                     </div>
                                     <div style="margin-left: 8px">
-                                      <span style="width: 30px; margin-right: 10px;">团队名</span>
+                                      <span style="width: 30px; margin-right: 10px;">{{ userStore.orgInfo.name }}</span>
                                       <span class="change">切换</span>
                                     </div>
                                   </div>
