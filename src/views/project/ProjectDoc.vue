@@ -24,10 +24,10 @@
 </template>
   
 <script>
-import DocCard from '../../components/project/DocCard.vue';
+import DocCard from '@/components/project/DocCard.vue';
 import docImg from '@/assets/project/projectDocImg.jpg'
-import DocCreateButton from '../../components/project/DocCreateButton.vue';
-import SearchBar from '../../components/project/SearchBar.vue';
+import DocCreateButton from '@/components/project/DocCreateButton.vue';
+import SearchBar from '@/components/project/SearchBar.vue';
 
 export default {
   name: "ProjectDoc",
