@@ -17,3 +17,10 @@ export const requestRoomMessage = (data) => {
 	})
 }
 
+export const requestSendMessage = (data) => {
+	return service({
+		url: 'chat/send_text',
+		method: 'post',
+		data: data
+	})
+}
