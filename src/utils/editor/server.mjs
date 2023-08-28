@@ -12,11 +12,11 @@ import dotenv from 'dotenv';
 dotenv.config()
 const pool = mysql.createPool({
     connectionLimit: 100, //important
-    host: '127.0.0.1',
+    host: '81.70.161.76',
     port: 3306,
-    user: 'root',
-    password: 'adk2002',
-    database: 'SE2023',
+    user: 'admin',
+    password: '2121_MySQL_Admin',
+    database: 'MoBook',
     debug: false
 });
 
