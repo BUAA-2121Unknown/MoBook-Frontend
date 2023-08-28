@@ -180,7 +180,6 @@ export default {
         // 业务逻辑处理
         this.addNewMessage()
         console.log(msg.data, "ws:data");
-
       };
     },
     reconnect() {

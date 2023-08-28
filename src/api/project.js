@@ -1,5 +1,88 @@
-import service from '@/utils/request'
 import { fmtForm } from '@/utils/common'
+import service from '@/utils/request';
+// 获得项目基础字段
+export const getProjectInfo = (params) => {
+  return service({
+    url: 'proj/profile',
+    method: 'get',
+    params: params,
+  })
+}
+// 更新项目基础字段
+export const updateProjectInfo = (data) => {
+  const form = [
+    'projId',
+    'name',
+    'description'
+  ]
+  return service({
+    url: 'proj/profile/update',
+    method: 'post',
+    data: fmtForm(data, form)
+  })
+}
+// 创建原型设计
+export const createPrototype = (data) => {
+  const form = [
+    'projId',
+    'name',
+    'type',
+    'live',
+  ]
+  return service({
+    url: 'proj/artifact/create',
+    method: 'post',
+    data: fmtForm(data, form)
+  })
+}
+// 更新原型设计状态
+export const updatePrototypeStatus = (data) => {
+  const form = [
+    'status',
+    'artifacts',
+  ]
+  return service({
+    url: 'proj/artifact/status/update',
+    method: 'post',
+    data: fmtForm(data, form)
+  })
+}
+// 获取原型设计
+export const getPrototype = (data) => {
+  const form = [
+    'artId',
+  ]
+  return service({
+    url: 'proj/artifact/file/download',
+    method: 'get',
+    data: fmtForm(data, form)
+  })
+}
+// 获取原型设计列表
+export const getPrototypeList = (data) => {
+  const form = [
+    'projId',
+  ]
+  return service({
+    url: 'proj/artifacts',
+    method: 'get',
+    data: fmtForm(data, form)
+  })
+}
+// 保存原型设计
+export const savePrototype = (data) => {
+  const form = [
+    'artId',
+    'file',
+  ]
+  return service({
+    url: 'proj/artifact/file/upload',
+    method: 'post',
+    data: fmtForm(data, form)
+  })
+}
+
+
 
 const url = {
   getProjectList: "/project/list",

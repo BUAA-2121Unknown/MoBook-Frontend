@@ -37,6 +37,7 @@
                     </el-col>
                     <el-col :xs="12" :lg="9" :md="9" :sm="14" :xl="9" class="flex items-center justify-end">
                       <div class="mr-1.5 flex items-center">
+                        <Message class="message-container"/>
                         <Search />
                         <el-dropdown>
                           <div class="flex justify-center items-center h-full w-full">
@@ -135,6 +136,7 @@ import BottomInfo from '@/layouts/bottomInfo/bottomInfo.vue'
 import CustomPic from '@/components/customPic/index.vue'
 import CommandMenu from '@/components/commandMenu/index.vue'
 import Setting from '@/layouts/setting/index.vue'
+import Message from './message/message.vue'
 // import { setUserAuthority } from '@/api/user'
 import emitter from '@/utils/emitter'
 import { computed, ref, onMounted, nextTick } from 'vue'
@@ -333,5 +335,8 @@ const goToChangeTeam = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+.message-container{
+  margin: 4px 8px 0 0;
 }
 </style>

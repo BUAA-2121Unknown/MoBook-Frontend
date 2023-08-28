@@ -96,7 +96,7 @@ const data = {
         },
 
         setComponentData(state, componentData = []) {
-            Vue.set(state, 'componentData', componentData)
+            state['componentData'] = componentData
         },
 
         addComponent(state, { component, index }) {
