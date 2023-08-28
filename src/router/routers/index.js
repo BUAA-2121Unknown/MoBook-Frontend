@@ -50,14 +50,14 @@ const routers = [
           title: '群聊',
         },
       },
-      {
+      /* {
         path: 'project',
         name: 'project',
         component: () => import('@/views/homeProject/HomeProject.vue'),
         meta: {
           title: '项目',
         },
-      },
+      }, */
     ]
   },
   {
@@ -95,6 +95,14 @@ const routers = [
     path: '/project',
     component: LAYOUT,
     children: [
+      {
+        path: 'list',
+        name: 'list',
+        component: () => import('@/views/homeProject/HomeProject.vue'),
+        meta: {
+          title: '项目列表',
+        },
+      },
       {
         path: 'info',
         name: 'info',

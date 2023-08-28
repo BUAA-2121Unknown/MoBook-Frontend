@@ -1,28 +1,34 @@
+
 <template>
-  <div class="window-container">
-    <vue-advanced-chat height="calc(80vh - 20px)" :current-user-id="currentUserId" :rooms="JSON.stringify(rooms)"
-      :load-first-room="false" :rooms-loaded="true" :messages="JSON.stringify(messages)" :messages-loaded="messagesLoaded"
-      :show-new-messages-divider="false" @send-message="sendMessage($event.detail[0])"
-      @fetch-messages="fetchMessages($event.detail[0])" />
+  <div class="window-container" v-if="showComponent">
+    <div v-if="showComponent">
+      <vue-advanced-chat v-if="showComponent" height="calc(80vh - 20px)" :current-user-id="currentUserId"
+        :rooms="JSON.stringify(rooms)" :load-first-room="false" :rooms-loaded="true" :messages="JSON.stringify(messages)"
+        :messages-loaded="messagesLoaded" :show-new-messages-divider="false" @send-message="sendMessage($event.detail[0])"
+        @fetch-messages="fetchMessages($event.detail[0])" />
+    </div>
   </div>
 </template>
 
+
 <script>
 import { register } from 'vue-advanced-chat'
+import { requestChatList, requestRoomMessage } from '@/api/chat'
+import { useUserStore } from '@/stores/modules/user'
 // import { register } from '../../vue-advanced-chat/dist/vue-advanced-chat.es.js'
 register()
 
 export default {
+  name: 'chat',
   data() {
     return {
-      newSocket: null,
       //实时连接
+      newSocket: null,
       lockReconnect: false,
       wsCfg: {
         // websocket地址
-        url: "ws://82.156.25.78:5000/ws/chat/1/"
+        url: "ws://82.156.25.78:5000/ws/chat/10/"
       },
-      currentUserId: '1234',
       roomId: '',
       rooms: [
         {
@@ -34,34 +40,28 @@ export default {
           lastMessage: {
             _id: 'xyz',
             content: '大家加油冲冲冲',
-            senderId: '1234',
+            senderId: '7',
             username: '陈锐',
             timestamp: '23:19',
-            saved: false,
-            distributed: false,
-            seen: false,
-            new: true,
-            failure: true
+            saved: true,
+            distributed: true,
+            seen: true,
           },
           users: [
             { _id: '1234', username: 'cr', avatar: 'https://img2.woyaogexing.com/2023/08/26/8d02aed9994bd1e4b4b3a40678eafd3a.jpg' },
             { _id: '4321', username: 'gahow', avatar: 'https://img2.woyaogexing.com/2023/08/26/e958b1689d603575d508a48239174022.png' },
             { _id: '4441', username: 'czx', avatar: 'https://img2.woyaogexing.com/2023/08/26/2bba8400047a6648336119995180d4ad.jpg' },
-            { _id: '4111', username: 'adk', avatar: 'https://img2.woyaogexing.com/2023/08/26/fbd06bd6e8e2e9ed4726869f98b97c40.jpg' },
-            { _id: '4111', username: 'zdw', avatar: 'https://img2.woyaogexing.com/2023/08/26/1e4f1922fe9d26fd45a9453f8b7e5a23.png' },
+            { _id: '4121', username: 'adk', avatar: 'https://img2.woyaogexing.com/2023/08/26/fbd06bd6e8e2e9ed4726869f98b97c40.jpg' },
+            { _id: '4131', username: 'zdw', avatar: 'https://img2.woyaogexing.com/2023/08/26/1e4f1922fe9d26fd45a9453f8b7e5a23.png' },
             { _id: '4111', username: 'lzy', avatar: 'https://img2.woyaogexing.com/2023/08/26/c9aad630d56c60bdd3a421d4d593efb0.jpg' },
           ],
-          messages: [
-            {
-
-            }
-          ],
+          // typingUsers: [7],
         },
         {
           roomId: '2',
           roomName: '软件工程课程群',
           unreadCount: 72,
-          index: 4,
+          index: 2,
           avatar: 'https://pic1.zhimg.com/80/v2-b7cccb43cd10a9aa0e1ef079acfc150f_720w.webp?source=1940ef5c',
           lastMessage: {
             _id: 'xyz',
@@ -69,37 +69,82 @@ export default {
             senderId: '1234',
             username: 'zhoues',
             timestamp: '23:17',
-            distributed: false,
-            seen: false,
-            new: true
+            saved: true,
+            distributed: true,
+            seen: true,
           },
           users: [
-            { _id: '1234', username: 'cr', avatar: 'https://img2.woyaogexing.com/2023/08/26/8d02aed9994bd1e4b4b3a40678eafd3a.jpg' },
+            { _id: '7', username: 'cr', avatar: 'https://img2.woyaogexing.com/2023/08/26/8d02aed9994bd1e4b4b3a40678eafd3a.jpg' },
             { _id: '4321', username: 'gahow', avatar: 'https://img2.woyaogexing.com/2023/08/26/e958b1689d603575d508a48239174022.png' },
             { _id: '4441', username: 'czx', avatar: 'https://img2.woyaogexing.com/2023/08/26/2bba8400047a6648336119995180d4ad.jpg' },
-            { _id: '4111', username: 'adk', avatar: 'https://img2.woyaogexing.com/2023/08/26/fbd06bd6e8e2e9ed4726869f98b97c40.jpg' },
-            { _id: '4111', username: 'zdw', avatar: 'https://img2.woyaogexing.com/2023/08/26/1e4f1922fe9d26fd45a9453f8b7e5a23.png' },
+            { _id: '4121', username: 'adk', avatar: 'https://img2.woyaogexing.com/2023/08/26/fbd06bd6e8e2e9ed4726869f98b97c40.jpg' },
+            { _id: '4131', username: 'zdw', avatar: 'https://img2.woyaogexing.com/2023/08/26/1e4f1922fe9d26fd45a9453f8b7e5a23.png' },
             { _id: '4111', username: 'lzy', avatar: 'https://img2.woyaogexing.com/2023/08/26/c9aad630d56c60bdd3a421d4d593efb0.jpg' },
           ],
-          messages: [
-            {
-
-            }
-          ],
+          // typingUsers: [7],
         }
       ],
       messages: [],
       messagesLoaded: false,
-      allUsers: [],
+      allUsers: [{ _id: '7', username: 'cr', avatar: 'https://img2.woyaogexing.com/2023/08/26/8d02aed9994bd1e4b4b3a40678eafd3a.jpg' },
+      { _id: '4321', username: 'gahow', avatar: 'https://img2.woyaogexing.com/2023/08/26/e958b1689d603575d508a48239174022.png' },
+      { _id: '4441', username: 'czx', avatar: 'https://img2.woyaogexing.com/2023/08/26/2bba8400047a6648336119995180d4ad.jpg' },
+      { _id: '4121', username: 'adk', avatar: 'https://img2.woyaogexing.com/2023/08/26/fbd06bd6e8e2e9ed4726869f98b97c40.jpg' },
+      { _id: '4131', username: 'zdw', avatar: 'https://img2.woyaogexing.com/2023/08/26/1e4f1922fe9d26fd45a9453f8b7e5a23.png' },
+      { _id: '4111', username: 'lzy', avatar: 'https://img2.woyaogexing.com/2023/08/26/c9aad630d56c60bdd3a421d4d593efb0.jpg' },],
+
     }
+
   },
   mounted() {
+    console.log("mounted");
+    this.requestMessages();
     this.createWebSocket();
+    console.log(this.currentUserId);
+  },
+  computed: {
+    currentUserId() {
+      const userStore = useUserStore()
+      return userStore.userInfo.id
+    }
   },
   methods: {
+    //建立http链接 请求当前列表聊天记录
+    async requestMessages() {
+      console.log("开始请求列表");
+      try {
+        const res = await requestChatList({ "org_id": 2 });
+        console.log(res)
+        this.rooms = res.data.chat_list;
+      } catch (e) {
+        console.log(e)
+      }
+    },
     //建立http链接 请求当前房间聊天记录
-    requestMessages() {
-
+    async requestRoom() {
+      console.log("开始请求当前聊天室");
+      try {
+        const res = await requestRoomMessage({ "chat_id": 10, "org_id": 2 });
+        console.log(res)
+        const list = res.data.message_list;
+        const messages = [];
+        // for (let i = 0; i < list.length; i++) {
+        //   // messages[i].avatar = list[i].avatar;
+        //   messages[i].content = list[i].content;
+        //   messages[i].date = list[i].content;
+        //   messages[i].distributed = list[i].distributed;
+        //   messages[i].saved = list[i].saved;
+        //   messages[i].seen = list[i].seen;
+        //   messages[i].senderId = list[i].senderId;
+        //   messages[i].timestamp = list[i].timestamp;
+        //   messages[i].username = list[i].username;
+        //   messages[i]._id = list[i]._id;
+        // }
+        this.messages = list;
+        console.log(list)
+      } catch (e) {
+        console.log(e)
+      }
     },
     createWebSocket() {
       try {
@@ -179,7 +224,10 @@ export default {
     },
 
     fetchMessages({ room, options = {} }) {
+      // console.log(this.messages)
+      this.requestRoom()
       room.unreadCount = 0
+      this.roomId = room.roomId
       this.messagesLoaded = false
       setTimeout(() => {
         if (options.reset) {
@@ -196,43 +244,60 @@ export default {
     addMessages(reset) {
       const messages = []
 
-      for (let i = 0; i < 9; i++) {
+      for (let i = 0; i < 30; i++) {
         messages.push({
           _id: reset ? i : this.messages.length + i,
           content: `${reset ? '' : 'old'} 老周666`,
           senderId: '4321',
           username: '周恩申是大帅哥',
+          avatar: 'https://img2.woyaogexing.com/2023/08/26/c9aad630d56c60bdd3a421d4d593efb0.jpg',
           date: '8.26',
           timestamp: `10:2${i % 9}`,
-          new: true
+          saved: true,
+          distributed: true,
+          seen: true,
         })
       }
       if (reset) {
         messages.push({
           _id: this.messages.length,
           username: 'Conroy',
+          avatar: 'https://img2.woyaogexing.com/2023/08/26/1e4f1922fe9d26fd45a9453f8b7e5a23.png',
           content: 'zhoues宇宙第一帅',
-          senderId: '1234',
+          senderId: '7',
           timestamp: '13:14',
           date: '8.26',
-          new: true
+          saved: true,
+          distributed: true,
+          seen: true,
         })
       }
       return messages
     },
 
-    sendMessage(message) {
-      this.newSocket.send(JSON.stringify(message));
+    sendMessage({ roomId, content, files, replyMessage, usersTag
+    }) {
       this.messages = [
         ...this.messages,
         {
-          _id: this.messages.length,
-          content: message.content,
-          senderId: this.currentUserId,
+          _id: roomId,
+          content: content,
+          avatar: 'https://img2.woyaogexing.com/2023/08/26/1e4f1922fe9d26fd45a9453f8b7e5a23.png',
+          senderId: '7',
           timestamp: new Date().toString().substring(16, 21),
-          date: this.nowDate()
+          date: this.nowDate(),
+          system: false,
+          saved: true,
+          distributed: true,
+          seen: true,
+          disableActions: false,
+          disableReactions: false,
+          files: files,
+          replyMessage: replyMessage,
+          reactions: usersTag,
         }
       ]
+      // this.newSocket.send(JSON.stringify(content));
     },
 
     addNewMessage() {
@@ -242,6 +307,7 @@ export default {
           {
             _id: this.messages.length,
             username: 'ADK',
+            avatar: 'https://img2.woyaogexing.com/2023/08/26/fbd06bd6e8e2e9ed4726869f98b97c40.jpg',
             content: '收到收到',
             senderId: '4441',
             timestamp: new Date().toString().substring(16, 21),
@@ -250,41 +316,42 @@ export default {
         ]
       }, 500)
     }
-  }
+  },
+  beforeDestroy() {
+    console.log('组件关闭')
+    // 关闭 WebSocket 连接
+    // if (this.newSocket && this.newSocket.readyState === WebSocket.OPEN) {
+    //   this.newSocket.close();
+    // }
+    //   // 组件销毁之前的清理工作
+    //   this.messagesLoaded = false
+    //   this.newSocket = null
+    //   this.lockReconnect = false
+  },
+
 }
+</script>
+
+<script setup>
+import { ref } from 'vue';
+import { onActivated, onDeactivated } from 'vue';
+
+const showComponent = ref(true);
+
+onActivated(() => {
+  showComponent.value = true;
+})
+
+onDeactivated(() => {
+  showComponent.value = false;
+})
 </script>
 
 <style lang="scss" scoped>
 .window-container {
-  width: 96%;
+  width: 95%;
   border-radius: 15px;
   margin-top: 13vh;
-}
-
-.container {
-  width: 1240px;
-}
-
-@media (max-width: 1280px) {
-  .container {
-    width: 1024px;
-  }
-}
-
-@media (max-width: 600px) {
-  .container {
-    width: unset;
-    min-width: 320px;
-  }
-}
-
-.container {
-  margin: auto;
-  padding: 0 20px;
-}
-
-form {
-  padding-bottom: 20px;
 }
 
 input {
@@ -302,62 +369,7 @@ input {
   }
 }
 
-button {
-  background: #1976d2;
-  color: #fff;
-  outline: none;
-  cursor: pointer;
-  border-radius: 4px;
-  padding: 8px 12px;
-  margin-left: 10px;
-  border: none;
-  font-size: 14px;
-  transition: 0.3s;
-  vertical-align: middle;
-
-  &:hover {
-    opacity: 0.8;
-  }
-
-  &:active {
-    opacity: 0.6;
-  }
-
-  &:disabled {
-    cursor: initial;
-    background: #c6c9cc;
-    opacity: 0.6;
-  }
-}
-
-.button-cancel {
-  color: #a8aeb3;
-  background: none;
-  margin-left: 5px;
-}
-
-select {
-  vertical-align: middle;
-  height: 33px;
-  width: 152px;
-  font-size: 13px;
-  margin: 0 !important;
-}
-
 body {
   font-family: 'Quicksand', sans-serif;
-  -webkit-text-size-adjust: none;
-  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-}
-
-/* 设置滚动条的样式 */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-/* 滚动条滑块 */
-::-webkit-scrollbar-thumb {
-  border-radius: 6px;
-  background: rgba(0, 0, 0, 0.1);
 }
 </style>

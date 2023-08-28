@@ -84,3 +84,42 @@ export const getOrgAllMemberInfo = (params) => {
     params: params
   })
 }
+
+export const getInviteLink = (data) => {
+  const form = [
+    'orgId',
+    'expires',
+    'review',
+  ]
+  return service({
+    url: 'org/member/auth/invite',
+    method: 'post',
+    data: fmtForm(data, form)
+  })
+}
+
+export const getOrgInfoByToken = (params) => {
+  return service({
+    url: 'org/member/auth/invitations',
+    method: 'get',
+    params: params
+  })
+}
+
+export const activateInvite = (data) => {
+  const form = [
+    'token',
+  ]
+  return service({
+    url: 'org/member/auth/activate',
+    method: 'post',
+    data: fmtForm(data, form)
+  })
+}
+
+export const getAllOrgs = () => {
+  return service({
+    url: 'org/all',
+    method: 'get',
+  })
+}

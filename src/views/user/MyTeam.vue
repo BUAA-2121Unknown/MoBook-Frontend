@@ -2,20 +2,21 @@
   <div class="main-wrapper">
     <div class="teamInfo-wrapper" v-if="teamOption == 'teamInfo'">
       <div v-for="teamInfo in teamInfoList"
-        :key="teamInfo.id"
+        :key="teamInfo.org.id"
         class="teamInfo-card"
       >
-        <img src="teamInfo.avatarUrl" class="team-avatar" />
+        <img v-if="teamInfo.org.avatarUrl" :src="teamInfo.org.avatarUrl" class="team-avatar" />
+        <img v-else src="@/assets/project/projectAvatar.jpg" class="team-avatar" />
         <span class="team-name">
-          {{ teamInfo.creator }} - {{ teamInfo.name }}
+          {{ teamInfo.org.creator || '创建者' }} - {{ teamInfo.org.name }}
         </span>
         <span class="team-intro">
-          {{ teamInfo.intro }}
+          {{ teamInfo.org.intro }}
         </span>
 
         <div class="flex-grow"></div>
 
-        <el-button @click="enterTeam(teamInfo.id)">
+        <el-button @click="enterTeam(teamInfo.org.id)">
           <span>进入</span>
           <el-icon><ArrowRight /></el-icon>
         </el-button>
@@ -40,44 +41,44 @@ export default {
 </script>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onActivated, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import emitter from '@/utils/emitter'
 import CreateTeam from '@/components/team/CreateTeam.vue'
 import { useUserStore } from '@/stores/modules/user'
+import { getAllOrgs } from '@/api/org'
 
 const router = useRouter()
 const userStore = useUserStore()
 
-const teamInfoList = ref()
-const createTeamDialogVisible = ref(false)
+const teamInfoList = ref([])
 
-onMounted(() => {
-  // TDOO: get team info from backend
-  teamInfoList.value = [
-    {
-      id: 1,
-      name: '团队1',
-      avatarUrl: 'https://avatars.githubusercontent.com/u/20411648?v=4',
-      creator: '张三',
-      intro: '团队简介 BlaBla...',
-    },
-    {
-      id: 2,
-      name: '团队2',
-      avatarUrl: 'https://avatars.githubusercontent.com/u/20411648?v=4',
-      creator: '李四',
-      intro: '团队简介 BlaBla...',
-    },
-    {
-      id: 3,
-      name: '团队3',
-      avatarUrl: 'https://avatars.githubusercontent.com/u/20411648?v=4',
-      creator: 'gahow',
-      intro: '团队简介 BlaBla...',
-    },
-  ]
+onActivated(() => {
+  GetAllOrgs()
 })
+
+const GetAllOrgs = async () => {
+  try {
+    const res = await getAllOrgs()
+    if (res.meta.status == 0) {
+      teamInfoList.value = res.data.organizations
+      moveCurrentTeamToTop(userStore.orgId)
+      console.log(teamInfoList.value)
+    } else {
+      console.log(res)
+    }
+  } catch(e) {
+    console.log(e)
+  }
+}
+
+const moveCurrentTeamToTop = (teamId) => {
+  const teamInfo = teamInfoList.value.find((teamInfo) => teamInfo.org.id == teamId)
+  teamInfoList.value.splice(teamInfoList.value.indexOf(teamInfo), 1)
+  teamInfoList.value.unshift(teamInfo)
+}
+
+GetAllOrgs()
 
 const enterTeam = (teamId) => {
   userStore.setOrgId(teamId)

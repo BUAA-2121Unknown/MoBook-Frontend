@@ -30,6 +30,7 @@ onMounted(() => {
     noOrg.value = true
   }
 })
+
 </script>
 
 <style scoped>

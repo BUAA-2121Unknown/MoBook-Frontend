@@ -38,9 +38,9 @@ export const getUserInfo = (params) => {
 }
 
 /**
- * @data: { file: File, id: 1 }
+ * @data: { file: File }
  */
-export const uploadOrgAvatar = (data) => {
+export const uploadUserAvatar = (data) => {
   return service({
     headers: { 'Content-Type': 'multipart/form-data' },
     url: 'user/avatar/upload',
