@@ -91,7 +91,7 @@ export default {
           this.$router.push({
               name: "info"
           });
-          userStore.setProjectId(this.project.id)
+          userStore.setProjectId(res.data.id)
           return res
         }
       } catch (e) {
@@ -113,6 +113,7 @@ export default {
   },
   async mounted(){
     const res = await getProjects({ orgId: userStore.orgId, status: 0 })
+    console.log(res)
     if (res.meta.status == 0) {
       this.projectList = res.data.projects
     } else {

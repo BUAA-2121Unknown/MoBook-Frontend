@@ -173,8 +173,8 @@ export const projectMenuList = [
   {
     "ID": 2,
     "parentId": "0",
-    "path": "doc",
-    "name": "doc",
+    "path": "docs",
+    "name": "docs",
     "hidden": false,
     "meta": {
       "activeName": "",
