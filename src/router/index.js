@@ -5,6 +5,7 @@ import { useUserStore } from '@/stores/modules/user'
 import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
 
+
 const router = createRouter({
   history: createWebHistory(),
   routes: routers,
@@ -29,12 +30,13 @@ router.beforeEach((to, from, next) => {
     return next('/')
   }
 
+
   // TODO: other cases
 
   next()
 })
 
-router.afterEach(() => {
+router.afterEach((to, from, next) => {
   document.getElementsByClassName('main-cont main-right')[0]?.scrollTo(0, 0)
   NProgress.done()
 })
