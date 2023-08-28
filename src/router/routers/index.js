@@ -120,7 +120,7 @@ const routers = [
         },
       },
       {
-        path: 'doc',
+        path: 'docs',
         name: 'docs',
         component: () => import('@/views/project/ProjectDoc.vue'),
         meta: {

@@ -101,6 +101,7 @@ export const useUserStore = defineStore({
         if (res.meta.status == 0) {
           this.resetUserInfo(res.data.user)
           this.setToken(res.data.token)
+
           if (this.orgId) {
             const orgInfo = await getOrgInfo({ orgId: this.orgId })
             if (orgInfo.meta.status == 0) {

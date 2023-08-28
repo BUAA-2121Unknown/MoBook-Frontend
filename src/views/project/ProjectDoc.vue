@@ -105,6 +105,7 @@ onMounted(async () => {
   projectIdFormData.value.projId = userStore.projectId
   try {
     console.log(projectIdFormData.value)
+    console.log(userStore.projectId)
     const res = await getDocList(projectIdFormData.value)
     console.log(res)
     if (res.meta.status == 0) {

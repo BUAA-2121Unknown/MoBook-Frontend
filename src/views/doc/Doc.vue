@@ -2,7 +2,7 @@
     <div id="app">
       <div class="top-bar">
         <div class="top-bar__left">
-          <router-link to="/project/doc">
+          <router-link to="/project/docs">
             <el-icon><ArrowLeftBold /></el-icon>
           </router-link>
           {{ this.title }}

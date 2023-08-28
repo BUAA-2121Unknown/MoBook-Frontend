@@ -91,7 +91,7 @@ export default {
           this.$router.push({
               name: "info"
           });
-          userStore.setProjectId(this.project.id)
+          userStore.setProjectId(res.data.id)
           return res
         }
       } catch (e) {

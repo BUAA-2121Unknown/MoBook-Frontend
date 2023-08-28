@@ -57,3 +57,17 @@ export const saveDoc = (data) => {
     data: fmtForm(data, form)
   })
 }
+
+// @ 人
+export const mention = (data) => {
+  const form = [
+    'projId',
+    'artId',
+    'users'
+  ]
+  return service({
+    url: 'notif/send/artat',
+    method: 'post',
+    data: fmtForm(data, form)
+  })
+}
