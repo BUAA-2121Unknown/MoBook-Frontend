@@ -23,6 +23,7 @@ export const useUserStore = defineStore({
       baseColor: '#fff'
     },
     token: window.localStorage.getItem('token') || '',
+    projectId: -1,
     orgId: 0,
     orgInfo: { },
     auth: '',
@@ -74,6 +75,10 @@ export const useUserStore = defineStore({
     setOrgId(val) {
       this.orgId = val
     },
+    
+    setProjectId(val) {
+      this.projectId = val
+    },
 
     setOrgInfo(val) {
       this.orgInfo = val
@@ -96,8 +101,11 @@ export const useUserStore = defineStore({
         if (res.meta.status == 0) {
           this.resetUserInfo(res.data.user)
           this.setToken(res.data.token)
+          console.log(res)
+          console.log(this.orgId)
           if (this.orgId) {
             const orgInfo = await getOrgInfo({ orgId: this.orgId })
+            console.log(orgInfo)
             if (orgInfo.meta.status == 0) {
               this.setOrgInfo(orgInfo.data.org)
             }

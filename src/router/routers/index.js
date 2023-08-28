@@ -120,17 +120,25 @@ const routers = [
         },
       },
       {
-        path: 'doc',
-        name: 'doc',
-        component: () => import('@/views/user/MyTeam.vue'),
+        path: 'docs',
+        name: 'docs',
+        component: () => import('@/views/project/ProjectDoc.vue'),
         meta: {
           title: '项目文档',
         },
       },
       {
+        path: 'list',
+        name: 'list',
+        component: () => import('@/views/homeProject/HomeProject.vue'),
+        meta: {
+          title: '项目列表',
+        },
+      },
+      {
         path: 'trash',
         name: 'trash',
-        component: () => import('@/views/user/Profile.vue'),
+        component: () => import('@/views/homeProject/TrashProject.vue'),
         meta: {
           title: '回收站',
         },
@@ -143,6 +151,17 @@ const routers = [
     meta: {
       title: '成员邀请'
     }
+  },
+  {
+    path: '/doc',
+    name: 'doc',
+    component: () => import('@/views/doc/Doc.vue'),
+    props: (route) => ({
+      doc_id: route.query.doc_id,
+    }),
+    meta: {
+      title: '文档',
+    },
   },
   {
     path: '/prototype',
