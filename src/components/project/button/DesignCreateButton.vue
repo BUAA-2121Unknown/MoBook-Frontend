@@ -39,7 +39,7 @@ import PictureUploader from "../PictureUploader.vue";
 import { useRouter } from "vue-router";
 
 import { createPrototype } from "@/api/artifact";
-import { userUserStore } from "@/stores/modules/user";
+import { useUserStore } from "@/stores/modules/user";
 
 export default {
   name: "DesignCreateButton",
