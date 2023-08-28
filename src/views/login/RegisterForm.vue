@@ -65,6 +65,7 @@ import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/modules/user'
 import emitter from '@/utils/emitter'
+import { ElMessage } from 'element-plus'
 
 const router = useRouter()
 
@@ -161,6 +162,11 @@ const submitForm = () => {
       router.push({
         name: 'login',
       })
+      ElMessage({
+        type: 'success',
+        message: '注册成功',
+      })
+      emitter.emit('setCurrentOption', 'login')
     } else {
       ElMessage({
         type: 'error',
