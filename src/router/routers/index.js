@@ -83,7 +83,7 @@ const routers = [
           {
             path: 'myteam',
             name: 'myteam',
-            component: () => import('@/views/user/Profile.vue'),
+            component: () => import('@/views/user/MyTeam.vue'),
             meta: {
               title: '我的团队',
             },

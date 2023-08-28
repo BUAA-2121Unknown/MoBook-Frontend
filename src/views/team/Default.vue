@@ -8,13 +8,13 @@
       </el-col>
       <el-col :span="20">
         <el-row class="row-wrapper">
-          <span class="teamName">
-            {{ teamName }}
+          <span class="orgName">
+            {{ orgName }}
           </span>
         </el-row>
         <el-row>
-          <span class="teamIntro">
-            {{ teamIntro }}
+          <span class="orgDesc">
+            {{ orgDesc }}
           </span>
         </el-row>
       </el-col>
@@ -25,14 +25,13 @@
         <el-button type="primary" icon="plus" @click="inviteUser">邀请成员</el-button>
       </div>
       <el-table
-        :data="coWorkerList"
+        :data="orgMemberList"
         :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
         row-key="authorityId"
         style="width: 100%"
       >
-        <el-table-column label="姓名" min-width="180" prop="name" />
-        <el-table-column label="邮箱" min-width="180" prop="email" />
-        <el-table-column label="角色" min-width="180" prop="role" />
+        <el-table-column label="姓名" min-width="180" prop="user.username" />
+        <el-table-column label="昵称" min-width="180" prop="member.nickname" />
         <el-table-column align="left" label="操作" width="460">
           <template #default="scope">
             <el-button
@@ -75,27 +74,71 @@
 <script>
 export default {
   name: 'DefaultHome',
+}
+</script>
 
-  data() {
-    return {
-      searchedInput: "",
-      coWorkerList: [
-        {
-          name: '张三',
-          email: 'fuckBUAA.edu.cn',
-          role: '管理员',
-        }
-      ],
-      teamName:  '团队名',
-      teamIntro: '团队简介 BlaBla...',
+<script setup>
+import { ref, onMounted } from 'vue'
+import { onActivated } from 'vue'
+import { onBeforeRouteUpdate } from 'vue-router'
+import { getOrgInfo, getOrgAllMemberInfo } from '@/api/org'
+import { useUserStore } from '@/stores/modules/user'
+
+const searchedInput = ''
+const orgMemberList = ref([
+  {
+    "user": {
+        "id": 1,
+        "username": "Tony",
+        "name": null,
+        "avatarUrl": null
+    },
+    "member": {
+        "orgId": 5,
+        "nickname": "Tony",
+        "auth": 0
     }
   },
+])
+const orgName = ref('团队名')
+const orgDesc = ref('团队简介 BlaBla...')
+const orgAvatarUrl = ref('')
+const userStore = useUserStore()
 
-  methods: {
-    inviteUser() {
-      console.log('inviteUser')
-    },
-  },
+const inviteUser = () => {
+  // TODO
+  console.log('inviteUser')
+}
+
+onMounted(() => {
+  GetOrgInfo()
+})
+
+onActivated(() => {
+  GetOrgInfo()
+})
+
+const GetOrgInfo = async () => {
+  try {
+    const orgInfo = await getOrgInfo({ orgId: userStore.orgId })
+    console.log(orgInfo)
+    if (orgInfo.meta.status == 0) {
+      orgName.value = orgInfo.data.org.name
+      orgDesc.value = orgInfo.data.org.description
+      orgAvatarUrl.value = orgInfo.data.org.avatarUrl
+      userStore.setAuth(orgInfo.data.auth.auth)
+    } else {
+      console.log(orgInfo)
+    }
+    const orgMembers = await getOrgAllMemberInfo({ orgId: userStore.orgId })
+    if (orgMembers.meta.status == 0) {
+      orgMemberList.value = orgMembers.data.members
+    } else {
+      console.log(orgMembers)
+    }
+  } catch(e) {
+    console.log(e)
+  }
 }
 </script>
 
@@ -119,12 +162,12 @@ export default {
   text-align: center;
 }
 
-.teamName {
+.orgName {
   font-size: 24px;
   font-weight: bold;
 }
 
-.teamIntro {
+.orgDesc {
   font-size: 16px;
   font-weight: bold;
 }

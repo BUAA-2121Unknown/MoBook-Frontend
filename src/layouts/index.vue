@@ -51,19 +51,9 @@
                           </div>
                           <template #dropdown>
                             <el-dropdown-menu>
-                              <el-dropdown-item>
-                                <span class="font-bold">
-                                  当前角色：{{ userStore.userInfo.authority.authorityName }}
-                                </span>
-                              </el-dropdown-item>
-                              <template v-if="userStore.userInfo.authorities">
-                                <el-dropdown-item v-for="item in userStore.userInfo.authorities.filter(i => i.authorityId !== userStore.userInfo.authorityId)" :key="item.authorityId" @click="changeUserAuth(item.authorityId)">
-                                  <span>
-                                    切换为：{{ item.authorityName }}
-                                  </span>
-                                </el-dropdown-item>
-                              </template>
-                              <el-dropdown-item icon="avatar">
+                              <el-dropdown-item icon="avatar" @click="toPerson">个人信息</el-dropdown-item>
+
+                              <el-dropdown-item icon="tools">
                                 <div class="command-box" style="display: flex" @click="handleCommand">
                                   <div>指令菜单</div>
                                   <div style="margin-left: 8px">
@@ -73,9 +63,26 @@
                                   </div>
                                 </div>
                               </el-dropdown-item>
-                              <el-dropdown-item icon="avatar" @click="toPerson">个人信息</el-dropdown-item>
-                              <el-dropdown-item icon="reading-lamp" @click="userStore.logout">登 出</el-dropdown-item>
+
+                              <el-dropdown-item icon="reading-lamp" @click="userStore.logout">退出登录</el-dropdown-item>
+
+                              <el-divider style="margin: 5px;" />
+
+                              <div class="team-change-wrapper">
+                                <el-button bg @click="goToChangeTeam">
+                                  <div style="display: flex">
+                                    <div style="text-align: center; vertical-align: center;">
+                                      <img src="@/assets/logo.png" style="height: 20px; width: 20px;"/>
+                                    </div>
+                                    <div style="margin-left: 8px">
+                                      <span style="width: 30px; margin-right: 10px;">团队名</span>
+                                      <span class="change">切换</span>
+                                    </div>
+                                  </div>
+                                </el-button>
+                              </div>
                             </el-dropdown-menu>
+
                           </template>
                         </el-dropdown>
                       </div>
@@ -285,13 +292,17 @@ const totalCollapse = () => {
 }
 
 const toPerson = () => {
-  router.push({ name: 'person' })
+  router.push({ name: 'profile' })
 }
 
 const changeShadow = () => {
   isShadowBg.value = !isShadowBg.value
   isSider.value = !!isCollapse.value
   totalCollapse()
+}
+
+const goToChangeTeam = () => {
+  console.log('need go to change team')
 }
 </script>
 
@@ -309,6 +320,20 @@ const changeShadow = () => {
 
 :deep .el-overlay {
   background-color: hsla(0,0%,100%,.9) !important;
+}
+
+.team-change-wrapper {
+  margin-left: 8%;
+  margin-right: 5%;
+  margin-bottom: 5%;
+  color: #8c8c8c;
+  font-size: 12px;
+  line-height: 48px;
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 .message-container{
   margin: 4px 8px 0 0;

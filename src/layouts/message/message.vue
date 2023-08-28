@@ -18,7 +18,7 @@
           <div class="message-header">
             <div class="left-container">
               <el-icon size="18"><Bell /></el-icon>
-              <el-select v-model="value" class="m-2" placeholder="Select">
+              <el-select v-model="onlyUnread" class="m-2" placeholder="Select">
                 <el-option
                   v-for="item in options"
                   :key="item.value"
@@ -51,6 +51,9 @@
             v-for="message in list"
             :key="message.id"
             :info="message"
+            :readHandler="readMessagel"
+            :delHandler="delMessagel"
+            :onlyUnread="onlyUnread"
           >
           </messageItem>
         </div>
@@ -62,6 +65,8 @@
 <script>
 import messageItem from "../../components/messageCenter/messageItem.vue";
 
+import { editMessage, getMessage } from "../../api/message";
+
 export default {
   name: "MessageCenter",
   components: {
@@ -69,38 +74,30 @@ export default {
   },
   data() {
     return {
-      unreadNumber: 10,
+      unreadNumber: 0,
       //   原始信息列表
-      messageList: [
-        {
-          id: 1,
-          read: true,
-          type: 1,
-          sender: "二道湾",
-          text: "行提供 gutter 属性来指定列之间的间距，其默认值为0。",
-          time: "2023-8-27 14:21",
-        },
-        {
-          id: 2,
-          read: false,
-          type: 0,
-          sender: "发你我",
-          text: "通过基础的 1/24 分栏任意扩展组合形成较为复杂的混合布局。通过基础的 1/24 分栏任意扩展组合形成较为复杂的混合布局。通过基础的 1/24 分栏任意扩展组合形成较为复杂的混合布局。",
-          time: "2023-8-27 14:21",
-        },
-      ],
+      messageList: [],
+
       //   选择已读未读
-      value: "all",
+      onlyUnread: false,
       options: [
         {
-          value: "all",
+          value: false,
           label: "全部消息",
         },
         {
-          value: "unread",
+          value: true,
           label: "未读消息",
         },
       ],
+      userId: undefined,
+      orgID: undefined,
+
+      // wb参数
+      // 连接标志位
+      lockReconnect: false,
+
+      newSocket: null,
     };
   },
   computed: {
@@ -110,22 +107,172 @@ export default {
     list() {
       return this.messageList;
     },
+    wsCfg() {
+      const userStore = useUserStore();
+      const str = '' + userStore.userInfo.id + '/3/' 
+      // websocket地址
+      return {
+        url: "ws://81.70.161.76:5000/ws/notif/" + str
+      };
+    },
   },
   methods: {
-    delReadMessage() {
-        this.$message.success('已删除全部已读消息')
+    async delMessagel(id) {
+      const data = {
+        status: 2,
+        notifications: [id],
+      };
+      try {
+        const res = await editMessage(data);
+        console.log(res);
+        this.$message.success("已删除消息");
+      } catch (e) {
+        console.log(e);
+      }
+      // this.messageList = this.messageList.filter(function (item) {
+      //   return item.msgId != id;
+      // });
     },
-    readAllMessage() {
-        this.$message.success('已将全部消息设为已读')
+    async delReadMessage() {
+      const dataList = [];
+      this.messageList.forEach((item, index, arr) => {
+        if(item.status == 1){
+          dataList.push(item.id);
+        }
+      });
+      const data = {
+        status: 2,
+        notifications: dataList,
+      };
+      try {
+        const res = await editMessage(data);
+        console.log(res, data);
+        // this.messageList = this.messageList.filter(function (item) {
+        //   item.msgId != id;
+        // });
+        this.$message.success("已删除全部已读消息");
+      } catch (e) {
+        console.log(e);
+      }
     },
-    readMessage() {
-        this.$message.success('消息设为已读')
-      console.log("消息已读", this.info.id);
+    async readMessagel(id) {
+      const data = {
+        status: 1,
+        notifications: [id],
+      };
+      try {
+        const res = await editMessage(data);
+        console.log(res, data);
+        this.$message.success("设置为已读消息");
+      } catch (e) {
+        console.log(e);
+      }
     },
-    delMessage() {
-        this.$message.success('成功删除消息')
-      console.log("消息删除", this.info.id);
+    async readAllMessage() {
+      const dataList = []
+      this.messageList.forEach((item, index, arr) => {
+        if(item.status == 0){
+          dataList.push(item.id)
+        }
+      });
+      const data = {
+        status: 1,
+        notifications: dataList,
+      };
+      try {
+        console.log(data)
+        const res = await editMessage(data);
+        console.log(res);
+        // this.messageList = this.messageList.filter(function (item) {
+        //   item.msgId != id;
+        // });
+        this.$message.success("已将全部消息设为已读");
+      } catch (e) {
+        console.log(e);
+      }
     },
+
+    // 加载全部消息列表
+    async loadAllMessage() {
+      const data = {
+        orgId: this.orgId,
+        status: 0,
+      };
+      try {
+        const res = await getMessage(data);
+        console.log(res, data);
+        this.messageList = res.data.notifications;
+        this.unreadNumber = res.data.unread;
+        console.log("成功加载全部消息列表", this.messageList);
+      } catch (e) {
+        console.log(e);
+      }
+    },
+
+    // websocket
+    // 创建websocket
+    createWebSocket() {
+      try {
+        // 创建Web Socket 连接
+        const socket = new WebSocket(this.wsCfg.url);
+        // 初始化事件
+        this.initEventHandle(socket);
+        console.log(socket)
+      } catch (e) {
+        console.log(e)
+        // 出错时重新连接
+        this.reconnect(this.wsCfg.url);
+      }
+    },
+    initEventHandle(socket) {
+      // 连接关闭时触发
+      socket.onclose = () => {
+        console.log("连接关闭");
+      };
+      // 通信发生错误时触发
+      socket.onerror = () => {
+        // 重新创建长连接
+        this.reconnect();
+        console.log("连接错误");
+      };
+      // 连接建立时触发
+      socket.onopen = () => {
+        console.log("连接成功");
+        this.newSocket = socket
+      };
+      // 客户端接收服务端数据时触发
+      socket.onmessage = (msg) => {
+        // 业务逻辑处理
+        console.log(msg.data, "收到了ws:data");
+        this.receiveNewMessage(msg);
+      };
+    },
+    reconnect() {
+      if (this.lockReconnect) {
+        return;
+      }
+      this.lockReconnect = true;
+
+      // 没连接上会一直重连，设置延迟避免请求过多
+      setTimeout(() => {
+        this.lockReconnect = false;
+        this.createWebSocket(this.wsCfg.url);
+      }, 2000);
+    },
+    //websocket接受回调函数
+    receiveNewMessage(msg) {
+      // this.newSocket.recv(JSON.stringify(message))
+      // this.messageList.unshift(msg);
+      console.log("当前消息列表新增", msg);
+    },
+  },
+  mounted() {
+    const userStore = useUserStore();
+    this.userId = userStore.userInfo.id;
+    this.orgId = 3;
+    this.loadAllMessage();
+
+    this.createWebSocket();
   },
 };
 </script>
@@ -133,23 +280,15 @@ export default {
   <script setup>
 import { ref } from "vue";
 import { useUserStore } from "@/stores/modules/user";
+
 const drawer = ref(false);
 const direction = ref("rtl");
-
-const userStore = useUserStore();
 
 const handleClose = () => {
   drawer.value = false;
 };
 const showSettingDrawer = () => {
   drawer.value = true;
-};
-const changeMode = (e) => {
-  if (e === null) {
-    userStore.changeSideMode("dark");
-    return;
-  }
-  userStore.changeSideMode(e);
 };
 </script>
   

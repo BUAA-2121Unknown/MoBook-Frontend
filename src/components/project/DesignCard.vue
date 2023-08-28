@@ -16,9 +16,10 @@
     </div>
     <transition name="slide-up">
       <el-row class="mb-4 doc-buttom-group" v-if="expanded">
-        <DelButton :handler="delHandler"></DelButton>
-        <ShareButton :handler="shareHandler"></ShareButton>
-        <ModifyButton :handler="modifyHandler"></ModifyButton>
+        <DelButton :handler="delHandler" v-if="design.status == 0"></DelButton>
+        <DelButton :handler="delForeverHandler" v-if="design.status != 0"></DelButton>
+        <ShareButton :handler="shareHandler" v-if="design.status == 0"></ShareButton>
+        <ModifyButton :handler="modifyHandler" v-if="design.status == 0"></ModifyButton>
       </el-row>
     </transition>
 
@@ -54,11 +55,22 @@
 
     <!-- 删除原型设计 -->
     <el-dialog v-model="dialogDelVisible" title="提示" width="30%">
-      <span>确认删除原型设计？删除后将无法恢复。</span>
+      <span>确认删除原型设计？该原型设计将被放入回收站。</span>
       <template #footer>
         <span class="dialog-footer">
-          <el-button @click="dialogVisible = false">取消</el-button>
+          <el-button @click="dialogDelVisible = false">取消</el-button>
           <el-button type="danger" @click="delDesign"> 删除 </el-button>
+        </span>
+      </template>
+    </el-dialog>
+
+     <!-- 从回收站删除原型设计 -->
+     <el-dialog v-model="dialogDelForeverVisible" title="提示" width="30%">
+      <span>确认彻底删除原型设计？彻底删除后将无法恢复！</span>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="dialogDelForeverVisible = false">取消</el-button>
+          <el-button type="danger" @click="delForeverDesign"> 删除 </el-button>
         </span>
       </template>
     </el-dialog>
@@ -71,6 +83,8 @@ import ShareButton from "./button/ShareButton.vue";
 import ModifyButton from "./button/ModifyButton.vue";
 import PictureUploader from "./PictureUploader.vue";
 import lodash from "lodash";
+
+import { updatePrototypeStatus, updatePrototypeInfo } from "../../api/artifact";
 
 export default {
   name: "DesignCard",
@@ -98,6 +112,7 @@ export default {
       },
       dialogFormVisible: false,
       dialogDelVisible: false,
+      dialogDelForeverVisible: false,
       formLabelWidth: "140px",
     };
   },
@@ -127,16 +142,49 @@ export default {
       this.expanded = false;
     },
 
+    // 将原型设计放入回收站
     delHandler() {
       this.dialogDelVisible = true;
     },
-    delDesign() {
-      this.dialogDelVisible = false;
-      this.fatherDelHandler(design.id);
-      this.$message({
-        message: "成功删除原型设计",
-        type: "success",
-      });
+    async delDesign() {
+      const data = { status: 1, artifacts: this.design.artId };
+      try {
+        const res = await updatePrototypeStatus(data);
+
+        console.log(res);
+        this.$message({
+          message: "已将原型设计放入回收站",
+          type: "success",
+        });
+        this.dialogDelVisible = false;
+        
+      } catch (e) {
+        this.dialogDelVisible = false;
+        console.log(e);
+      }
+      this.fatherDelHandler(this.design.id);
+    },
+
+    // 将原型设计从回收站删除
+    delForeverHandler() {
+      this.dialogDelForeverVisible = true;
+    },
+    async delForeverDesign() {
+      const data = { status: 2, artifacts: this.design.artId };
+      try {
+        const res = await updatePrototypeStatus(data);
+
+        console.log(res);
+        this.$message({
+          message: "原型设计已彻底删除",
+          type: "success",
+        });
+        this.dialogDelForeverVisible = false;
+        this.fatherDelHandler(design.id);
+      } catch (e) {
+        this.dialogDelForeverVisible = false;
+        console.log(e);
+      }
     },
 
     shareHandler() {
@@ -152,6 +200,8 @@ export default {
         type: "success",
       });
     },
+
+    // 更新原型设计信息
     uploadModify() {
       this.dialogFormVisible = false;
       this.$message({

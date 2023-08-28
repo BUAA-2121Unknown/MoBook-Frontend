@@ -1,12 +1,12 @@
 <template>
-  <div class="message-container">
+  <div class="message-container" v-if="!onlyUnread || !info.status">
     <!-- 删除与已读 -->
     <div class="button-group">
       <el-icon
         size="14"
         class="message-button"
         @click="readMessage"
-        v-if="!info.read"
+        v-if="!info.status"
         ><Finished
       /></el-icon>
       <el-icon size="14" class="message-button" @click="delMessage"
@@ -15,7 +15,7 @@
     </div>
     <div class="type-container">
       {{ messageType }}
-      <div class="notread-icon" v-if="!info.read">未读</div>
+      <div class="notread-icon" v-if="!info.status">未读</div>
     </div>
     <div class="content-container" @click="jumpForMessage">
       <el-row :gutter="20">
@@ -44,7 +44,7 @@ import defaultImgUrl from "@/assets/logo.png";
 
 export default {
   name: "messageItem",
-  props: ["info"],
+  props: ["info", "readHandler", "delHandler", "onlyUnread"],
   computed: {
     messageType() {
       return this.info.type === 1 ? "@我的" : "系统通知";
@@ -56,7 +56,7 @@ export default {
       return this.info.avatarUrl ? this.info.avatarUrl : defaultImgUrl;
     },
     readClass() {
-      return this.info.read ? "read-class" : "";
+      return this.info.status ? "read-class" : "";
     },
   },
   methods: {
@@ -64,12 +64,12 @@ export default {
       console.log("跳转");
     },
     readMessage() {
-        this.$message.success('消息设为已读')
-      console.log("消息已读", this.info.id);
+      console.log('read', this.info.id)
+      this.readHandler(this.info.id);
     },
     delMessage() {
-        this.$message.success('成功删除消息')
-      console.log("消息删除", this.info.id);
+      console.log('del', this.info.id)
+      this.delHandler(this.info.id);
     },
   },
 };

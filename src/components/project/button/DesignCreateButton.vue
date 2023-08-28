@@ -38,6 +38,8 @@
 import PictureUploader from "../PictureUploader.vue";
 import { useRouter } from "vue-router";
 
+import { createPrototype } from "@/api/artifact";
+
 export default {
   name: "DesignCreateButton",
   props: ["handler"],
@@ -59,20 +61,35 @@ export default {
     const router = useRouter();
   },
   methods: {
-    handleCreate() {
-      this.dialogFormVisible = false;
-      this.$message({
-        message: "成功创建原型设计",
-        type: "success",
-      });
-      // console.log(this.form.url)
-      this.form = {
-        name: "",
-        intro: "",
-        url: "",
+    // 创建原型设计
+    async handleCreate() {
+      const data = {
+        projId: 12,
+        name: this.form.name,
+        type: "prototype",
+        live: false,
       };
-      this.$router.push({path: '/prototype', query: {prototype_id: '1'}})
-      
+      try {
+        const res = await createPrototype(data);
+        this.dialogFormVisible = false;
+        this.$message({
+          message: "成功创建原型设计",
+          type: "success",
+        });
+        // 让父组件刷新一下状态
+        this.handler()
+        
+        console.log(res)
+        this.form = {
+          name: "",
+          intro: "",
+          url: "",
+        };
+        this.$router.push({ path: "/prototype", query: { artId: res.data.id} });
+      } catch (e) {
+        this.dialogFormVisible = false;
+        console.log(e);
+      }
     },
   },
 };

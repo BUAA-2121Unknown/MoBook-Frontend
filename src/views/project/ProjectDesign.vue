@@ -9,7 +9,7 @@
         <SearchBar :handler="handleSearch"></SearchBar>
       </el-col>
       <el-col :span="4">
-        <DesignCreateButton class="header-button"></DesignCreateButton>
+        <DesignCreateButton class="header-button" :handler="getList"></DesignCreateButton>
       </el-col>
     </el-row>
 
@@ -18,18 +18,22 @@
     <div class="design-list">
       <el-row :gutter="15">
         <el-col v-for="item in designList" :key="item.id" :span="8">
-          <DesignCard :design="item" :delHandler="delHandler"></DesignCard>
+          <DesignCard :design="item" :projId="projId" :fatherDelHandler="delHandler"></DesignCard>
         </el-col>
       </el-row>
     </div>
   </div>
 </template>
-  
+<script setup>
+  import { useUserStore } from "@/stores/modules/user";
+</script>
 <script>
 import DesignCard from '../../components/project/DesignCard.vue';
 import designImg from '@/assets/project/projectDesignImg.png'
 import DesignCreateButton from '../../components/project/button/DesignCreateButton.vue';
 import SearchBar from '../../components/project/SearchBar.vue';
+
+import { getPrototypeList } from '../../api/artifact';
 
 export default {
   name: "ProjectDesign",
@@ -43,35 +47,41 @@ export default {
       designList: [
         {
           id: 1,
+          status: 0,
           name: '无标题原型a',
           intro: 'asdgmerioioioioioioioiof',
           img: designImg,
         },
         {
           id: 2,
+          status: 0,
           name: '无标题原型b',
           intro: 'asdgmerioioioioioioioiof',
           img: designImg,
         },
         {
           id: 3,
+          status: 0,
           name: '无标题原型c',
           intro: 'asdgmerioioioioioioioiof',
           img: designImg,
         },
         {
           id: 4,
+          status: 0,
           name: '无标题原型d',
           intro: 'asdgmerioioioioioioioiof',
           img: designImg,
         },
         {
           id: 5,
+          status: 0,
           name: '无标题原型e',
           intro: '123',
           img: designImg,
         },
       ],
+      orgId: undefined,
     }
   },
   methods: {
@@ -79,11 +89,36 @@ export default {
       console.log('原型设计页面搜索：' + input)
     },
     delHandler(id) {
-      this.designList = this.designList.filter(function(itemId) {
-        return itemId != id
+      this.designList = this.designList.filter(function(item) {
+        return item.id != id
       })
     },
+
+    // 获取当前的原型列表
+    async getList(){
+      console.log(this.projId)
+      const params = { 
+        projId: this.projId,
+      }
+      try {
+        const res = await getPrototypeList(params);
+        console.log(res)
+        this.designList = res.data.artifacts.filter(function(item){
+          return item.isLive === false
+        })
+      } catch (e) {
+        console.log(e);
+      }
+    }
+
   },
+  mounted() {
+    // const userStore = useUserStore();
+    // this.projId = this.$router.query.projId
+    // console.log(this.projId)
+    this.projId = 12
+    this.getList()
+  }
 };
 </script>
   

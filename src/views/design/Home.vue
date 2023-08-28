@@ -66,6 +66,8 @@ import { useRoute } from "vue-router";
 import { $on } from "../../utils/design/gogocodeTransfer";
 import eventBus from "@/utils/design/eventBus";
 
+import { getPrototype } from "../../api/artifact";
+
 export default {
   components: {
     Editor,
@@ -158,29 +160,55 @@ export default {
         JSON.stringify(this.canvasStyleData),
       ]);
     },
-    restore() {
-      const route = useRoute();
-      const data = new FormData();
-      data.append("protoId", route.params.id);
-      console.log(route.params, route.query);
-      Project.getProto(data)
-        .then((res) => {
-          console.log("res", res);
-          this.$store.commit(
-            "setComponentData",
-            JSON.parse(res.data.canvasData).array
-          );
-          this.$store.commit(
-            "setCanvasStyle",
-            JSON.parse(res.data.canvasStyle)
-          );
-          this.isPreviewing = res.data.isPreviewing;
-          this.loading = false;
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+    async restore() {
+      // const newPrototype = this.$route.query.newPrototype
+      // // 如果是新项目，那么应该直接跳过初始化
+      // if(newPrototype){
+      //   return
+      // }
+      // 是已保存的项目
+      const data = {
+        artId: this.$route.query.artId,
+      };
+      try {
+        const res = await getPrototype(data);
+        const val = JSON.parse(res.data.file)
+        this.$store.commit(
+          "setComponentData",
+          val.canvasData.array
+        );
+        this.$store.commit("setCanvasStyle", val.canvasStyle);
+        this.isPreviewing = false;
+        this.loading = false;
+
+        console.log(res);
+      } catch (e) {
+        console.log(e);
+      }
     },
+    // restore() {
+    //   const route = useRoute();
+    //   const data = new FormData();
+    //   data.append("protoId", route.params.id);
+    //   console.log(route.params, route.query);
+    //   Project.getProto(data)
+    //     .then((res) => {
+    //       console.log("res", res);
+    //       this.$store.commit(
+    //         "setComponentData",
+    //         JSON.parse(res.data.canvasData).array
+    //       );
+    //       this.$store.commit(
+    //         "setCanvasStyle",
+    //         JSON.parse(res.data.canvasStyle)
+    //       );
+    //       this.isPreviewing = res.data.isPreviewing;
+    //       this.loading = false;
+    //     })
+    //     .catch((err) => {
+    //       console.log(err);
+    //     });
+    // },
 
     handleDrop(e) {
       e.preventDefault();

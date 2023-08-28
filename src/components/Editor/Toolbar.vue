@@ -124,6 +124,7 @@ import { ref } from "vue";
 import { ElMessageBox } from "element-plus";
 import Clipboard from "vue-clipboard3";
 
+import { savePrototype } from "../../api/artifact";
 // const dialogVisible = ref(false);
 
 export default {
@@ -328,28 +329,63 @@ export default {
       this.$store.commit("setEditMode", "preview");
     },
 
-    save() {
-      // TODO 保存
-      // localStorage.setItem("canvasData", JSON.stringify(this.componentData));
-      // localStorage.setItem("canvasStyle", JSON.stringify(this.canvasStyleData));
-      const data = new FormData();
-      data.append("protoId", this.$route.params.id);
-      console.log("protoId: ", this.$route.params.id);
-      data.append("canvasData", JSON.stringify({ array: this.componentData }));
-      data.append("canvasStyle", JSON.stringify(this.canvasStyleData));
-      Project.saveProto(data)
-        .then((res) => {
-          if (res.status === 200) {
-            this.$message.success("保存成功");
-          } else {
-            this.$message.error("保存失败");
-          }
-        })
-        .catch((err) => {
-          console.log(err);
+    // 保存项目
+    async save() {
+      // const val1 = JSON.stringify({
+      //   canvasData: { array: this.componentData },
+      //   canvasStyle: this.canvasStyleData,
+      // });
+      // const val2 = JSON.stringify({
+      //   canvasData: { array: this.componentData },
+      //   canvasStyle: JSON.stringify(this.canvasStyleData),
+      // });
+      // console.log("新", val1, JSON.parse(val1), JSON.parse(val1).canvasStyle);
+      // console.log("旧", val2, JSON.parse(val2));
+        if(!this.$route.query || !this.$route.query.artId){
+          console.log('未给出artId，无法保存')
+          return
+        }
+        const id = 1
+        const data = {
+          artId: this.$route.query.artId,
+          file: JSON.stringify(
+          {
+            canvasData: JSON.stringify({ array: this.componentData }),
+            canvasStyle: this.canvasStyleData,
+          })
+        }
+        try{
+          const res = await savePrototype(data)
+          console.log(res)
+          this.$message.success("保存成功");
+        } catch(e) {
+          console.log(e)
           this.$message.error("保存失败");
-        });
+        }
     },
+
+    // save() {
+    //   // TODO 保存
+    //   // localStorage.setItem("canvasData", JSON.stringify(this.componentData));
+    //   // localStorage.setItem("canvasStyle", JSON.stringify(this.canvasStyleData));
+    //   const data = new FormData();
+    //   data.append("protoId", this.$route.params.id);
+    //   console.log("protoId: ", this.$route.params.id);
+    //   data.append("canvasData", JSON.stringify({ array: this.componentData }));
+    //   data.append("canvasStyle", JSON.stringify(this.canvasStyleData));
+    //   Project.saveProto(data)
+    //     .then((res) => {
+    //       if (res.status === 200) {
+    //         this.$message.success("保存成功");
+    //       } else {
+    //         this.$message.error("保存失败");
+    //       }
+    //     })
+    //     .catch((err) => {
+    //       console.log(err);
+    //       this.$message.error("保存失败");
+    //     });
+    // },
 
     clearCanvas() {
       this.$store.commit("setCurComponent", { component: null, index: null });
