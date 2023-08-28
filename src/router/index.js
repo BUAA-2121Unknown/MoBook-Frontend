@@ -7,6 +7,7 @@ import 'nprogress/nprogress.css'
 import { resetMenuList } from '@/utils/common'
 import { menuList, projectMenuList } from '@/enums/menuEnum'
 
+
 const router = createRouter({
   history: createWebHistory(),
   routes: routers,
@@ -52,6 +53,7 @@ router.beforeEach((to, from, next) => {
   if (to.path === '/login' && token) {
     return next('/')
   }
+
 
   // TODO: other cases
 

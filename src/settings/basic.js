@@ -4,7 +4,7 @@ const settings = {
   appOrgURL: 'https://github.com/BUAA-2121Unknown',
   appURL: 'http://localhost:5173/',
   appLogo: '',
-  apiURL: 'http://81.70.161.76:5000/api/',
+  apiURL: 'http://82.156.25.78:5000/api/',
 
   useErrorHandle: false,
 }
