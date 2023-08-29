@@ -106,7 +106,6 @@ export default {
       const params = {
         projId: userStore.projectId,
       };
-      console.log("请求参数", params);
       try {
         const res = await getProjectInfo(params);
         console.log("成功导入项目信息", res);
@@ -116,9 +115,9 @@ export default {
       }
     },
   },
-  mounted() {
-    this.getInfo();
-  },
+  // mounted() {
+  //   this.getInfo();
+  // },
   activated() {
     this.getInfo();
   },
