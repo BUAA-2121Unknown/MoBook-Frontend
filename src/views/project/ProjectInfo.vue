@@ -181,7 +181,7 @@ export default {
   text-align: start;
   border-radius: 5px;
   padding: 3px 2px;
-  max-width: 20%;
+  max-width: 50%;
   /* 字体 */
   font-size: 30px;
   font-weight: bold;

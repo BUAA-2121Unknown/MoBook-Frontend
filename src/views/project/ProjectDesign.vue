@@ -50,36 +50,8 @@ export default {
         {
           id: 1,
           status: 0,
-          name: "无标题原型a",
-          intro: "asdgmerioioioioioioioiof",
-          img: designImg,
-        },
-        {
-          id: 2,
-          status: 0,
-          name: "无标题原型b",
-          intro: "asdgmerioioioioioioioiof",
-          img: designImg,
-        },
-        {
-          id: 3,
-          status: 0,
-          name: "无标题原型c",
-          intro: "asdgmerioioioioioioioiof",
-          img: designImg,
-        },
-        {
-          id: 4,
-          status: 0,
-          name: "无标题原型d",
-          intro: "asdgmerioioioioioioioiof",
-          img: designImg,
-        },
-        {
-          id: 5,
-          status: 0,
-          name: "无标题原型e",
-          intro: "123",
+          name: "无标题原型设计",
+          intro: "浏览器支持双值语法，当仅发现外部值时，例如当指定 display: block 或 display: inline.",
           img: designImg,
         },
       ],
@@ -104,23 +76,23 @@ export default {
       };
       try {
         const res = await getPrototypeList(params);
-        console.log(res);
+        console.log('开始导入原型设计列表', res);
         this.designList = res.data.artifacts.filter(function (item) {
-          return item.isLive === true;
+          return item.isLive === false;
         });
-        console.log(this.designList);
+        console.log('成功导入原型设计列表', this.designList);
       } catch (e) {
         console.log(e);
       }
     },
   },
-  mounted() {
-    const userStore = useUserStore();
-    // this.projId = this.$router.query.projId
-    // console.log(this.projId)
-    this.projId = userStore.projectId;
-    this.getList();
-  },
+  // mounted() {
+  //   const userStore = useUserStore();
+  //   // this.projId = this.$router.query.projId
+  //   // console.log(this.projId)
+  //   this.projId = userStore.projectId;
+  //   this.getList();
+  // },
   activated() {
     const userStore = useUserStore();
     // this.projId = this.$router.query.projId
