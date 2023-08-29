@@ -13,7 +13,7 @@
 
 <script>
 import { register } from 'vue-advanced-chat'
-import { requestChatList, requestRoomMessage } from '@/api/chat'
+import { requestChatList, requestRoomMessage, requestSendMessage } from '@/api/chat'
 import { useUserStore } from '@/stores/modules/user'
 // import { register } from '../../vue-advanced-chat/dist/vue-advanced-chat.es.js'
 register()
@@ -22,6 +22,7 @@ export default {
   name: 'chat',
   data() {
     return {
+      currentUserId: '',
       //实时连接
       newSocket: null,
       lockReconnect: false,
@@ -55,7 +56,7 @@ export default {
             { _id: '4131', username: 'zdw', avatar: 'https://img2.woyaogexing.com/2023/08/26/1e4f1922fe9d26fd45a9453f8b7e5a23.png' },
             { _id: '4111', username: 'lzy', avatar: 'https://img2.woyaogexing.com/2023/08/26/c9aad630d56c60bdd3a421d4d593efb0.jpg' },
           ],
-          // typingUsers: [7],
+          typingUsers: [7],
         },
         {
           roomId: '2',
@@ -81,14 +82,14 @@ export default {
             { _id: '4131', username: 'zdw', avatar: 'https://img2.woyaogexing.com/2023/08/26/1e4f1922fe9d26fd45a9453f8b7e5a23.png' },
             { _id: '4111', username: 'lzy', avatar: 'https://img2.woyaogexing.com/2023/08/26/c9aad630d56c60bdd3a421d4d593efb0.jpg' },
           ],
-          // typingUsers: [7],
+          // typingUsers: [7], 
         }
       ],
       messages: [],
       messagesLoaded: false,
       allUsers: [{ _id: '7', username: 'cr', avatar: 'https://img2.woyaogexing.com/2023/08/26/8d02aed9994bd1e4b4b3a40678eafd3a.jpg' },
-      { _id: '4321', username: 'gahow', avatar: 'https://img2.woyaogexing.com/2023/08/26/e958b1689d603575d508a48239174022.png' },
-      { _id: '4441', username: 'czx', avatar: 'https://img2.woyaogexing.com/2023/08/26/2bba8400047a6648336119995180d4ad.jpg' },
+      { _id: '2', username: 'gahow', avatar: 'https://img2.woyaogexing.com/2023/08/26/e958b1689d603575d508a48239174022.png' },
+      { _id: '3', username: 'czx', avatar: 'https://img2.woyaogexing.com/2023/08/26/2bba8400047a6648336119995180d4ad.jpg' },
       { _id: '4121', username: 'adk', avatar: 'https://img2.woyaogexing.com/2023/08/26/fbd06bd6e8e2e9ed4726869f98b97c40.jpg' },
       { _id: '4131', username: 'zdw', avatar: 'https://img2.woyaogexing.com/2023/08/26/1e4f1922fe9d26fd45a9453f8b7e5a23.png' },
       { _id: '4111', username: 'lzy', avatar: 'https://img2.woyaogexing.com/2023/08/26/c9aad630d56c60bdd3a421d4d593efb0.jpg' },],
@@ -100,15 +101,14 @@ export default {
     console.log("mounted");
     this.requestMessages();
     this.createWebSocket();
+    this.currentUserId = this.getCurrentUserId();
     console.log(this.currentUserId);
   },
-  computed: {
-    currentUserId() {
+  methods: {
+    getCurrentUserId() {
       const userStore = useUserStore()
       return userStore.userInfo.id
-    }
-  },
-  methods: {
+    },
     //建立http链接 请求当前列表聊天记录
     async requestMessages() {
       console.log("开始请求列表");
@@ -125,9 +125,9 @@ export default {
       console.log("开始请求当前聊天室");
       try {
         const res = await requestRoomMessage({ "chat_id": 10, "org_id": 2 });
-        console.log(res)
         const list = res.data.message_list;
-        const messages = [];
+        console.log(list)
+        // const messages = [];
         // for (let i = 0; i < list.length; i++) {
         //   // messages[i].avatar = list[i].avatar;
         //   messages[i].content = list[i].content;
@@ -140,8 +140,26 @@ export default {
         //   messages[i].username = list[i].username;
         //   messages[i]._id = list[i]._id;
         // }
+        this.rooms.find(room => room.roomId === this.roomId).users = res.data.users;
+        this.rooms.find(room => room.roomId === this.roomId).unreadCount = 0;
         this.messages = list;
-        console.log(list)
+        console.log(list[30].senderId);
+      } catch (e) {
+        console.log(e)
+      }
+    },
+    //建立http链接 发送消息要求更新数据库
+    async requestSendMessages(message) {
+      console.log("开始发送消息");
+      try {
+        const res = await requestSendMessage({
+          "type": 3,
+          "org_id": 2,
+          "text": message.content,
+          "at_list": [1],
+          "chat_id": 10
+        });
+        console.log(res)
       } catch (e) {
         console.log(e)
       }
@@ -178,9 +196,14 @@ export default {
       // 客户端接收服务端数据时触发
       socket.onmessage = msg => {
         // 业务逻辑处理
-        this.addNewMessage()
-        console.log(msg.data, "ws:data");
-
+        // this.addNewMessage()
+        console.log(JSON.parse(msg.data))
+        const data = JSON.parse(msg.data).data;
+        // console.log(msg.data['data'])
+        this.rooms.find(room => room.roomId === this.roomId).lastMessage = data;
+        if (!(data.senderId === this.currentUserId)) {
+          this.addNewMessage(data)
+        }
       };
     },
     reconnect() {
@@ -225,20 +248,20 @@ export default {
 
     fetchMessages({ room, options = {} }) {
       // console.log(this.messages)
+      this.messagesLoaded = false;
+      this.roomId = room.roomId;
       this.requestRoom()
-      room.unreadCount = 0
-      this.roomId = room.roomId
-      this.messagesLoaded = false
-      setTimeout(() => {
-        if (options.reset) {
-          this.messages = this.addMessages(true)
-          this.messagesLoaded = true
-        } else {
-          this.messages = [...this.addMessages(), ...this.messages]
-          this.messagesLoaded = true
-        }
-        // this.addNewMessage()
-      })
+      // room.unreadCount = 0;
+      // setTimeout(() => {
+      //   if (options.reset) {
+      //     this.messages = this.addMessages(true)
+      //     this.messagesLoaded = true
+      //   } else {
+      //     this.messages = [...this.addMessages(), ...this.messages]
+      //     this.messagesLoaded = true
+      //   }
+      //   // this.addNewMessage()
+      // })
     },
 
     addMessages(reset) {
@@ -246,7 +269,7 @@ export default {
 
       for (let i = 0; i < 30; i++) {
         messages.push({
-          _id: reset ? i : this.messages.length + i,
+          _id: i,
           content: `${reset ? '' : 'old'} 老周666`,
           senderId: '4321',
           username: '周恩申是大帅哥',
@@ -260,7 +283,7 @@ export default {
       }
       if (reset) {
         messages.push({
-          _id: this.messages.length,
+          _id: 40,
           username: 'Conroy',
           avatar: 'https://img2.woyaogexing.com/2023/08/26/1e4f1922fe9d26fd45a9453f8b7e5a23.png',
           content: 'zhoues宇宙第一帅',
@@ -277,44 +300,37 @@ export default {
 
     sendMessage({ roomId, content, files, replyMessage, usersTag
     }) {
+      const message = {
+        _id: roomId,
+        content: content,
+        avatar: 'https://img2.woyaogexing.com/2023/08/26/1e4f1922fe9d26fd45a9453f8b7e5a23.png',
+        senderId: '' + this.currentUserId,
+        timestamp: new Date().toString().substring(16, 21),
+        date: this.nowDate(),
+        system: false,
+        saved: true,
+        distributed: true,
+        seen: true,
+        disableActions: false,
+        disableReactions: false,
+        files: files,
+        replyMessage: replyMessage,
+        reactions: usersTag,
+      };
       this.messages = [
         ...this.messages,
-        {
-          _id: roomId,
-          content: content,
-          avatar: 'https://img2.woyaogexing.com/2023/08/26/1e4f1922fe9d26fd45a9453f8b7e5a23.png',
-          senderId: '7',
-          timestamp: new Date().toString().substring(16, 21),
-          date: this.nowDate(),
-          system: false,
-          saved: true,
-          distributed: true,
-          seen: true,
-          disableActions: false,
-          disableReactions: false,
-          files: files,
-          replyMessage: replyMessage,
-          reactions: usersTag,
-        }
-      ]
+        message
+      ];
+      // console.log(usersTag);
+      this.requestSendMessages(message);
       // this.newSocket.send(JSON.stringify(content));
     },
 
-    addNewMessage() {
-      setTimeout(() => {
-        this.messages = [
-          ...this.messages,
-          {
-            _id: this.messages.length,
-            username: 'ADK',
-            avatar: 'https://img2.woyaogexing.com/2023/08/26/fbd06bd6e8e2e9ed4726869f98b97c40.jpg',
-            content: '收到收到',
-            senderId: '4441',
-            timestamp: new Date().toString().substring(16, 21),
-            date: this.nowDate()
-          }
-        ]
-      }, 500)
+    addNewMessage(message) {
+      this.messages = [
+        ...this.messages,
+        message
+      ];
     }
   },
   beforeDestroy() {

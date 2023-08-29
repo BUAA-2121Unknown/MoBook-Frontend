@@ -1,97 +1,138 @@
 <!-- 项目概况 -->
 <template>
   <div class="container">
-    <h1>项目概览</h1>
+    <h1 class="header-container">项目概览</h1>
     <!--  -->
     <!-- 简介头栏 -->
     <div class="project-header-container">
       <!-- 背景头图 -->
-      <img :src="projectInfo.projectHeadUrl" class="header-background-image" />
+      <!-- <img :src="projectHeadUrl" class="header-background-image" /> -->
       <!-- 模糊背景 -->
       <div class="project-header-intro-container header-blur-container"></div>
+      <!-- <div class="project-header-bk header-blur-container"></div> -->
+
       <!-- 编辑按钮 -->
       <button class="edit-button" type="button" @click="handleEdit">
         编辑
       </button>
 
+      <!-- 项目卡片 -->
       <el-row :gutter="10">
-        <el-col :span="5">
+        <el-col :span="5" class="avatar-container">
           <!-- 头像 -->
-          <img :src="projectInfo.projectAvatarUrl" class="project-header-avatar" />
+          <img
+            :src="projectAvatarUrl"
+            class="project-header-avatar"
+          />
         </el-col>
         <el-col :span="19">
           <!-- 名称 -->
           <h2 class="project-header-name header-blur-container">
-            {{ projectInfo.projectName }}
+            {{ projectInfo.name }}
           </h2>
           <div class="project-header-label header-blur-container">项目简介</div>
           <!-- 简介 -->
           <div class="project-header-intro header-blur-container">
-            {{ projectInfo.projectIntro }}
+            {{ projectInfo.description }}
           </div>
-          <div style="display: flex;">
+          <div style="display: flex">
             <div class="project-header-item header-blur-container">
-              项目创建于 | {{ projectInfo.createDate }}
+              <span class="project-header-item-text"
+                >项目创建于 | {{ projectInfo.created }}</span
+              >
+              <MiniUserCard :userInfo="creatingUser"></MiniUserCard>
             </div>
             <div class="project-header-item header-blur-container">
-              最后修改于 | {{ projectInfo.modifyDate }}
+              <span class="project-header-item-text"
+                >最后修改于 | {{ projectInfo.updated }}</span
+              >
+              <MiniUserCard :userInfo="lastModifyUser"></MiniUserCard>
             </div>
           </div>
         </el-col>
       </el-row>
-
-
-      <!-- 小组右侧关注按钮和申请管理员按钮
-            <div class="project-header-button-project">
-                <button :class="joinButtonClass" @click="joinproject" v-if="isLogin">{{ projectInfo.userInproject ? '退出小组' :
-                    '加入小组'
-                }}</button>
-                <button :class="applyButtonClass" @click="applyForAdmin" v-if="isLogin && projectInfo.userInproject"><i
-                        class="fa-solid fa-user-project" v-if="projectInfo.userIsAdmin"></i>{{ projectInfo.userIsAdmin ? '管理员' :
-                            '申请管理员'
-                        }}</button>
-            </div> -->
     </div>
-    <!-- 小组 -->
+    <div></div>
   </div>
 </template>
 
 <script>
 import head from '@/assets/project/projectHeadBackground.jpg'
 import avatar from '@/assets/project/projectAvatar.jpg'
+import MiniUserCard from '../../components/project/MiniUserCard.vue';
+
+import { getProjectInfo } from '../../api/project';
+import { useUserStore } from '../../stores/modules/user';
+
+import defaultImgUrl from "@/assets/logo.png";
 
 export default {
-  name: "ProjectInfo",
-  data() {
-    return {
-      projectInfo: {
-        projectHeadUrl: head,
-        projectAvatarUrl: avatar,
-        projectName: '吃饭',
-        projectIntro: '睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉',
-        createDate: '2023-8-24',
-        modifyDate: '2023-8-25',
-      }
-    }
-  },
-  methods: {
-    handleEdit() {
-      // console.log('成功修改资料')
-      this.$message({
-        message: '成功修改项目字段',
-        type: 'success'
-      });
-    }
-  },
+    name: "ProjectInfo",
+    components:{
+        MiniUserCard,
+    },
+    data() {
+        return {
+            projectInfo: {
+                name: '吃饭',
+                description: '睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉',
+                created: '2023-8-24',
+                updated: '2023-8-25',
+            },
+            creatingUser: {
+                name: '牢大',
+                avatarUrl: avatar,
+            },
+            lastModifyUser: {
+                name: '原神高手',
+                avatarUrl: avatar,
+            },
+            projectHeadUrl: head,
+            projectAvatarUrl: defaultImgUrl,
+        }
+    },
+    methods: {
+        handleEdit() {
+            // console.log('成功修改资料')
+            this.$message({
+                message: '成功修改项目字段',
+                type: 'success'
+            });
+        },
+        async getInfo(){
+            const userStore = useUserStore();
+            const params = {
+                projId: userStore.projectId,
+            }
+            console.log('请求参数', params)
+            try{
+                const res = await getProjectInfo(params)
+                console.log('成功导入项目信息', res)
+                this.projectInfo = res.data
+            } catch(e) {
+                console.log(e)
+            }
+            
+        },
+    },
+    mounted(){
+        this.getInfo()
+    },
 };
 </script>
 
 <style scoped>
+.header-container {
+  background-color: rgba(243, 243, 243, 0.8);
+  align-items: center;
+  padding: 5px 40px;
+}
 .project-header-container {
   position: relative;
-  width: 80%;
+  width: 95%;
   /* max-height: 50%; */
-  min-height: 300px;
+  min-height: 250px;
+  margin: 0 auto;
 }
 
 /* 头图 */
@@ -105,6 +146,11 @@ export default {
   border-radius: 10px;
 }
 
+.avatar-container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 /* 头像 */
 .project-header-avatar {
   width: 160px;
@@ -112,8 +158,8 @@ export default {
   border-radius: 4px;
   margin: 10px;
   /* 边框 */
-  border: 2px solid rgba(255, 255, 255, 0.8);
-  box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.2);
+  /* border: 2px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.2); */
   object-fit: cover;
   z-index: 5;
 }
@@ -121,19 +167,19 @@ export default {
 /* 模糊背景 */
 .header-blur-container {
   z-index: 4;
-  background-color: rgba(252, 248, 248, 0.6);
+  background-color: rgba(238, 238, 238, 0.5);
   backdrop-filter: blur(4px);
   /* -webkit-backdrop-filter: blur(2px); */
 }
 
 /* 名称 */
 .project-header-name {
-  text-align: center;
+  text-align:start;
   border-radius: 5px;
-  padding: 3px 20px;
+  padding: 3px 2px;
   max-width: 20%;
   /* 字体 */
-  font-size: 28px;
+  font-size: 30px;
   font-weight: bold;
   color: rgba(5, 5, 5, 0.9);
   overflow: hidden;
@@ -148,11 +194,22 @@ export default {
   width: 100%;
   height: 100%;
   background-color: rgba(236, 235, 235, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.8);
+  border: 2px solid rgba(255, 255, 255, 0.8);
   box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.25);
   z-index: 0;
+  border-radius: 10px;
 }
-
+.project-header-bk {
+  position: absolute;
+  left: 16%;
+  top: 0;
+  width: 84%;
+  height: 100%;
+  background-color: rgba(214, 214, 214, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 10px;
+  z-index: 0;
+}
 .project-header-label {
   width: 90px;
   border-radius: 10px;
@@ -191,26 +248,32 @@ export default {
 
 .project-header-item {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: flex-start;
   /* position: absolute; */
-  width: 25%;
+  width: 40%;
   /* left: 26%;
     top: 25%; */
   border-radius: 10px;
   background-color: rgba(255, 248, 248, 0.6);
   margin: 1%;
-  padding: 1%;
+  padding: 0 1%;
   text-align: left;
   /* width: 75%; */
-  /* 字体 */
-  font-size: 12px;
-  color: rgba(5, 5, 5, 0.9);
 
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
+.project-header-item-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 字体 */
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(70, 70, 70, 0.9);
+  margin: 0 3%;
+}
 .project-header-button-project {
   /* 弹性布局 设置子按钮的位置 */
   display: flex;
@@ -225,7 +288,6 @@ export default {
   border-radius: 5px;
   height: 34px;
 }
-
 
 .project-header-button-selected {
   width: 120px;
@@ -242,7 +304,7 @@ export default {
   color: rgba(49, 49, 49, 0.9);
   /* 手型 */
   cursor: pointer;
-  transition: .5s ease;
+  transition: 0.5s ease;
 }
 
 .project-header-button-unselected {
@@ -260,7 +322,7 @@ export default {
   color: rgba(49, 49, 49, 0.9);
   /* 手型 */
   cursor: pointer;
-  transition: .5s ease;
+  transition: 0.5s ease;
 }
 
 .project-header-button-unselected:hover,
@@ -283,8 +345,8 @@ export default {
   padding: 4px 6px;
   font-size: 16px;
   /* line-height: 1px; */
-  transition: all .3s ease;
-  background-color: rgba(191, 191, 191, 0.6);
+  transition: all 0.3s ease;
+  background-color: rgba(171, 167, 167, 0.6);
 
   border: 2px solid rgba(248, 247, 237, 0.8);
   box-shadow: 0px 1px 2px 0px rgba(232, 247, 61, 0.2);
