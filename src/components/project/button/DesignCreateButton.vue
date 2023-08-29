@@ -37,8 +37,8 @@
 <script>
 import PictureUploader from "../PictureUploader.vue";
 import { useRouter } from "vue-router";
-import { useUserStore } from "../../../stores/modules/user";
 import { createPrototype } from "@/api/artifact";
+import { useUserStore } from "@/stores/modules/user";
 
 export default {
   name: "DesignCreateButton",

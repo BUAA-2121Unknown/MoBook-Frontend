@@ -195,10 +195,6 @@ export default {
     },
     modifyHandler() {
       this.dialogFormVisible = true;
-      this.$message({
-        message: "成功修改原型设计",
-        type: "success",
-      });
     },
 
     // 更新原型设计信息

@@ -58,19 +58,19 @@
         </el-table-column>
         <el-table-column align="left" label="操作" width="460" v-if="userStore.auth <= 1">
           <template #default="scope">
-            <el-button v-if="scope.row.member.auth == 1 && userStore.auth == 0"
+            <el-button v-if="userStore.auth == 0 && scope.row.member.auth == 1"
               icon="setting"
               type="primary"
               link
               @click="changeAuth(scope.row, 2)"
             >设为普通用户</el-button>
-            <el-button v-if="scope.row.member.auth == 2"
+            <el-button v-if="userStore.auth <= 1 && userStore.userInfo.id != scope.row.user.id && scope.row.member.auth == 2"
               icon="setting"
               type="primary"
               link
               @click="changeAuth(scope.row, 1)"
             >设为管理员</el-button>
-            <el-button
+            <el-button v-if="userStore.auth < scope.row.member.auth || userStore.userInfo.id == scope.row.user.id"
               icon="edit"
               type="primary"
               link
@@ -228,7 +228,9 @@ onActivated(() => {
 
 const GetOrgInfo = async () => {
   try {
+    console.log('start getOrgInfo', userStore.orgId)
     const orgInfo = await getOrgInfo({ orgId: userStore.orgId })
+    console.log(orgInfo)
     if (orgInfo.meta.status == 0) {
       orgName.value = orgInfo.data.org.name
       orgDesc.value = orgInfo.data.org.description

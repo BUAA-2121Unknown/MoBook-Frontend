@@ -105,7 +105,7 @@ export default {
       const cnt = this.messageList.filter(function (item) {
         return item.status === 0;
       }).length;
-      console.log("更新未读消息数量", cnt);
+      console.log("消息中心：更新未读消息数量", cnt);
       return cnt >= 100 ? "99+" : cnt;
     },
     list() {
@@ -133,7 +133,7 @@ export default {
       try {
         const res = await editMessage(data);
         console.log(res);
-        this.$message.success("已删除消息");
+        this.$message.success("消息中心：已删除消息");
       } catch (e) {
         console.log(e);
       }
@@ -162,7 +162,7 @@ export default {
         // this.messageList = this.messageList.filter(function (item) {
         //   item.msgId != id;
         // });
-        this.$message.success("已删除全部已读消息");
+        this.$message.success("消息中心：已删除全部已读消息");
       } catch (e) {
         console.log(e);
       }
@@ -181,7 +181,7 @@ export default {
       try {
         const res = await editMessage(data);
         console.log(res, data);
-        this.$message.success("设置为已读消息");
+        this.$message.success("消息中心：设置为已读消息");
       } catch (e) {
         console.log(e);
       }
@@ -203,7 +203,7 @@ export default {
         console.log(data);
         const res = await editMessage(data);
         console.log(res);
-        this.$message.success("已将全部消息设为已读");
+        this.$message.success("消息中心：已将全部消息设为已读");
       } catch (e) {
         console.log(e);
       }
@@ -219,7 +219,7 @@ export default {
         const res = await getMessage(data);
         console.log(res, data);
         this.messageList = res.data.notifications;
-        console.log("成功加载全部消息列表", this.messageList);
+        console.log("消息中心：成功加载全部消息列表", this.messageList);
       } catch (e) {
         console.log(e);
       }
@@ -243,23 +243,22 @@ export default {
     initEventHandle(socket) {
       // 连接关闭时触发
       socket.onclose = () => {
-        console.log("连接关闭");
+        console.log("消息中心：连接关闭");
       };
       // 通信发生错误时触发
       socket.onerror = () => {
         // 重新创建长连接
         this.reconnect();
-        console.log("连接错误");
+        console.log("消息中心：连接错误");
       };
       // 连接建立时触发
       socket.onopen = () => {
-        console.log("连接成功");
+        console.log("消息中心：连接成功");
         this.newSocket = socket;
       };
       // 客户端接收服务端数据时触发
       socket.onmessage = (msg) => {
         // 业务逻辑处理
-        console.log(msg.data, "收到了ws:data");
         this.receiveNewMessage(msg);
       };
     },
@@ -282,7 +281,7 @@ export default {
       // this.messageList.unshift(msg);
       const message = JSON.parse(msg.data);
       this.messageList.unshift(message);
-      console.log("当前消息列表新增", message);
+      console.log("消息中心：收到了新消息", message);
       ElNotification({
         title: "您收到了一条新消息",
         message: "请点击消息列表查看",
@@ -298,6 +297,14 @@ export default {
 
     this.createWebSocket();
   },
+  activated() {
+    const userStore = useUserStore();
+    this.userId = userStore.userInfo.id;
+    this.orgId = userStore.orgId;
+    this.loadAllMessage();
+
+    this.createWebSocket();
+  }
 };
 </script>
   
