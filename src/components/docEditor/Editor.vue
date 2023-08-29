@@ -244,7 +244,7 @@
       const tmp_token = "2"
 
       this.provider = new HocuspocusProvider({
-        url: 'ws://127.0.0.1:80',
+        url: 'ws://localhost:3000',
         name: "test",
         document: ydoc,
         token: tmp_token + '-' + this.doc_id + '-' + userName,
