@@ -102,8 +102,6 @@ const initPage = () => {
   })
 
   routerStore.formatRouter(routerStore.menuRouter, routerStore.routeMap)
-  console.log(route)
-  // TODO: render Menu depend on router
 }
 
 initPage()

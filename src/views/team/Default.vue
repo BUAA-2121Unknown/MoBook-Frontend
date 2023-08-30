@@ -39,15 +39,18 @@
       </div>
       <el-table
         :data="orgMemberList"
-        :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
         row-key="user.id"
+        :row-class-name="membersRow"
         style="width: 100%"
       >
-        <el-table-column label="团队内昵称" min-width="180">
+        <el-table-column label="昵称" min-width="180">
           <template #default="scope">
-            <img v-if="scope.row.user.avatarUrl" :src="scope.row.user.avatarUrl" style="width: 24px; height: 24px; margin-right: 10px; border-radius: 50%" />
-            <img v-else src="@/assets/noBody.png" style="width: 24px; height: 24px; margin-right: 10px; border-radius: 50%" />
-            <span>{{ scope.row.member.nickname }}</span>
+            <div class="team-member-wrapper">
+              <img v-if="scope.row.user.avatarUrl" :src="scope.row.user.avatarUrl" style="width: 24px; height: 24px; margin-right: 10px; border-radius: 50%" />
+              <img v-else src="@/assets/noBody.png" style="width: 24px; height: 24px; margin-right: 10px; border-radius: 50%" />
+              <span v-if="scope.$index === 0">{{ scope.row.member.nickname }}（我）</span>
+              <span v-else>{{ scope.row.member.nickname }}</span>
+            </div>
           </template>
         </el-table-column>
         <el-table-column label="邮箱" min-width="180" prop="user.email" />
@@ -146,21 +149,7 @@ import { Search } from '@element-plus/icons-vue'
 import { updateOrgMemberInfo } from '@/api/org'
 
 const searchedInput = ref('')
-const orgMemberList = ref([
-  {
-    "user": {
-        "id": 1,
-        "username": "Tony",
-        "name": null,
-        "avatarUrl": null
-    },
-    "member": {
-        "orgId": 5,
-        "nickname": "Tony",
-        "auth": 0
-    }
-  },
-])
+const orgMemberList = ref([])
 const orgMemberListCopy = ref([])
 const orgName = ref('团队名')
 const orgDesc = ref('团队简介 BlaBla...')
@@ -241,8 +230,14 @@ const GetOrgInfo = async () => {
     }
     const orgMembers = await getOrgAllMemberInfo({ orgId: userStore.orgId })
     if (orgMembers.meta.status == 0) {
-      orgMemberList.value = orgMembers.data.members
-      orgMemberListCopy.value = orgMembers.data.members
+      const members = orgMembers.data.members
+      const targetIndex = members.findIndex(item => item.user.id == userStore.userInfo.id)
+      if (targetIndex != -1) {
+        const targetElement = members.splice(targetIndex, 1)[0]
+        members.unshift(targetElement)
+      }
+      orgMemberList.value = members
+      orgMemberListCopy.value = members
     } else {
       console.log(orgMembers)
     }
@@ -322,6 +317,15 @@ const confirmChangeProfile = async () => {
   }
   changeProfileVisible.value = false
 }
+
+const membersRow = (row, index) => {
+  if (row.rowIndex == 0) {
+    console.log('first-row-wrapper')
+    return 'first-row-wrapper'
+  } else {
+    return ''
+  }
+}
 </script>
 
 <style scoped>
@@ -391,5 +395,17 @@ const confirmChangeProfile = async () => {
   width: 178px;
   height: 178px;
   text-align: center;
+}
+
+.team-member-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+</style>
+
+<style>
+.el-table .first-row-wrapper {
+  --el-table-tr-bg-color: var(--el-color-warning-light-9);
 }
 </style>

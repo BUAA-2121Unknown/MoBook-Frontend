@@ -24,7 +24,7 @@ const noOrg = ref(false)
 const userStore = useUserStore()
 
 onMounted(() => {
-  if (userStore.orgId) {
+  if (userStore.orgId != -1) {
     noOrg.value = false
   } else {
     noOrg.value = true
