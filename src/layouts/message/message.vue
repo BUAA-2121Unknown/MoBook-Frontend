@@ -216,8 +216,8 @@ export default {
       };
       try {
         const res = await getMessage(data);
-        this.messageList = res.data.notifications;
-        // console.log("消息中心：加载全部消息列表", this.messageList, res);
+        this.messageList = res.data.notifications.reverse();
+        console.log("消息中心：加载全部消息列表", this.messageList, res);
       } catch (e) {
         console.log(e);
       }
