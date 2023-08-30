@@ -18,6 +18,14 @@ Object.keys(modules).forEach((key) => {
 
 const routers = [
   {
+    path: '/home',
+    name: 'home',
+    component: () => import('@/views/Home.vue'),
+    meta: {
+      title: '主页',
+    },
+  },
+  {
     path: '/login',
     name: 'login',
     component: () => import('@/views/login/Login.vue'),
