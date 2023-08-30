@@ -4,8 +4,6 @@ import  debounce  from "debounce";
 import { TiptapTransformer } from "@hocuspocus/transformer";
 import { Database } from "@hocuspocus/extension-database";
 import { Redis } from "@hocuspocus/extension-redis";
-import { forwardRef, HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
-
 let debounced;
 
 // 数据库部分
@@ -53,9 +51,8 @@ const server = Server.configure({
     console.log(username)
     
     if (auth === "0") {
-      // data.connection.readOnly = true;
-      throw new HttpException('您无权查看此文档', HttpStatus.FORBIDDEN);
-      // throw new Error("Not authorized!");
+      data.connection.readOnly = true;
+      throw new Error("Not authorized!");
     }
     else if (auth === "1") {
       data.connection.readOnly = true;

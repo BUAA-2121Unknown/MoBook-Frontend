@@ -19,8 +19,8 @@
     <div class="content-container" @click="jumpForMessage">
       <el-row :gutter="20">
         <el-col :span="4" class="avatar-container">
-          <img class="user-img message-img" :src="userUrl" />
           <img class="pos-img message-img" :src="posUrl" />
+          <img class="user-img message-img" :src="userUrl" />
         </el-col>
         <el-col :span="20">
           <div class="notread-icon" v-if="!info.status">未读</div>
@@ -267,7 +267,9 @@ export default {
 .message-img {
   height: 50px;
   width: 50px;
-  border-radius: 20px;
+  border-radius: 50%;
+  border: 2px solid rgba(50, 50, 50, 0.2);
+  box-shadow: 0px 2px 4px 0px rgba(52, 51, 51, 0.2);
 }
 .user-img {
   position: absolute;

@@ -20,10 +20,7 @@
       <el-row :gutter="10">
         <el-col :span="5" class="avatar-container">
           <!-- 头像 -->
-          <img
-            :src="projectAvatarUrl"
-            class="project-header-avatar"
-          />
+          <img :src="projectAvatarUrl" class="project-header-avatar" />
         </el-col>
         <el-col :span="19">
           <!-- 名称 -->
@@ -57,67 +54,73 @@
 </template>
 
 <script>
-import head from '@/assets/project/projectHeadBackground.jpg'
-import avatar from '@/assets/project/projectAvatar.jpg'
-import MiniUserCard from '../../components/project/MiniUserCard.vue';
+import head from "@/assets/project/projectHeadBackground.jpg";
+import avatar from "@/assets/project/projectAvatar.jpg";
+import MiniUserCard from "../../components/project/MiniUserCard.vue";
 
-import { getProjectInfo } from '../../api/project';
-import { useUserStore } from '../../stores/modules/user';
+import { getProjectInfo } from "../../api/project";
+import { useUserStore } from "../../stores/modules/user";
 
 import defaultImgUrl from "@/assets/logo.png";
 
 export default {
-    name: "ProjectInfo",
-    components:{
-        MiniUserCard,
+  name: "ProjectInfo",
+  components: {
+    MiniUserCard,
+  },
+  data() {
+    return {
+      projectInfo: {
+        name: "吃饭",
+        description:
+          "睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉",
+        created: "2023-8-24",
+        updated: "2023-8-25",
+      },
+      creatingUser: {
+        name: "testUser1",
+        avatarUrl: avatar,
+      },
+      lastModifyUser: {
+        name: "testUser2",
+        avatarUrl: avatar,
+      },
+      projectHeadUrl: head,
+      projectAvatarUrl: defaultImgUrl,
+    };
+  },
+  methods: {
+    handleEdit() {
+      const userStore = useUserStore();
+      const data = {
+        projId: userStore.projectId,
+      };
+      // console.log('成功修改资料')
+      this.$message({
+        message: "成功修改项目字段",
+        type: "success",
+      });
     },
-    data() {
-        return {
-            projectInfo: {
-                name: '吃饭',
-                description: '睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉',
-                created: '2023-8-24',
-                updated: '2023-8-25',
-            },
-            creatingUser: {
-                name: '牢大',
-                avatarUrl: avatar,
-            },
-            lastModifyUser: {
-                name: '原神高手',
-                avatarUrl: avatar,
-            },
-            projectHeadUrl: head,
-            projectAvatarUrl: defaultImgUrl,
-        }
+    async getInfo() {
+      const userStore = useUserStore();
+      const params = {
+        projId: userStore.projectId,
+      };
+      try {
+        const res = await getProjectInfo(params);
+        console.log("成功导入项目信息", res);
+        this.projectInfo = res.data;
+      } catch (e) {
+        console.log(e);
+      }
     },
-    methods: {
-        handleEdit() {
-            // console.log('成功修改资料')
-            this.$message({
-                message: '成功修改项目字段',
-                type: 'success'
-            });
-        },
-        async getInfo(){
-            const userStore = useUserStore();
-            const params = {
-                projId: userStore.projectId,
-            }
-            console.log('请求参数', params)
-            try{
-                const res = await getProjectInfo(params)
-                console.log('成功导入项目信息', res)
-                this.projectInfo = res.data
-            } catch(e) {
-                console.log(e)
-            }
-            
-        },
-    },
-    mounted(){
-        this.getInfo()
-    },
+  },
+  // mounted() {
+  //   this.getInfo();
+  // },
+  activated() {
+    this.getInfo();
+  },
 };
 </script>
 
@@ -146,10 +149,10 @@ export default {
   border-radius: 10px;
 }
 
-.avatar-container{
-    display: flex;
-    justify-content: center;
-    align-items: center;
+.avatar-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 /* 头像 */
 .project-header-avatar {
@@ -174,10 +177,10 @@ export default {
 
 /* 名称 */
 .project-header-name {
-  text-align:start;
+  text-align: start;
   border-radius: 5px;
   padding: 3px 2px;
-  max-width: 20%;
+  max-width: 50%;
   /* 字体 */
   font-size: 30px;
   font-weight: bold;

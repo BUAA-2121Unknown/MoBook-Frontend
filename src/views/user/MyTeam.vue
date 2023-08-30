@@ -81,6 +81,7 @@ const moveCurrentTeamToTop = (teamId) => {
 GetAllOrgs()
 
 const enterTeam = (teamId) => {
+  console.log(teamId)
   userStore.setOrgId(teamId)
   router.push({
     name: 'team',

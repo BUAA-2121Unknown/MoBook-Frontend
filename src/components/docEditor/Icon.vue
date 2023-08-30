@@ -3,8 +3,8 @@
     class="icon"
     :class="[`icon--${name}`, `icon--${size}`, { 'has-align-fix': fixAlign }]"
   >
-    <!-- <img :src="require(`../../assets/icons/${title}.svg`)" :alt="`${title}`" /> -->
-    <img :src="'url(../../src/assets/docEditorIcons/' + name + '.svg'" :alt="`${name}`" />
+    <!-- <img :src="() => import(`@/assets/icons/${title}.svg`)" :alt="`${title}`" /> -->
+    <img :src="'/docEditorIcons/' + name + '.svg'" :alt="`${name}`" />
   </div>
 </template>
 

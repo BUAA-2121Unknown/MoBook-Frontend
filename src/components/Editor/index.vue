@@ -358,7 +358,7 @@ export default {
     },
 
     getComponentStyle(style) {
-      console.log(getStyle(style, this.svgFilterAttrs), )
+      // console.log(getStyle(style, this.svgFilterAttrs), )
       return getStyle(style, this.svgFilterAttrs);
     },
 

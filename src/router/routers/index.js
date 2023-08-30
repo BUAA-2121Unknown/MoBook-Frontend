@@ -156,9 +156,9 @@ const routers = [
     path: '/doc',
     name: 'doc',
     component: () => import('@/views/doc/Doc.vue'),
-    props: (route) => ({
-      doc_id: route.query.doc_id,
-    }),
+    // props: (route) => ({
+    //   doc_id: route.query.doc_id,
+    // }),
     meta: {
       title: '文档',
     },
@@ -170,6 +170,17 @@ const routers = [
     meta: {
       title: '原型设计',
     },
+  },
+  {
+    path: '/share/doc',
+    name: 'shareDoc',
+    component: () => import('@/views/doc/Doc.vue'),
+    // props: (route) => ({
+    //   token: route.query.token
+    // }),
+    meta: {
+      title: '文档分享'
+    }
   },
   ERROR_LOG_ROUTE,
   PAGE_NOT_FOUND_ROUTE,

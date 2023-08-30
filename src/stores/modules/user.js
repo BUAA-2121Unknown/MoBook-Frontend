@@ -102,24 +102,28 @@ export const useUserStore = defineStore({
           this.resetUserInfo(res.data.user)
           this.setToken(res.data.token)
           console.log(res)
-          console.log(this.orgId)
+          /* console.log(this.orgId)
           if (this.orgId) {
             const orgInfo = await getOrgInfo({ orgId: this.orgId })
             console.log(orgInfo)
             if (orgInfo.meta.status == 0) {
               this.setOrgInfo(orgInfo.data.org)
             }
-          } else {
+          } else { */
             const orgList = await getAllOrgs()
+            console.log(orgList)
             if (orgList.meta.status == 0) {
               const lis = orgList.data.organizations
-              if (lis) {
+              if (lis.length) {
+                console.log('fuck')
                 this.setOrgId(lis[0].org.id)
                 this.setOrgInfo(lis[0].org)
                 this.setAuth(lis[0].auth.auth)
+              } else {
+                this.setOrgId(0)
               }
             }
-          }
+          // }
           const isWin = ref(/windows/i.test(navigator.userAgent))
           if (isWin.value) {
             window.localStorage.setItem('osType', 'WIN')

@@ -3,7 +3,7 @@
   <div class="design-card" @mouseenter="expandCard" @mouseleave="shrinkCard">
     <div
       class="design-image-container"
-      :style="{ backgroundImage: `url(${data.img})`, height: imageHeight }"
+      :style="{ backgroundImage: `url(${data.url})`, height: imageHeight }"
       @click="jumpForDesign"
     ></div>
     <div
@@ -12,14 +12,24 @@
       @click="jumpForDesign"
     >
       <div class="design-title">{{ data.name }}</div>
-      <div v-if="expanded" class="design-intro">{{ data.intro }}</div>
+      <div v-if="expanded" class="design-intro">创建于 | {{  data.created }}</div>
+      <div v-if="expanded" class="design-intro">更新于 | {{  data.updated }}</div>
     </div>
     <transition name="slide-up">
       <el-row class="mb-4 doc-buttom-group" v-if="expanded">
         <DelButton :handler="delHandler" v-if="design.status == 0"></DelButton>
-        <DelButton :handler="delForeverHandler" v-if="design.status != 0"></DelButton>
-        <ShareButton :handler="shareHandler" v-if="design.status == 0"></ShareButton>
-        <ModifyButton :handler="modifyHandler" v-if="design.status == 0"></ModifyButton>
+        <DelButton
+          :handler="delForeverHandler"
+          v-if="design.status != 0"
+        ></DelButton>
+        <ShareButton
+          :handler="shareHandler"
+          v-if="design.status == 0"
+        ></ShareButton>
+        <ModifyButton
+          :handler="modifyHandler"
+          v-if="design.status == 0"
+        ></ModifyButton>
       </el-row>
     </transition>
 
@@ -35,7 +45,7 @@
         </el-form-item>
         <el-form-item label="简介" :label-width="formLabelWidth">
           <el-input
-            v-model="form.intro"
+            v-model="form.description"
             :rows="2"
             type="textarea"
             placeholder="请输入简介"
@@ -64,8 +74,8 @@
       </template>
     </el-dialog>
 
-     <!-- 从回收站删除原型设计 -->
-     <el-dialog v-model="dialogDelForeverVisible" title="提示" width="30%">
+    <!-- 从回收站删除原型设计 -->
+    <el-dialog v-model="dialogDelForeverVisible" title="提示" width="30%">
       <span>确认彻底删除原型设计？彻底删除后将无法恢复！</span>
       <template #footer>
         <span class="dialog-footer">
@@ -78,6 +88,7 @@
 </template>
 
 <script>
+import designImg from "@/assets/project/projectDesignImg.png";
 import DelButton from "./button/DelButton.vue";
 import ShareButton from "./button/ShareButton.vue";
 import ModifyButton from "./button/ModifyButton.vue";
@@ -88,7 +99,7 @@ import { updatePrototypeStatus, updatePrototypeInfo } from "../../api/artifact";
 
 export default {
   name: "DesignCard",
-  props: ["design", "fatherDelHandler"],
+  props: ["design", "fatherDelHandler", "projId"],
   components: {
     DelButton,
     ShareButton,
@@ -116,10 +127,6 @@ export default {
       formLabelWidth: "140px",
     };
   },
-  mounted() {
-    this.data = lodash.cloneDeep(this.design);
-    this.form = lodash.cloneDeep(this.design);
-  },
   computed: {
     imageHeight() {
       return this.expanded ? "40%" : "80%";
@@ -130,9 +137,12 @@ export default {
   },
   methods: {
     jumpForDesign() {
+      console.log('跳转至原型设计界面, artId:', this.design.id)
       this.$router.push({
         path: "/prototype",
-        query: this.form.id,
+        query: {
+          artId: this.design.id,
+        }
       });
     },
     expandCard() {
@@ -157,7 +167,6 @@ export default {
           type: "success",
         });
         this.dialogDelVisible = false;
-        
       } catch (e) {
         this.dialogDelVisible = false;
         console.log(e);
@@ -195,10 +204,6 @@ export default {
     },
     modifyHandler() {
       this.dialogFormVisible = true;
-      this.$message({
-        message: "成功修改原型设计",
-        type: "success",
-      });
     },
 
     // 更新原型设计信息
@@ -211,7 +216,18 @@ export default {
       // console.log(this.form.url)
       this.data = lodash.cloneDeep(this.form);
     },
+    // activated() {
+    //   this.data = lodash.cloneDeep(this.design);
+    //   this.data.url = this.data.url ? this.data.url : designImg
+    //   this.form = lodash.cloneDeep(this.design);
+    // },
   },
+  mounted() {
+      this.data = lodash.cloneDeep(this.design);
+      this.data.url = designImg
+      this.form = lodash.cloneDeep(this.design);
+      console.log('成功加载原型设计卡片',this.data)
+    },
 };
 </script>
   
@@ -260,10 +276,12 @@ export default {
 
 .design-intro {
   margin: 10px;
-  font-size: 16px;
-  color: rgba(39, 39, 39, 0.9);
+  font-size: 13px;
+  color: rgba(69, 69, 69, 0.9);
   overflow: hidden;
   text-overflow: ellipsis;
+  display: flex;
+  justify-content: flex-start;
 }
 
 .doc-buttom-group {

@@ -172,6 +172,9 @@
   import suggestion from './suggestion.js'
 
   import { useUserStore } from '@/stores/modules/user'
+import { boolean } from 'mathjs'
+
+  
   const userStore = useUserStore()
   const userName = userStore.userInfo.username
 
@@ -187,6 +190,10 @@
     props: {
       doc_id: {
         type: String,
+        required: true,
+      },
+      editable: {
+        type: Boolean,
         required: true,
       },
       activeButtons: {
@@ -237,14 +244,15 @@
       };
     },
     created(){
-      console.log(userStore)
+      console.log(this.editable)
       // 创建时，后端会创建一个新的文档，拿到文档的id，传给js后端
       const ydoc = new Y.Doc()
       
+
       const tmp_token = "2"
 
       this.provider = new HocuspocusProvider({
-        url: 'ws://127.0.0.1:80',
+        url: 'ws://localhost:80',
         name: "test",
         document: ydoc,
         token: tmp_token + '-' + this.doc_id + '-' + userName,
@@ -280,6 +288,7 @@
             suggestion,
           }),
         ],
+        editable: this.editable
       })
       localStorage.setItem('currentUser', JSON.stringify(this.currentUser))
 

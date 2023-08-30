@@ -3,3 +3,9 @@ services:
     build: ./
     ports:
       - 8001:80
+    depends_on:
+      - server
+  server:
+    build: ./editor_server
+    ports:
+      - 3000:80

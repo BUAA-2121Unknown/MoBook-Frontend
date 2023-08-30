@@ -28,7 +28,7 @@ export default {
       lockReconnect: false,
       wsCfg: {
         // websocket地址
-        url: "ws://82.156.25.78:5000/ws/chat/10/"
+        url: "ws://81.70.161.76:5000/ws/chat/10/"
       },
       roomId: '',
       rooms: [
@@ -113,7 +113,8 @@ export default {
     async requestMessages() {
       console.log("开始请求列表");
       try {
-        const res = await requestChatList({ "org_id": 2 });
+        const userStore = useUserStore()
+        const res = await requestChatList({ "org_id": userStore.orgId });
         console.log(res)
         this.rooms = res.data.chat_list;
       } catch (e) {
@@ -124,7 +125,8 @@ export default {
     async requestRoom() {
       console.log("开始请求当前聊天室");
       try {
-        const res = await requestRoomMessage({ "chat_id": 10, "org_id": 2 });
+        const userStore = useUserStore()
+        const res = await requestRoomMessage({ "chat_id": 10, "org_id": userStore.orgId });
         const list = res.data.message_list;
         console.log(list)
         // const messages = [];

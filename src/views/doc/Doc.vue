@@ -7,15 +7,36 @@
             <ArrowLeftBold />
           </el-icon>
         </router-link>
-        {{ this.title }}
+        {{ title }}
       </div>
       <div class="top-bar__right">
-        <el-button type="primary">分享</el-button>
+        <el-button type="primary" @click="dialogFormVisible = true">分享</el-button>
       </div>
+      <el-dialog v-model="dialogFormVisible" title="生成共享链接" width="20%" >
+        <el-form :model="form">
+          <el-form-item label="链接有效时间" :label-width="formLabelWidth">
+            <el-input v-model="shareForm.expires" autocomplete="off" size="small" class="input-width" />天
+          </el-form-item>
+          <el-form-item label="权限" :label-width="formLabelWidth">
+            <el-radio-group v-model="radio1" class="ml-4">
+              <el-radio label="2" size="large">可编辑</el-radio>
+              <el-radio label="1" size="large">仅可查看</el-radio>
+            </el-radio-group>
+          </el-form-item>
+        </el-form>
+        <template #footer>
+          <span class="dialog-footer">
+            <el-button @click="dialogFormVisible = false">取消</el-button>
+            <el-button type="primary" @click="shareLink" >
+              生成链接
+            </el-button>
+          </span>
+        </template>
+      </el-dialog>
     </div>
     <div class="editor-container">
-      <h1>{{ this.title }}</h1>
-      <editor :doc_id="this.doc_id" :active-buttons="[
+      <h1>{{ title }}</h1>
+      <editor :doc_id="doc_id" :editable="editable" v-if="visible" :active-buttons="[
         'bold',
         'italic',
         'strike',
@@ -36,38 +57,134 @@
   </div>
 </template>
   
-<script>
-import Editor from '@/components/docEditor/Editor.vue';
-import { getDoc } from '@/api/artifact.js';
 
-export default {
-  name: 'Doc',
-  props: {
-    doc_id: {
-      type: String,
-      required: true,
-    },
-  },
-  components: {
-    Editor,
-  },
-  data() {
-    return {
-      title: '',
-      form: {
-        artId: 8
+
+<script setup>
+import Editor from '@/components/docEditor/Editor.vue';
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { getDoc, createDocToken, getDocAuth } from '@/api/artifact.js';
+import settings from '@/settings/basic'
+import { useRoute, useRouter } from 'vue-router'
+import { ref, onMounted } from 'vue'
+
+const title = ref('')
+const form = ref({
+        artId: -1
+      })
+const dialogFormVisible =  ref()
+const formLabelWidth =  ref('120px')
+const shareForm = ref({
+        artId: -1,
+        expires: 7,
+        auth: 1,
+        orgOnly: false
+      })
+
+const radio1 =  ref('1')
+const editable = ref(true)
+
+const visible = ref(false)
+
+const route = useRoute()
+
+const doc_id = route.query.doc_id
+const token = route.query.token
+
+ 
+const getNowDoc = async() => {
+  try{
+    if (doc_id && !token)
+    {
+      form.value.artId = doc_id
+      console.log(form.value)
+      const res =  await getDoc(form.value)
+      if (res.meta.status == 0)
+      {
+        title.value = res.data.name
+        document.title = title.value;
       }
     }
-  },
-  async mounted() {
-    this.form.artId = this.doc_id
-    console.log(this.doc_id)
-    const res = await getDoc(this.form)
-    console.log(res)
-    this.title = res.data.name
-    document.title = this.title;
-  },
-  methods: {
+    // 通过分享链接进入
+    else if (doc_id && token)
+    {
+      const res = await getDocAuth({'token': token})
+      if (res.meta.status == 0)
+      {
+        const auth = res.data.auth
+        console.log(auth)
+        if (auth == '1')
+          editable.value = false
+        else if (auth === '2')
+          editable.value = true
+
+        form.value.artId = doc_id
+        const res2 =  await getDoc(form.value)
+        if (res2.meta.status == 0)
+        {
+          title.value = res2.data.name
+          document.title = title.value;
+        }
+      }
+    }
+  }catch(e) {
+    console.log(e)
+  }
+}
+
+onMounted(async () => {
+  await getNowDoc();
+  visible.value = true;
+});
+
+const createToken = async () => {
+  shareForm.value.artId = parseInt(doc_id)
+  shareForm.value.auth = parseInt(radio1.value)
+  console.log(shareForm.value)
+  try {
+    const res = await createDocToken(shareForm.value);
+    const shareUrl =  settings.appURL + 'doc?doc_id=' + doc_id + '&' + 'token=' + res.data.token
+    
+    const input = document.createElement('input')
+    input.setAttribute('readonly', 'readonly')
+    input.setAttribute('value', shareUrl)
+    document.body.appendChild(input)
+    input.select()
+    if (document.execCommand('copy')) {
+      document.execCommand('copy')
+      ElMessage({
+        type: 'success',
+        message: '复制成功',
+      })
+    }
+    document.body.removeChild(input)
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+const shareLink = () => {
+  dialogFormVisible.value = false
+  createToken()
+}
+
+
+</script>
+
+<script>
+export default {
+  name: 'Doc',
+  // props: {
+  //   doc_id: {
+  //     type: String,
+  //     required: true,
+  //   },
+  //   token: {
+  //     type: String,
+  //     required: true,
+  //   }
+  // },
+  components: {
+    Editor,
   },
 };
 </script>
@@ -104,6 +221,25 @@ export default {
   padding: 0 20px;
   box-sizing: border-box;
   z-index: 100;
+}
+
+/* 点击分享后的弹出框 */
+.el-button--text {
+  margin-right: 15px;
+}
+.el-select {
+  width: 300px;
+}
+.el-input {
+  width: 300px;
+}
+.dialog-footer button:first-child {
+  margin-right: 10px;
+}
+
+/* 输入框宽度 */
+.input-width{
+  width: 100px;
 }
 </style>
   
