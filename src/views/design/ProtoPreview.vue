@@ -86,26 +86,44 @@ export default {
     this.restore();
   },
   methods: {
-    restore() {
-      const data = new FormData();
-      data.append("protoId", this.prototypeId);
-      Project.getProto(data)
-        .then((res) => {
-          this.$store.commit(
-            "setComponentData",
-            JSON.parse(res.data.canvasData).array
-          );
-          this.$store.commit(
-            "setCanvasStyle",
-            JSON.parse(res.data.canvasStyle)
-          );
-          this.loading = false;
-        })
-        .catch((err) => {
-          console.log(err);
-          this.loading = false;
-        });
+    // 读取数据 初始化画布
+    async restore() {
+      // 是已保存的项目
+      const params = {
+        artId: Number(this.$route.query.artId),
+      };
+      try {
+        const res = await getPrototype(params);
+        const val = JSON.parse(res.data.content);
+        console.log("原型设计：尝试获取已保存的画板信息", res, val);
+        this.$store.commit("setComponentData", val.canvasData.array);
+        this.$store.commit("setCanvasStyle", val.canvasStyle);
+        // this.isPreviewing = false;
+        this.loading = false;
+      } catch (e) {
+        console.log(e);
+      }
     },
+    // restore() {
+    //   const data = new FormData();
+    //   data.append("protoId", this.prototypeId);
+    //   Project.getProto(data)
+    //     .then((res) => {
+    //       this.$store.commit(
+    //         "setComponentData",
+    //         JSON.parse(res.data.canvasData).array
+    //       );
+    //       this.$store.commit(
+    //         "setCanvasStyle",
+    //         JSON.parse(res.data.canvasStyle)
+    //       );
+    //       this.loading = false;
+    //     })
+    //     .catch((err) => {
+    //       console.log(err);
+    //       this.loading = false;
+    //     });
+    // },
     handlePreviewChange() {
       this.isShowPreview = false;
       this.$store.commit("setEditMode", "edit");

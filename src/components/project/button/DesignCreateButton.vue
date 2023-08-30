@@ -39,6 +39,7 @@ import PictureUploader from "../PictureUploader.vue";
 import { useRouter } from "vue-router";
 import { createPrototype, savePrototype } from "@/api/artifact";
 import { useUserStore } from "@/stores/modules/user";
+import { emptyTemplateContent } from "@/enums/prototypeTemplateEnum.js"
 
 export default {
   name: "DesignCreateButton",
@@ -79,7 +80,7 @@ export default {
           artId: res.data.id,
           filename: "prototype_" + res.data.id + ".json",
           // filename: 'DesignForTestProject2.json',
-          content: '{"canvasData":{"array":[]},"canvasStyle":{"width":1200,"height":740,"scale":100,"color":"#000","opacity":1,"background":"#fff","fontSize":14}}'
+          content: emptyTemplateContent
         };
         const res2 = await savePrototype(data2);
         console.log("成功初始化原型设计", res2);

@@ -1,5 +1,5 @@
 <template>
-  <button @click="handleClick">修改</button>
+  <button @click="handleClick" class="button1">修改</button>
 
   <!-- 项目信息修改 -->
   <el-dialog v-model="dialogFormVisible" title="字段修改">
@@ -86,7 +86,7 @@ export default {
 </script>
 
 <style scoped>
-button {
+.button1 {
   cursor: pointer;
 
   margin: 5px 10px;
@@ -105,7 +105,7 @@ button {
   position: relative;
 }
 
-button::before {
+.button1::before {
   position: absolute;
   content: "";
   background: var(--color);
@@ -115,17 +115,17 @@ button::before {
   border-radius: 50%;
 }
 
-button:hover {
+.button1:hover {
   color: white;
 }
 
-button:before {
+.button1:before {
   top: 100%;
   left: 100%;
   transition: 0.3s all;
 }
 
-button:hover::before {
+.button1:hover::before {
   top: -30px;
   left: -30px;
 }

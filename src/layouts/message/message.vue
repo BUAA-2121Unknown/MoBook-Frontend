@@ -2,7 +2,7 @@
   <div>
     <div class="icon-container" @click="showSettingDrawer">
       <el-icon size="18"><Message /></el-icon>
-      <div class="number-container">
+      <div class="number-container" v-if="unreadMessageCnt != 0">
         {{ unreadMessageCnt }}
       </div>
     </div>

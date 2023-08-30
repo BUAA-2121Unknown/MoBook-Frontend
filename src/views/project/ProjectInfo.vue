@@ -49,7 +49,36 @@
         </el-col>
       </el-row>
     </div>
-    <div></div>
+
+    <!-- 项目信息修改框 -->
+    <el-dialog v-model="dialogFormVisible" title="修改项目基础字段">
+      <el-form :model="form">
+        <el-form-item label="名称" :label-width="formLabelWidth">
+          <el-input
+            v-model="form.name"
+            autocomplete="off"
+            placeholder="请输入项目名称"
+          />
+        </el-form-item>
+        <el-form-item label="简介" :label-width="formLabelWidth">
+          <el-input
+            v-model="form.description"
+            :rows="2"
+            type="textarea"
+            placeholder="请输入项目简介"
+          />
+        </el-form-item>
+        <el-form-item label="封面" :label-width="formLabelWidth">
+          <PictureUploader :form="form"></PictureUploader>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="dialogFormVisible = false">取消</el-button>
+          <el-button type="primary" @click="uploadEdit"> 确认 </el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -57,8 +86,8 @@
 import head from "@/assets/project/projectHeadBackground.jpg";
 import avatar from "@/assets/project/projectAvatar.jpg";
 import MiniUserCard from "../../components/project/MiniUserCard.vue";
-
-import { getProjectInfo } from "../../api/project";
+import PictureUploader from "../../components/project/PictureUploader.vue";
+import { getProjectInfo, updateProjectInfo } from "../../api/project";
 import { useUserStore } from "../../stores/modules/user";
 
 import defaultImgUrl from "@/assets/logo.png";
@@ -67,40 +96,66 @@ export default {
   name: "ProjectInfo",
   components: {
     MiniUserCard,
+    PictureUploader,
   },
   data() {
     return {
       projectInfo: {
-        name: "吃饭",
-        description:
-          "睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉睡觉",
+        name: "墨书团队",
+        description: "墨书开发团队",
+        url: "",
         created: "2023-8-24",
-        updated: "2023-8-25",
+        updated: "2023-9-3",
+      },
+      // 修改项目
+      form: {
+        name: "",
+        description: "",
+        url: "",
       },
       creatingUser: {
-        name: "testUser1",
+        name: "testuser3",
         avatarUrl: avatar,
       },
       lastModifyUser: {
-        name: "testUser2",
+        name: "testuser2",
         avatarUrl: avatar,
       },
       projectHeadUrl: head,
       projectAvatarUrl: defaultImgUrl,
+      dialogFormVisible: false,
+      formLabelWidth: "140px",
     };
   },
   methods: {
+    // 展开项目修改
     handleEdit() {
+      this.dialogFormVisible = true;
+    },
+    async uploadEdit() {
       const userStore = useUserStore();
       const data = {
         projId: userStore.projectId,
+        name: this.form.name,
+        description: this.form.description,
       };
-      // console.log('成功修改资料')
-      this.$message({
-        message: "成功修改项目字段",
-        type: "success",
-      });
+      try {
+        const res = await updateProjectInfo(data);
+        console.log("成功更新项目信息", res);
+        // 再导入一次
+        this.getInfo()
+        
+        this.$message({
+          message: "成功修改项目字段",
+          type: "success",
+        });
+        this.dialogFormVisible = false;
+      } catch (e) {
+        console.log(e);
+        this.dialogFormVisible = false;
+      }
     },
+    // 读取项目信息
     async getInfo() {
       const userStore = useUserStore();
       const params = {
@@ -115,9 +170,6 @@ export default {
       }
     },
   },
-  // mounted() {
-  //   this.getInfo();
-  // },
   activated() {
     this.getInfo();
   },

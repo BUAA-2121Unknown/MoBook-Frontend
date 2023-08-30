@@ -76,13 +76,17 @@ export default {
         artId: id,
       };
       try {
+        let val = {
+          canvasData: [],
+          canvasStyle: {},
+        }
         if (this.design.id >= 0) {
           const res = await getPrototype(params);
-          const val = JSON.parse(res.data.content);
+          val = JSON.parse(res.data.content);
           console.log("原型设计：尝试读取自定义模板", res, val, this.design.id);
         }
         else{
-          const val = JSON.parse(this.design.content);
+          val = JSON.parse(this.design.content);
           console.log("原型设计：读取默认模板", val, this.design.id);
         }
 

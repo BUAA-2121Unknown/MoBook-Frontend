@@ -47,12 +47,12 @@
 
 <script>
 import designImg from "@/assets/project/projectDesignImg.png";
-import TemplateCard from "../project/TemplateCard.vue";
+import TemplateCard from "@/components/project/TemplateCard.vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { mapState } from "vuex";
 import { useUserStore } from "../../stores/modules/user";
 import { getPrototypeList, createPrototype, savePrototype } from "../../api/artifact";
-import prototypeTemplateList from '@/enums/prototypeTemplateEnum'
+import { templateList } from '@/enums/prototypeTemplateEnum'
 
 export default {
   name: "TemplateList",
@@ -145,6 +145,11 @@ export default {
         console.log(e);
       }
     },
+    // 获取默认项目模板列表
+    getDefaultTemplateList() {
+      this.defaultDesignList = templateList
+      console.log('导入默认模板列表', this.defaultDesignList)
+    },
     // 将指定模板在前端假移除
     handleDel(id){
       this.projectDesignList = this.projectDesignList.filter(function (item) {
@@ -225,7 +230,7 @@ export default {
   activated() {
     const userStore = useUserStore();
     this.projId = userStore.projectId;
-    this.defaultDesignList = prototypeTemplateList
+    this.getDefaultTemplateList()
     this.getList();
   },
 };

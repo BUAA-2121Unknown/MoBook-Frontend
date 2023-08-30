@@ -172,6 +172,14 @@ const routers = [
       title: '原型设计',
     },
   },
+  {
+    path: '/prototype-preview',
+    name: 'prototype-preview',
+    component: () => import('@/views/design/ProtoPreview.vue'),
+    meta: {
+      title: '原型设计预览',
+    },
+  },
   ERROR_LOG_ROUTE,
   PAGE_NOT_FOUND_ROUTE,
 ]
