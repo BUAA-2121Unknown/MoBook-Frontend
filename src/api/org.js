@@ -28,6 +28,7 @@ export const deleteOrg = (data) => {
  * @data: { file: File, id: 1 }
  */
 export const uploadOrgAvatar = (data) => {
+  console.log(data)
   return service({
     headers: { 'Content-Type': 'multipart/form-data' },
     url: 'org/avatar/upload',

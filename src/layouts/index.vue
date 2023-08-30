@@ -5,7 +5,7 @@
       <el-aside class="main-cont gva-aside" :style="{ width:asideWidth() }">
         <div class="min-h-[60px] text-center transition-all duration-300 flex items-center justify-center gap-2" :style="{ background: backgroundColor }">
           <img alt class="w-9 h-9 p-1 bg-white rounded-full" src="@/assets/logo.png">
-          <div v-if="isSider" class="inline-flex text-white font-bold text-2xl" :style="{ color:textColor }">{{ $MoBook.appName }}</div>
+          <div v-if="isSider" class="inline-flex font-bold text-2xl" :style="{ color:textColor }">{{ $MoBook.appName }}</div>
         </div>
         <Aside class="aside" />
       </el-aside>
@@ -235,9 +235,9 @@ const getAsideWidth = () =>{
 }
 
 const textColor = computed(() => {
-  if (userStore.sideMode === 'dark') {
+  if (userStore.sideMode === '#191a23') {
     return '#fff'
-  } else if (userStore.sideMode === 'light') {
+  } else if (userStore.sideMode === '#fff') {
     return '#191a23'
   } else {
     return userStore.baseColor
@@ -245,13 +245,7 @@ const textColor = computed(() => {
 })
 
 const backgroundColor = computed(() => {
-  if (userStore.sideMode === 'dark') {
-    return '#191a23'
-  } else if (userStore.sideMode === 'light') {
-    return '#fff'
-  } else {
-    return userStore.sideMode
-  }
+  return userStore.sideMode
 })
 
 const matched = computed(() => route.meta.matched)

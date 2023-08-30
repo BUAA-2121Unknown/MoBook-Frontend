@@ -24,8 +24,8 @@ export const useUserStore = defineStore({
     },
     token: window.localStorage.getItem('token') || '',
     projectId: -1,
-    orgId: 0,
-    orgInfo: { },
+    orgId: -1,
+    orgInfo: {},
     auth: '',
   }),
 
@@ -96,20 +96,23 @@ export const useUserStore = defineStore({
     },
 
     async loginIn(loginInfo) {
+      console.log('login')
+      console.log(this.userInfo)
+      console.log(this.orgId)
       try {
         const res = await login(loginInfo)
         if (res.meta.status == 0) {
           this.resetUserInfo(res.data.user)
           this.setToken(res.data.token)
           console.log(res)
-          /* console.log(this.orgId)
-          if (this.orgId) {
+          console.log(this.orgId)
+          if (this.orgId != -1) {
             const orgInfo = await getOrgInfo({ orgId: this.orgId })
             console.log(orgInfo)
             if (orgInfo.meta.status == 0) {
               this.setOrgInfo(orgInfo.data.org)
             }
-          } else { */
+          } else {
             const orgList = await getAllOrgs()
             console.log(orgList)
             if (orgList.meta.status == 0) {
@@ -120,10 +123,10 @@ export const useUserStore = defineStore({
                 this.setOrgInfo(lis[0].org)
                 this.setAuth(lis[0].auth.auth)
               } else {
-                this.setOrgId(0)
+                this.setOrgId(-1)
               }
             }
-          // }
+          }
           const isWin = ref(/windows/i.test(navigator.userAgent))
           if (isWin.value) {
             window.localStorage.setItem('osType', 'WIN')
@@ -145,7 +148,9 @@ export const useUserStore = defineStore({
     async clearStorage() {
       this.token = ''
       sessionStorage.clear()
+      console.log('before', localStorage)
       localStorage.clear()
+      console.log('after', localStorage)
     },
 
     async changeSideMode(data) {

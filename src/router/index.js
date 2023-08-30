@@ -45,14 +45,10 @@ router.beforeEach((to, from, next) => {
     resetMenuList(menuList)
   }
 
-  if (to.path !== '/login' && !token) {
+  if (!(to.meta.noAuthNeed == true) && !token) {
+    localStorage.setItem('redirectURL', to.fullPath)
     return next('/login')
   }
-
-  if (to.path === '/login' && token) {
-    return next('/')
-  }
-
 
   // TODO: other cases
 

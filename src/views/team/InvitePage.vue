@@ -62,6 +62,7 @@ const confirmJoin = async () => {
   }
   try {
     const res = await activateInvite({ token: token })
+    console.log(res)
     if (res.meta.status == 0) {
       userStore.orgId = res.data.profile.member.orgId
       router.push('/team')
