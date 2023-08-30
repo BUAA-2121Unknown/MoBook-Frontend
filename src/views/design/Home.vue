@@ -8,8 +8,15 @@
     <main>
       <!-- 左侧组件列表 -->
       <section class="left">
-        <ComponentList />
-        <RealTimeComponentList />
+        <TemplateList></TemplateList>
+        <el-collapse v-model="activeNames">
+          <el-collapse-item title="组件库" name="1">
+            <ComponentList />
+          </el-collapse-item>
+          <el-collapse-item title="元素列表" name="2">
+            <RealTimeComponentList />
+          </el-collapse-item>
+        </el-collapse>
       </section>
       <!-- 中间画布 -->
       <section class="center">
@@ -58,6 +65,7 @@ import generateID from "../../utils/design/generateID";
 import { listenGlobalKeyDown } from "../../utils/design/shortcutKey";
 import RealTimeComponentList from "../../components/Editor/RealTimeComponentList.vue";
 import CanvasAttr from "../../components/Editor/CanvasAttr.vue";
+import TemplateList from "../../components/Editor/TemplateList.vue";
 import { Project } from "../../api/project";
 import { useRoute } from "vue-router";
 import { ElNotification } from "element-plus";
@@ -68,6 +76,7 @@ import { $on } from "../../utils/design/gogocodeTransfer";
 import eventBus from "@/utils/design/eventBus";
 
 import { getPrototype } from "../../api/artifact";
+import TemplateListVue from '../../components/Editor/TemplateList.vue';
 
 export default {
   components: {
@@ -78,6 +87,7 @@ export default {
     Toolbar,
     RealTimeComponentList,
     CanvasAttr,
+    TemplateList,
   },
   data() {
     return {
@@ -89,6 +99,8 @@ export default {
       isPreview: false,
       isPreviewing: false,
       loading: false,
+
+      activeNames: ['1', '2'],
     };
   },
   computed: mapState([
@@ -101,8 +113,11 @@ export default {
   mounted() {
     console.log("原型设计接收到路由传递的参数", this.$route.query.artId);
   },
-  created() {
+  activated() {
     this.restore();
+  },
+  created() {
+    // this.restore();
     // this.initCollaboration();
     // 全局监听按键事件
     listenGlobalKeyDown();
@@ -268,11 +283,12 @@ export default {
     .left {
       position: absolute;
       height: 100%;
-      width: 200px;
-      left: 0;
+      width: 190px;
+      left: 10px;
       top: 0;
       // background-color: #333;
-
+      overflow: auto;
+      
       & > div {
         overflow: auto;
 

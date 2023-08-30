@@ -8,7 +8,14 @@
       @click="showMsg(item)"
       :data-index="index"
     >
-      <span class="iconfont" :class="'icon-' + item.icon"></span>
+      <span
+        class="iconfont"
+        :class="'icon-' + item.icon"
+        v-if="!isNewComponent(item.component)"
+      ></span>
+      <span class="newcp-font" v-if="isNewComponent(item.component)">{{
+        item.label
+      }}</span>
     </div>
   </div>
 </template>
@@ -24,18 +31,22 @@ function handleDragStart(e) {
 function showMsg(item) {
   console.log(item);
 }
+function isNewComponent(name) {
+  const list = ["Rate", "Slider", "Switch", "Select"];
+  return list.includes(name);
+}
 </script>
 
 <style lang="scss" scoped>
 .component-list {
-  height: 40%;
-  padding: 10px;
+  // height: 60%;
+  padding: 5px;
   display: grid;
   grid-gap: 10px 19px;
   grid-template-columns: repeat(auto-fill, 80px);
   grid-template-rows: repeat(auto-fill, 40px);
   .list {
-    width: 80px;
+    width: 70px;
     height: 40px;
     border: 1px solid #ddd;
     cursor: grab;
@@ -54,7 +65,10 @@ function showMsg(item) {
       margin-right: 4px;
       font-size: 20px;
     }
-
+    .newcp-font {
+      margin-right: 4px;
+      font-size: 14px;
+    }
     .icon-wenben,
     .icon-biaoge {
       font-size: 18px;

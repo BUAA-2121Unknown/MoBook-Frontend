@@ -226,7 +226,7 @@ export default {
       this.data = lodash.cloneDeep(this.design);
       this.data.url = designImg
       this.form = lodash.cloneDeep(this.design);
-      console.log('成功加载原型设计卡片',this.data)
+      // console.log('成功加载原型设计卡片',this.data)
     },
 };
 </script>
@@ -234,7 +234,7 @@ export default {
 <style scoped>
 .design-card {
   margin: 20px 0;
-  width: 350px;
+  width: 380px;
   height: 280px;
   overflow: hidden;
   border: 2px solid rgba(255, 255, 255, 0.8);

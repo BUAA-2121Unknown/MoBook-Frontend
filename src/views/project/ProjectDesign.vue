@@ -56,6 +56,7 @@ export default {
         // },
       ],
       orgId: undefined,
+      projId: -1,
     };
   },
   methods: {
@@ -75,7 +76,6 @@ export default {
       };
       try {
         const res = await getPrototypeList(params);
-        console.log('开始导入原型设计列表', res);
         this.designList = res.data.artifacts.filter(function (item) {
           return item.isLive === false;
         });

@@ -217,7 +217,7 @@ export default {
       try {
         const res = await getMessage(data);
         this.messageList = res.data.notifications;
-        console.log("消息中心：加载全部消息列表", this.messageList, res);
+        // console.log("消息中心：加载全部消息列表", this.messageList, res);
       } catch (e) {
         console.log(e);
       }
@@ -254,7 +254,7 @@ export default {
       };
       // 连接建立时触发
       socket.onopen = () => {
-        console.log("消息中心：连接成功");
+        // console.log("消息中心：连接成功");
         this.newSocket = socket;
       };
       // 客户端接收服务端数据时触发

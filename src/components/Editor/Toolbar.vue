@@ -168,10 +168,14 @@ export default {
     $on(eventBus, "save", this.save);
     $on(eventBus, "clearCanvas", this.clearCanvas);
     this.scale = this.canvasStyleData.scale;
-    
+  },
+  activated() {
+    // setTimeout(() => {
+    //   this.save();
+    // }, 1000);
   },
   mounted() {
-    this.save();
+    
   },
   methods: {
     copyCode() {},
@@ -339,17 +343,6 @@ export default {
 
     // 保存原型设计项目
     async save() {
-      // const val1 = JSON.stringify({
-      //   canvasData: { array: this.componentData },
-      //   canvasStyle: this.canvasStyleData,
-      // });
-      // const val2 = JSON.stringify({
-      //   canvasData: { array: this.componentData },
-      //   canvasStyle: JSON.stringify(this.canvasStyleData),
-      // });
-      // console.log("新", val1, JSON.parse(val1), JSON.parse(val1).canvasStyle);
-      // console.log("旧", val2, JSON.parse(val2));
-
       // 无query参数进入，禁止保存
       if (!this.$route.query || !this.$route.query.artId) {
         // 首次进入时会自动进行一次上传，这次保存无需提醒
@@ -378,12 +371,13 @@ export default {
         }),
       };
       try {
+        console.log("原型设计信息字符串", data.content);
         const res = await savePrototype(data);
         console.log("原型设计保存成功", res);
-        if (!this.forbidSaveTips){
+        if (!this.forbidSaveTips) {
           this.$message.success("原型设计保存成功！");
         }
-        this.forbidSaveTips = false
+        this.forbidSaveTips = false;
       } catch (e) {
         console.log(e);
         this.$message.error("原型设计保存失败，请检查您的网络配置。");
