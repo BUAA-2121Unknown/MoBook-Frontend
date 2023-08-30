@@ -180,7 +180,8 @@ const routers = [
     //   token: route.query.token
     // }),
     meta: {
-      title: '文档分享'
+      title: '文档分享',
+      noAuthNeed: true,
     }
   },
   ERROR_LOG_ROUTE,

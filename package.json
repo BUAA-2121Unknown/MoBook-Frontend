@@ -8,6 +8,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@douyinfe/semi-ui": "^2.42.2",
     "@element-plus/icons-vue": "^2.1.0",
     "@hocuspocus/extension-database": "^2.4.0",
     "@hocuspocus/extension-redis": "^2.4.0",
@@ -38,6 +39,7 @@
     "dotenv": "^16.3.1",
     "echarts": "^5.4.3",
     "element-plus": "^2.3.9",
+    "helpers": "^0.0.6",
     "html-to-image": "^1.11.11",
     "lodash": "^4.17.21",
     "lodash-es": "^4.17.21",

@@ -142,7 +142,7 @@ const createToken = async () => {
   console.log(shareForm.value)
   try {
     const res = await createDocToken(shareForm.value);
-    const shareUrl =  settings.appURL + 'doc?doc_id=' + doc_id + '&' + 'token=' + res.data.token
+    const shareUrl =  settings.appURL + 'share/doc?doc_id=' + doc_id + '&' + 'token=' + res.data.token
     
     const input = document.createElement('input')
     input.setAttribute('readonly', 'readonly')

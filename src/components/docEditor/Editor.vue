@@ -170,7 +170,8 @@
   import Underline from '@tiptap/extension-underline';
   import Mention from '@tiptap/extension-mention'
   import suggestion from './suggestion.js'
-
+  import Placeholder from '@tiptap/extension-placeholder'
+  import Document from '@tiptap/extension-document'
   import { useUserStore } from '@/stores/modules/user'
 import { boolean } from 'mathjs'
 
@@ -181,6 +182,11 @@ import { boolean } from 'mathjs'
   const getRandomElement = list => {
     return list[Math.floor(Math.random() * list.length)]
   }
+
+  const DocumentWithTitle = Document.extend({
+    content: 'title{1} block+',
+  });
+
   export default {
     name: 'Editor',
     components: {
@@ -266,10 +272,19 @@ import { boolean } from 'mathjs'
           StarterKit.configure({
             history: false,
           }), 
+          DocumentWithTitle,
           Underline,
           Highlight,
           TaskList,
           TaskItem,
+          Placeholder.configure({
+            placeholder: ({ node }) => {
+              if (node.type.name === 'heading') {
+                return 'What’s the title?'
+              }
+              return 'Can you add some further context?'
+            },
+          }),
           Collaboration.configure({
             document: ydoc,
             // document: provider.document
