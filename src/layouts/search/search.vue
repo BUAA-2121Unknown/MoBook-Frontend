@@ -25,7 +25,7 @@ const handleReload = () => {
 }
 
 const toService = () => {
-  window.open('https://support.qq.com/product/371961')
+  window.open('https://github.com/BUAA-2121Unknown')
 }
 </script>
 

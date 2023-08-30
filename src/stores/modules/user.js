@@ -17,7 +17,6 @@ export const useUserStore = defineStore({
       email: '',
       name: '',
       avatarUrl: '',
-      authority: {},
       sideMode: window.localStorage.getItem('sideMode') || 'dark',
       activeColor: 'var(--el-color-primary)',
       baseColor: '#fff'
@@ -105,6 +104,7 @@ export const useUserStore = defineStore({
           this.resetUserInfo(res.data.user)
           this.setToken(res.data.token)
           console.log(res)
+          this.orgId = -1
           console.log(this.orgId)
           if (this.orgId != -1) {
             const orgInfo = await getOrgInfo({ orgId: this.orgId })

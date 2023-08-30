@@ -124,3 +124,15 @@ export const getAllOrgs = () => {
     method: 'get',
   })
 }
+
+export const deleteOrgMember = (data) => {
+  const form = [
+    'orgId',
+    'users',
+  ]
+  return service({
+    url: 'org/member/auth/kick',
+    method: 'post',
+    data: fmtForm(data, form)
+  })
+}
