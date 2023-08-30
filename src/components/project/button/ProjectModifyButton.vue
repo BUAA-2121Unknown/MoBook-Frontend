@@ -4,7 +4,14 @@
 </template>
 
 <script>
-export default {};
+export default {
+  props:['editHandler'],
+  methods:{
+    handleEdit(){
+      this.editHandler()
+    }
+  }
+};
 </script>
 
 <style>

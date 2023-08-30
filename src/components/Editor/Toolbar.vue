@@ -123,6 +123,8 @@ import { File } from "../../api/file.js";
 import { ref } from "vue";
 import { ElMessageBox } from "element-plus";
 import Clipboard from "vue-clipboard3";
+import { ElNotification } from "element-plus";
+import { ElMessage } from "element-plus";
 
 import { savePrototype } from "../../api/artifact";
 // const dialogVisible = ref(false);
@@ -150,6 +152,8 @@ export default {
       dialogVisible: false,
       previewing: this.isPreviewing,
       codeDialogVisible: false,
+
+      forbidSaveTips: true,
     };
   },
   computed: mapState([
@@ -164,6 +168,10 @@ export default {
     $on(eventBus, "save", this.save);
     $on(eventBus, "clearCanvas", this.clearCanvas);
     this.scale = this.canvasStyleData.scale;
+    
+  },
+  mounted() {
+    this.save();
   },
   methods: {
     copyCode() {},
@@ -329,7 +337,7 @@ export default {
       this.$store.commit("setEditMode", "preview");
     },
 
-    // 保存项目
+    // 保存原型设计项目
     async save() {
       // const val1 = JSON.stringify({
       //   canvasData: { array: this.componentData },
@@ -341,27 +349,45 @@ export default {
       // });
       // console.log("新", val1, JSON.parse(val1), JSON.parse(val1).canvasStyle);
       // console.log("旧", val2, JSON.parse(val2));
-        if(!this.$route.query || !this.$route.query.artId){
-          console.log('未给出artId，无法保存')
-          return
+
+      // 无query参数进入，禁止保存
+      if (!this.$route.query || !this.$route.query.artId) {
+        // 首次进入时会自动进行一次上传，这次保存无需提醒
+        if (!this.forbidSaveTips) {
+          ElNotification({
+            title: "保存失败",
+            message:
+              "您正在使用临时设计工具。若要保存，请先在项目页面创建一个原型设计。",
+            type: "danger",
+          });
         }
-        const id = 1
-        const data = {
-          artId: this.$route.query.artId,
-          file: JSON.stringify(
-          {
-            canvasData: JSON.stringify({ array: this.componentData }),
-            canvasStyle: this.canvasStyleData,
-          })
+        this.forbidSaveTips = false;
+        console.log("未给出artId，无法保存");
+        return;
+      }
+
+      // 带query参数才允许保存
+      const id = this.$route.query.artId;
+      const data = {
+        artId: Number(id),
+        filename: "prototype_" + this.$route.query.artId + ".json",
+        // filename: 'DesignForTestProject2.json',
+        content: JSON.stringify({
+          canvasData: { array: this.componentData },
+          canvasStyle: this.canvasStyleData,
+        }),
+      };
+      try {
+        const res = await savePrototype(data);
+        console.log("原型设计保存成功", res);
+        if (!this.forbidSaveTips){
+          this.$message.success("原型设计保存成功！");
         }
-        try{
-          const res = await savePrototype(data)
-          console.log(res)
-          this.$message.success("保存成功");
-        } catch(e) {
-          console.log(e)
-          this.$message.error("保存失败");
-        }
+        this.forbidSaveTips = false
+      } catch (e) {
+        console.log(e);
+        this.$message.error("原型设计保存失败，请检查您的网络配置。");
+      }
     },
 
     // save() {
