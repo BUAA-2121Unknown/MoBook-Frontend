@@ -1,60 +1,20 @@
 <template>
   <div class="create-team-form-wrapper">
-  <el-form :model="form" label-width="120px">
-    <el-form-item label="团队名">
-      <el-input v-model="form.name" />
-    </el-form-item>
-    <!-- <el-form-item label="Activity zone">
-      <el-select v-model="form.region" placeholder="please select your zone">
-        <el-option label="Zone one" value="shanghai" />
-        <el-option label="Zone two" value="beijing" />
-      </el-select>
-    </el-form-item>
-    <el-form-item label="Activity time">
-      <el-col :span="11">
-        <el-date-picker
-          v-model="form.date1"
-          type="date"
-          placeholder="Pick a date"
-          style="width: 100%"
-        />
-      </el-col>
-      <el-col :span="2" class="text-center">
-        <span class="text-gray-500">-</span>
-      </el-col>
-      <el-col :span="11">
-        <el-time-picker
-          v-model="form.date2"
-          placeholder="Pick a time"
-          style="width: 100%"
-        />
-      </el-col>
-    </el-form-item>
-    <el-form-item label="Instant delivery">
-      <el-switch v-model="form.delivery" />
-    </el-form-item>
-    <el-form-item label="Activity type">
-      <el-checkbox-group v-model="form.type">
-        <el-checkbox label="Online activities" name="type" />
-        <el-checkbox label="Promotion activities" name="type" />
-        <el-checkbox label="Offline activities" name="type" />
-        <el-checkbox label="Simple brand exposure" name="type" />
-      </el-checkbox-group>
-    </el-form-item>
-    <el-form-item label="Resources">
-      <el-radio-group v-model="form.resource">
-        <el-radio label="Sponsor" />
-        <el-radio label="Venue" />
-      </el-radio-group>
-    </el-form-item> -->
-    <el-form-item label="团队描述">
-      <el-input v-model="form.description" type="textarea" />
-    </el-form-item>
-    <el-form-item>
+    <el-form :model="form" label-width="120px">
+      <el-form-item label="团队名">
+        <el-input v-model="form.name" />
+      </el-form-item>
+      <el-form-item label="团队描述">
+        <el-input v-model="form.description" type="textarea" />
+      </el-form-item>
+    </el-form>
+
+    <AvatarUpload />
+
+    <div class="button-wrapper">
       <el-button type="primary" @click="createTeam">创建</el-button>
       <el-button @click="emitter.emit('setTeamOption', 'teamInfo')">取消</el-button>
-    </el-form-item>
-  </el-form>
+    </div>
   </div>
 </template>
 
@@ -67,10 +27,11 @@ export default {
 <script setup>
 import { ref } from 'vue'
 import emitter from '@/utils/emitter'
-import { createOrg } from '@/api/org'
+import { createOrg, uploadOrgAvatar } from '@/api/org'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/modules/user' 
 import { useRouter } from 'vue-router'
+import AvatarUpload from '@/components/avatar/AvatarUpload.vue'
 
 const form = ref({
   name: '',
@@ -80,21 +41,34 @@ const form = ref({
 const router = useRouter()
 const userStore = useUserStore()
 
+const imageUrl = ref()
+const dialogVisible = ref(false)
+
+const handleAvatarSuccess = (response, uploadFile) => {
+  imageUrl.value = URL.createObjectURL(uploadFile.raw)
+}
+const handlePictureCardPreview = (uploadFile) => {
+  console.log(uploadFile.url)
+  imageUrl.value = uploadFile.url
+  dialogVisible.value = true
+}
+
 const createTeam = async () => {
   // TODO
   try {
     const res = await createOrg(form.value)
-    console.log(res)
     if (res.meta.status == 0) {
+      const orgId = res.data.id
+      console.log(orgId)
+      emitter.emit('uploadAvatar', orgId)
       ElMessage({
         type: 'success',
         message: '创建成功'
       })
-      userStore.setOrgId(res.data.id)
+      userStore.setOrgId(orgId)
       router.push({
         name: 'team',
       })
-      return res
     }
   } catch (e) {
     console.log(e)
@@ -107,5 +81,50 @@ const createTeam = async () => {
   border-radius: 0.25rem;
   background-color: rgb(255 255 255 / var(--tw-bg-opacity));
   padding: 1.5rem;
+}
+
+.avatar-uploader .avatar {
+  width: 178px;
+  height: 178px;
+  display: block;
+}
+
+.avatar-uploader .el-upload:hover {
+  border-color: var(--el-color-primary);
+}
+
+.el-icon.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 178px;
+  height: 178px;
+  text-align: center;
+}
+
+.button-wrapper {
+  margin-top: 20px;
+}
+</style>
+
+<style>
+.avatar-uploader .el-upload {
+  border: 1px dashed var(--el-border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: var(--el-transition-duration-fast);
+}
+
+.avatar-uploader .el-upload:hover {
+  border-color: var(--el-color-primary);
+}
+
+.el-icon.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 178px;
+  height: 178px;
+  text-align: center;
 }
 </style>
