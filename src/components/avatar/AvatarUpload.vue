@@ -43,8 +43,8 @@ emitter.on('uploadAvatar', (orgId) => uploadAvatar(orgId))
 
 <style scoped>
 .avatar-uploader .avatar {
-  width: 178px;
-  height: 178px;
+  width: 128px;
+  height: 128px;
   display: block;
 }
 </style>
@@ -66,8 +66,8 @@ emitter.on('uploadAvatar', (orgId) => uploadAvatar(orgId))
 .el-icon.avatar-uploader-icon {
   font-size: 28px;
   color: #8c939d;
-  width: 178px;
-  height: 178px;
+  width: 128px;
+  height: 128px;
   text-align: center;
 }
 </style>
