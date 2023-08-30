@@ -1,15 +1,16 @@
 <template>
   <div class="create-team-form-wrapper">
     <el-form :model="form" label-width="120px">
-      <el-form-item label="团队名">
+      <el-form-item label="团队名" :rules="{required: true}">
         <el-input v-model="form.name" />
       </el-form-item>
-      <el-form-item label="团队描述">
+      <el-form-item label="团队描述" :rules="{required: true}">
         <el-input v-model="form.description" type="textarea" />
       </el-form-item>
+      <el-form-item label="团队头像">
+        <AvatarUpload />
+      </el-form-item>
     </el-form>
-
-    <AvatarUpload />
 
     <div class="button-wrapper">
       <el-button type="primary" @click="createTeam">创建</el-button>
@@ -66,6 +67,12 @@ const createTeam = async () => {
         message: '创建成功'
       })
       userStore.setOrgId(orgId)
+      emitter.emit('setTeamOption', 'teamInfo')
+      form.value = {
+        name: '',
+        description: '',
+      }
+      imageUrl.value = ''
       router.push({
         name: 'team',
       })
