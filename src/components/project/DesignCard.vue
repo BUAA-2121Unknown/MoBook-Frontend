@@ -140,7 +140,9 @@ export default {
       console.log('跳转至原型设计界面, artId:', this.design.id)
       this.$router.push({
         path: "/prototype",
-        query: this.design.id,
+        query: {
+          artId: this.design.id,
+        }
       });
     },
     expandCard() {
@@ -221,7 +223,6 @@ export default {
     // },
   },
   mounted() {
-      console.log('开始加载原型设计卡片',this.design)
       this.data = lodash.cloneDeep(this.design);
       this.data.url = designImg
       this.form = lodash.cloneDeep(this.design);

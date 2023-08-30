@@ -3,8 +3,8 @@
     <el-row>
       <el-col :span="4">
         <div class="avatar-wrapper">
-          <img v-if="orgAvatarUrl" :src="orgAvatarUrl" style="height: 100%" />
-          <img v-else src="@/assets/logo.png" style="height: 100%" />
+          <img v-if="orgAvatarUrl" :src="orgAvatarUrl" class="orgAvatar" />
+          <img v-else src="@/assets/logo.png" class="orgAvatar" />
         </div>
       </el-col>
       <el-col :span="20">
@@ -30,6 +30,7 @@
           v-model="searchedInput"
           placeholder="搜索成员"
           class="input-with-select"
+          @keyup.enter="searchTeamMember"
         >
           <template #append>
             <el-button :icon="Search" @click="searchTeamMember" />
@@ -39,15 +40,18 @@
       </div>
       <el-table
         :data="orgMemberList"
-        :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
         row-key="user.id"
+        :row-class-name="membersRow"
         style="width: 100%"
       >
-        <el-table-column label="团队内昵称" min-width="180">
+        <el-table-column label="昵称" min-width="180">
           <template #default="scope">
-            <img v-if="scope.row.user.avatarUrl" :src="scope.row.user.avatarUrl" style="width: 24px; height: 24px; margin-right: 10px; border-radius: 50%" />
-            <img v-else src="@/assets/noBody.png" style="width: 24px; height: 24px; margin-right: 10px; border-radius: 50%" />
-            <span>{{ scope.row.member.nickname }}</span>
+            <div class="team-member-wrapper">
+              <img v-if="scope.row.user.avatarUrl" :src="scope.row.user.avatarUrl" style="width: 24px; height: 24px; margin-right: 10px; border-radius: 50%" />
+              <img v-else src="@/assets/noBody.png" style="width: 24px; height: 24px; margin-right: 10px; border-radius: 50%" />
+              <span v-if="scope.$index === 0">{{ scope.row.member.nickname }}（我）</span>
+              <span v-else>{{ scope.row.member.nickname }}</span>
+            </div>
           </template>
         </el-table-column>
         <el-table-column label="邮箱" min-width="180" prop="user.email" />
@@ -56,7 +60,7 @@
             <span>{{ authToRole(scope.row) }}</span>
           </template>
         </el-table-column>
-        <el-table-column align="left" label="操作" width="460" v-if="userStore.auth <= 1">
+        <el-table-column align="left" label="操作" width="460">
           <template #default="scope">
             <el-button v-if="userStore.auth == 0 && scope.row.member.auth == 1"
               icon="setting"
@@ -76,12 +80,12 @@
               link
               @click="changeProfile(scope.row)"
             >编辑</el-button>
-            <!-- <el-button
+            <el-button v-if="userStore.auth <= 1 && userStore.userInfo.id != scope.row.user.id && scope.row.member.auth == 2"
               icon="delete"
               type="primary"
               link
-              @click="deleteAuth(scope.row)"
-            >删除</el-button> -->
+              @click="deleteMember(scope.row)"
+            >移出团队</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -143,24 +147,10 @@ import { useUserStore } from '@/stores/modules/user'
 import { getInviteLink } from '@/api/org'
 import settings from '@/settings/basic'
 import { Search } from '@element-plus/icons-vue'
-import { updateOrgMemberInfo } from '@/api/org'
+import { updateOrgMemberInfo, deleteOrgMember } from '@/api/org'
 
 const searchedInput = ref('')
-const orgMemberList = ref([
-  {
-    "user": {
-        "id": 1,
-        "username": "Tony",
-        "name": null,
-        "avatarUrl": null
-    },
-    "member": {
-        "orgId": 5,
-        "nickname": "Tony",
-        "auth": 0
-    }
-  },
-])
+const orgMemberList = ref([])
 const orgMemberListCopy = ref([])
 const orgName = ref('团队名')
 const orgDesc = ref('团队简介 BlaBla...')
@@ -236,13 +226,20 @@ const GetOrgInfo = async () => {
       orgDesc.value = orgInfo.data.org.description
       orgAvatarUrl.value = orgInfo.data.org.avatarUrl
       userStore.setAuth(orgInfo.data.auth.auth)
+      userStore.setOrgInfo(orgInfo.data.org)
     } else {
       console.log(orgInfo)
     }
     const orgMembers = await getOrgAllMemberInfo({ orgId: userStore.orgId })
     if (orgMembers.meta.status == 0) {
-      orgMemberList.value = orgMembers.data.members
-      orgMemberListCopy.value = orgMembers.data.members
+      const members = orgMembers.data.members
+      const targetIndex = members.findIndex(item => item.user.id == userStore.userInfo.id)
+      if (targetIndex != -1) {
+        const targetElement = members.splice(targetIndex, 1)[0]
+        members.unshift(targetElement)
+      }
+      orgMemberList.value = members
+      orgMemberListCopy.value = members
     } else {
       console.log(orgMembers)
     }
@@ -269,7 +266,6 @@ const changeAuth = async (row, auth) => {
       userId: row.user.id,
       auth: auth,
     })
-    console.log(res)
     if (res.meta.status == 0) {
       ElMessage({
         type: 'success',
@@ -280,6 +276,30 @@ const changeAuth = async (row, auth) => {
       ElMessage({
         type: 'error',
         message: '修改失败',
+      })
+      console.log(res)
+    }
+  } catch(e) {
+    console.log(e)
+  }
+}
+
+const deleteMember = async (row) => {
+  try {
+    const res = await deleteOrgMember({
+      orgId: userStore.orgId,
+      users: [row.user.id],
+    })
+    if (res.meta.status == 0) {
+      ElMessage({
+        type: 'success',
+        message: '移除成功',
+      })
+      GetOrgInfo()
+    } else {
+      ElMessage({
+        type: 'error',
+        message: '移除失败',
       })
       console.log(res)
     }
@@ -322,6 +342,14 @@ const confirmChangeProfile = async () => {
   }
   changeProfileVisible.value = false
 }
+
+const membersRow = (row, index) => {
+  if (row.rowIndex == 0) {
+    return 'first-row-wrapper'
+  } else {
+    return ''
+  }
+}
 </script>
 
 <style scoped>
@@ -337,6 +365,13 @@ const confirmChangeProfile = async () => {
   line-height: 96px;
   color: var(--el-text-color-primary);
   text-align: center;
+  border-radius: 50%;
+}
+
+.orgAvatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
 }
 
 .orgName {
@@ -391,5 +426,17 @@ const confirmChangeProfile = async () => {
   width: 178px;
   height: 178px;
   text-align: center;
+}
+
+.team-member-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+</style>
+
+<style>
+.el-table .first-row-wrapper {
+  --el-table-tr-bg-color: var(--el-color-warning-light-9);
 }
 </style>

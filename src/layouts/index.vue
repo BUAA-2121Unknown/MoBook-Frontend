@@ -5,7 +5,7 @@
       <el-aside class="main-cont gva-aside" :style="{ width:asideWidth() }">
         <div class="min-h-[60px] text-center transition-all duration-300 flex items-center justify-center gap-2" :style="{ background: backgroundColor }">
           <img alt class="w-9 h-9 p-1 bg-white rounded-full" src="@/assets/logo.png">
-          <div v-if="isSider" class="inline-flex text-white font-bold text-2xl" :style="{ color:textColor }">{{ $MoBook.appName }}</div>
+          <div v-if="isSider" class="inline-flex font-bold text-2xl" :style="{ color:textColor }">{{ $MoBook.appName }}</div>
         </div>
         <Aside class="aside" />
       </el-aside>
@@ -50,7 +50,7 @@
                             </span>
                           </div>
                           <template #dropdown>
-                            <el-dropdown-menu>
+                            <el-dropdown-menu popper-class="custom-dropdown">
                               <el-dropdown-item icon="avatar" @click="toPerson">个人信息</el-dropdown-item>
 
                               <el-dropdown-item icon="tools">
@@ -68,20 +68,23 @@
 
                               <el-divider style="margin: 5px;" />
 
+                              <!-- 切换团队 -->
+                              <!-- TODO: 样式美化 -->
                               <div class="team-change-wrapper">
-                                <el-button bg @click="goToChangeTeam">
-                                  <div style="display: flex">
-                                    <div style="text-align: center; vertical-align: center;">
+                                <el-button text bg @click="goToChangeTeam" style="height: 42px" plain>
+                                  <div class="team-change-wrapper-inner">
+                                    <div class="avatar">
                                       <img v-if="userStore.orgInfo.avatarUrl" :src="userStore.orgInfo.avatarUrl" style="height: 20px; width: 20px;"/>
                                       <img v-else src="@/assets/logo.png" style="height: 20px; width: 20px;"/>
                                     </div>
-                                    <div style="margin-left: 8px">
-                                      <span style="width: 30px; margin-right: 10px;">{{ userStore.orgInfo.name }}</span>
-                                      <span class="change">切换</span>
+                                    <div class="team">
+                                      <span class="team-name-wrapper">{{ userStore.orgInfo.name }}</span>
+                                      <span class="change">切换<el-icon><ArrowRight /></el-icon></span>
                                     </div>
                                   </div>
                                 </el-button>
                               </div>
+
                             </el-dropdown-menu>
 
                           </template>
@@ -235,9 +238,9 @@ const getAsideWidth = () =>{
 }
 
 const textColor = computed(() => {
-  if (userStore.sideMode === 'dark') {
+  if (userStore.sideMode === '#191a23') {
     return '#fff'
-  } else if (userStore.sideMode === 'light') {
+  } else if (userStore.sideMode === '#fff') {
     return '#191a23'
   } else {
     return userStore.baseColor
@@ -245,13 +248,7 @@ const textColor = computed(() => {
 })
 
 const backgroundColor = computed(() => {
-  if (userStore.sideMode === 'dark') {
-    return '#191a23'
-  } else if (userStore.sideMode === 'light') {
-    return '#fff'
-  } else {
-    return userStore.sideMode
-  }
+  return userStore.sideMode
 })
 
 const matched = computed(() => route.meta.matched)
@@ -279,7 +276,8 @@ const reload = async() => {
       reloadFlag.value = true
     } else {
       const title = route.meta.title
-      router.push({ name: 'Reload', params: { title }})
+      // router.push({ name: 'Reload', params: { title }})
+      window.location.reload()
     }
   }, 400)
 }
@@ -307,7 +305,7 @@ const goToChangeTeam = () => {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .button {
   font-size: 12px;
   color: #666;
@@ -322,21 +320,59 @@ const goToChangeTeam = () => {
 :deep .el-overlay {
   background-color: hsla(0,0%,100%,.9) !important;
 }
+.message-container{
+  margin: 4px 8px 0 0;
+}
 
 .team-change-wrapper {
-  margin-left: 8%;
-  margin-right: 5%;
-  margin-bottom: 5%;
+  margin-left: 5%;
+  margin-right: 1%;
+  margin-bottom: 2%;
   color: #8c8c8c;
   font-size: 12px;
   line-height: 48px;
   border-radius: 4px;
+  height: 44px;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
-.message-container{
-  margin: 4px 8px 0 0;
+
+.team-name-wrapper {
+  display: inline-block;
+  vertical-align: center;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  width: 80px; /* Adjust the width of the box */
+  white-space: nowrap; /* Prevent line breaks within the text */
+  overflow: hidden; /* Hide any overflowing content */
+  text-overflow: ellipsis; /* Show ellipsis for truncated text */
+}
+
+.team-change-wrapper-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.team-change-wrapper-inner .avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.team-change-wrapper-inner .team {
+  display: flex;
+  align-items: center;
+  margin-left: 8px;
+}
+
+.change {
+  color: #8c8c8c;
+  font-size: 12px;
+  line-height: 48px;
 }
 </style>

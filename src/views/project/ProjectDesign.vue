@@ -47,13 +47,13 @@ export default {
   data() {
     return {
       designList: [
-        {
-          id: 1,
-          status: 0,
-          name: "无标题原型设计",
-          intro: "浏览器支持双值语法，当仅发现外部值时，例如当指定 display: block 或 display: inline.",
-          img: designImg,
-        },
+        // {
+        //   id: 1,
+        //   status: 0,
+        //   name: "无标题原型设计",
+        //   intro: "浏览器支持双值语法，当仅发现外部值时，例如当指定 display: block 或 display: inline.",
+        //   img: designImg,
+        // },
       ],
       orgId: undefined,
     };
@@ -70,7 +70,6 @@ export default {
 
     // 获取当前的原型列表
     async getList() {
-      console.log(this.projId);
       const params = {
         projId: this.projId,
       };

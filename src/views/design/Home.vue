@@ -60,6 +60,7 @@ import RealTimeComponentList from "../../components/Editor/RealTimeComponentList
 import CanvasAttr from "../../components/Editor/CanvasAttr.vue";
 import { Project } from "../../api/project";
 import { useRoute } from "vue-router";
+import { ElNotification } from "element-plus";
 // 实时协作
 // import * as Y from "yjs";
 // import { WebsocketProvider } from "y-websocket";
@@ -98,10 +99,10 @@ export default {
     "editor",
   ]),
   mounted() {
-    console.log(this.$route.query.prototype_id);
+    console.log("原型设计接收到路由传递的参数", this.$route.query.artId);
   },
   created() {
-    // this.restore();
+    this.restore();
     // this.initCollaboration();
     // 全局监听按键事件
     listenGlobalKeyDown();
@@ -160,28 +161,31 @@ export default {
         JSON.stringify(this.canvasStyleData),
       ]);
     },
+    // 读取数据 初始化画布
     async restore() {
-      // const newPrototype = this.$route.query.newPrototype
-      // // 如果是新项目，那么应该直接跳过初始化
-      // if(newPrototype){
-      //   return
-      // }
+      if (!this.$route.query || !this.$route.query.artId) {
+        this.$alert(
+          "您正在使用临时设计工具，因此不支持保存至任何项目。若要保存，请先在对应项目下创建一个原型设计。",
+          "请注意！",
+          {
+            confirmButtonText: "确定",
+          }
+        );
+        console.log("未给出artId，无法加载");
+        return;
+      }
       // 是已保存的项目
       const params = {
-        artId: this.$route.query.artId,
+        artId: Number(this.$route.query.artId),
       };
       try {
         const res = await getPrototype(params);
-        const val = JSON.parse(res.data.file)
-        this.$store.commit(
-          "setComponentData",
-          val.canvasData.array
-        );
+        const val = JSON.parse(res.data.content);
+        console.log("原型设计：尝试获取已保存的画板信息", res, val);
+        this.$store.commit("setComponentData", val.canvasData.array);
         this.$store.commit("setCanvasStyle", val.canvasStyle);
         this.isPreviewing = false;
         this.loading = false;
-
-        console.log(res);
       } catch (e) {
         console.log(e);
       }

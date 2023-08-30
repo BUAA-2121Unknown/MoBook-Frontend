@@ -63,6 +63,7 @@ const showSettingDrawer = () => {
   drawer.value = true
 }
 const changeMode = (e) => {
+  console.log(e)
   if (e === null) {
     userStore.changeSideMode('dark')
     return

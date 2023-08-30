@@ -28,6 +28,7 @@ export const deleteOrg = (data) => {
  * @data: { file: File, id: 1 }
  */
 export const uploadOrgAvatar = (data) => {
+  console.log(data)
   return service({
     headers: { 'Content-Type': 'multipart/form-data' },
     url: 'org/avatar/upload',
@@ -121,5 +122,17 @@ export const getAllOrgs = () => {
   return service({
     url: 'org/all',
     method: 'get',
+  })
+}
+
+export const deleteOrgMember = (data) => {
+  const form = [
+    'orgId',
+    'users',
+  ]
+  return service({
+    url: 'org/member/auth/kick',
+    method: 'post',
+    data: fmtForm(data, form)
   })
 }

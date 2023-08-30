@@ -112,8 +112,8 @@ export default {
       return this.messageList;
     },
     wsCfg() {
-      const userStore = useUserStore();
-      const str = "" + userStore.userInfo.id + "/3/";
+      // const userStore = useUserStore();
+      const str = "" + this.userId + "/" + this.orgId + "/";
       // websocket地址
       return {
         url: "ws://81.70.161.76:5000/ws/notif/" + str,
@@ -132,8 +132,7 @@ export default {
       });
       try {
         const res = await editMessage(data);
-        console.log(res);
-        this.$message.success("消息中心：已删除消息");
+        this.$message.success("消息中心：已删除消息", res);
       } catch (e) {
         console.log(e);
       }
@@ -217,9 +216,8 @@ export default {
       };
       try {
         const res = await getMessage(data);
-        console.log(res, data);
         this.messageList = res.data.notifications;
-        console.log("消息中心：成功加载全部消息列表", this.messageList);
+        console.log("消息中心：加载全部消息列表", this.messageList, res);
       } catch (e) {
         console.log(e);
       }
@@ -228,6 +226,9 @@ export default {
     // websocket
     // 创建websocket
     createWebSocket() {
+      if(this.newSocket){
+        return
+      }
       try {
         // 创建Web Socket 连接
         const socket = new WebSocket(this.wsCfg.url);
@@ -289,14 +290,14 @@ export default {
       });
     },
   },
-  mounted() {
-    const userStore = useUserStore();
-    this.userId = userStore.userInfo.id;
-    this.orgId = userStore.orgId;
-    this.loadAllMessage();
+  // mounted() {
+  //   const userStore = useUserStore();
+  //   this.userId = userStore.userInfo.id;
+  //   this.orgId = userStore.orgId;
+  //   this.loadAllMessage();
 
-    this.createWebSocket();
-  },
+  //   this.createWebSocket();
+  // },
   activated() {
     const userStore = useUserStore();
     this.userId = userStore.userInfo.id;

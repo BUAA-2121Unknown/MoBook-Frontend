@@ -31,6 +31,7 @@ const routers = [
     component: () => import('@/views/login/Login.vue'),
     meta: {
       title: '登录',
+      noAuthNeed: true,
     },
   },
   {

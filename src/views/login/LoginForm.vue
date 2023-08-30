@@ -121,7 +121,13 @@ const submitForm = () => {
         // loginVerify()
         return false
       }
-      router.push({ path: '/' })
+      const redirectURL = localStorage.getItem('redirectURL')
+      if (redirectURL) {
+        router.push(redirectURL);
+        localStorage.removeItem('redirectURL')
+      } else {
+        router.push({ path: '/' })
+      }
     } else {
       ElMessage({
         type: 'error',
