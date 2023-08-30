@@ -364,7 +364,6 @@ export default {
       const data = {
         artId: Number(id),
         filename: "prototype_" + this.$route.query.artId + ".json",
-        // filename: 'DesignForTestProject2.json',
         content: JSON.stringify({
           canvasData: { array: this.componentData },
           canvasStyle: this.canvasStyleData,

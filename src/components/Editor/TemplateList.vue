@@ -8,7 +8,7 @@
     <div class="header-container">
       <div style="display: flex; align-items: center">
         <h3 class="header-title">项目模板</h3>
-        <button @click="handleSave" class="template-button">
+        <button @click="handleCreate" class="template-button">
           保存当前设计为模板
         </button>
       </div>
@@ -20,6 +20,7 @@
               :projId="projId"
               :loadHandler="handleClose"
               :isDefault="false"
+              :fatherHandler="getList"
             ></TemplateCard>
           </el-col>
         </el-row>
@@ -50,6 +51,8 @@ import TemplateCard from "../project/TemplateCard.vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { mapState } from "vuex";
 import { useUserStore } from "../../stores/modules/user";
+import { getPrototypeList, createPrototype, savePrototype } from "../../api/artifact";
+import prototypeTemplateList from '@/enums/prototypeTemplateEnum'
 
 export default {
   name: "TemplateList",
@@ -72,18 +75,18 @@ export default {
     handleClose() {
       this.dialogTableVisible = false;
     },
-    // 保存当前设计为模板
-    handleSave() {
-      ElMessageBox.confirm("确定将当前原型设计保存至项目模板？", "保存为模板", {
+    // 保存当前设计为模板的包装函数
+    handleCreate() {
+      ElMessageBox.prompt("请输入模板标题。", "保存为模板", {
         confirmButtonText: "保存",
         cancelButtonText: "取消",
       })
-        .then(() => {
+        .then(({ value }) => {
+          console.log(value)
+          value = value ? value : '未命名模板'
           // 执行保存函数
-          this.saveTemplate();
-          // 再获取一次列表
-          this.getList();
-          
+          this.createTemplate(value);
+    
           ElMessage({
             type: "success",
             message: "原型设计已保存至团队模板",
@@ -96,51 +99,62 @@ export default {
           });
         });
     },
-    // 保存模板的实际实现函数
-    async saveTemplate() {
-      // 包裹参数
-      const id = this.$route.query.artId;
+    // 保存模板的实际实现函数 实际上为创建一个原型设计
+    async createTemplate(name) {
+      const userStore = useUserStore();
       const data = {
-        artId: Number(id),
-        filename: "prototype_template_" + this.$route.query.artId + ".json",
-        // filename: 'DesignForTestProject2.json',
-        content: JSON.stringify({
-          canvasData: { array: this.componentData },
-          canvasStyle: this.canvasStyleData,
-        }),
-      };
-      // 请求保存
-      try {
-        // const res = await savePrototype(data);
-        // console.log("原型设计成功保存为模板", res);
-        console.log("成功保存原型设计");
-      } catch (e) {
-        console.log(e);
-        // this.$message.error("原型设计保存失败，请检查您的网络配置。");
-      }
-    },
-    // 获取模板列表
-    async getList() {
-      const params = {
-        projId: this.projId,
+        projId: userStore.projectId,
+        name: name,
+        type: "t",
+        live: false,
       };
       try {
-        console.log("开始导入原型设计模板列表", params);
-        // const res = await getPrototypeList(params);
-        // console.log('开始导入原型设计模板列表', res);
-        // this.designList = res.data.artifacts.filter(function (item) {
-        //   return item.isLive === false;
-        // });
-        // console.log('成功导入原型设计列表', this.designList);
+        // 创建原型设计
+        const res = await createPrototype(data);
+        console.log("成功创建原型设计模板", res);
+        // 创建之后立即初始化一次原型设计的内容
+        const data2 = {
+          artId: res.data.id,
+          filename: "prototype_template_" + res.data.id + ".json",
+          content: JSON.stringify({
+            canvasData: { array: this.componentData },
+            canvasStyle: this.canvasStyleData,
+          }),
+        };
+        const res2 = await savePrototype(data2);
+        console.log("成功初始化原型设计模板", res2);
+        // 再获取一次列表
+        this.getList();
       } catch (e) {
         console.log(e);
       }
     },
 
+    // 获取全部项目模板列表
+    async getList() {
+      const params = {
+        projId: this.projId,
+      };
+      try {
+        const res = await getPrototypeList(params);
+        this.projectDesignList = res.data.artifacts.filter(function (item) {
+          return item.isLive === false && item.type == "t";
+        });
+        console.log("成功导入原型设计模板列表", res, this.projectDesignList);
+      } catch (e) {
+        console.log(e);
+      }
+    },
+    // 将指定模板在前端假移除
+    handleDel(id){
+      this.projectDesignList = this.projectDesignList.filter(function (item) {
+          return item.id != id;
+      });
+    }
   },
   data() {
     return {
-      projId: 1,
+      projId: -1,
       dialogTableVisible: false,
       defaultDesignList: [
         {
@@ -211,6 +225,7 @@ export default {
   activated() {
     const userStore = useUserStore();
     this.projId = userStore.projectId;
+    this.defaultDesignList = prototypeTemplateList
     this.getList();
   },
 };

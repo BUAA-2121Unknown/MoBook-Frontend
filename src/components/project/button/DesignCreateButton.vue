@@ -67,7 +67,7 @@ export default {
       const data = {
         projId: userStore.projectId,
         name: this.form.name,
-        type: "prototype",
+        type: "p",
         live: false,
       };
       try {

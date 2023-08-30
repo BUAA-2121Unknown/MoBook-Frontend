@@ -4,7 +4,7 @@
     <div
       class="design-image-container"
       :style="{ backgroundImage: `url(${data.url})`, height: imageHeight }"
-      @click="loadDesign"
+      @click="designHandler"
     ></div>
     <div
       class="design-text-container"
@@ -21,51 +21,13 @@
     </div>
     <transition name="slide-up">
       <el-row class="mb-4 doc-buttom-group" v-if="expanded && !isDefault">
-        <DelButton :handler="delForeverHandler"></DelButton>
-        <ModifyButton :handler="modifyHandler"></ModifyButton>
+        <DelButton :fatherHandler="fatherHandler" :design="design"></DelButton>
+        <ModifyButton
+          :fatherHandler="changeData"
+          :design="design"
+        ></ModifyButton>
       </el-row>
     </transition>
-
-    <!-- 项目信息修改 -->
-    <el-dialog v-model="dialogFormVisible" title="字段修改">
-      <el-form :model="form">
-        <el-form-item label="标题" :label-width="formLabelWidth">
-          <el-input
-            v-model="form.name"
-            autocomplete="off"
-            placeholder="请输入标题"
-          />
-        </el-form-item>
-        <el-form-item label="简介" :label-width="formLabelWidth">
-          <el-input
-            v-model="form.description"
-            :rows="2"
-            type="textarea"
-            placeholder="请输入简介"
-          />
-        </el-form-item>
-        <el-form-item label="封面" :label-width="formLabelWidth">
-          <PictureUploader :form="form"></PictureUploader>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="dialogFormVisible = false">取消</el-button>
-          <el-button type="primary" @click="uploadModify"> 确认修改 </el-button>
-        </span>
-      </template>
-    </el-dialog>
-
-    <!-- 从回收站删除原型设计 -->
-    <el-dialog v-model="dialogDelForeverVisible" title="提示" width="30%">
-      <span>确认彻底删除原型设计模板？彻底删除后将无法恢复！</span>
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="dialogDelForeverVisible = false">取消</el-button>
-          <el-button type="danger" @click="delForeverDesign"> 删除 </el-button>
-        </span>
-      </template>
-    </el-dialog>
   </div>
 </template>
   
@@ -74,20 +36,18 @@ import designImg from "@/assets/project/projectDesignImg.png";
 import DelButton from "./button/DelButton.vue";
 import ShareButton from "./button/ShareButton.vue";
 import ModifyButton from "./button/ModifyButton.vue";
-import PictureUploader from "./PictureUploader.vue";
 import lodash from "lodash";
 
-import { updatePrototypeStatus, updatePrototypeInfo } from "../../api/artifact";
+import { getPrototype } from "../../api/artifact";
 import { ElMessage, ElMessageBox } from "element-plus";
 
 export default {
   name: "TemplateCard",
-  props: ["design", "projId", "loadHandler", "isDefault"],
+  props: ["design", "projId", "loadHandler", "isDefault", "fatherHandler"],
   components: {
     DelButton,
     ShareButton,
     ModifyButton,
-    PictureUploader,
   },
   data() {
     return {
@@ -98,15 +58,7 @@ export default {
         intro: "",
         url: "",
       },
-      form: {
-        id: "",
-        name: "",
-        intro: "",
-        url: "",
-      },
       dialogFormVisible: false,
-      dialogDelForeverVisible: false,
-      formLabelWidth: "140px",
     };
   },
   computed: {
@@ -118,14 +70,22 @@ export default {
     },
   },
   methods: {
+    // 加载指定的原型设计到画板 实现函数
     async loadDesign(id) {
       const params = {
         artId: id,
       };
       try {
-        const res = await getPrototype(params);
-        const val = JSON.parse(res.data.content);
-        console.log("原型设计：尝试读取模板", res, val, this.design.id);
+        if (this.design.id >= 0) {
+          const res = await getPrototype(params);
+          const val = JSON.parse(res.data.content);
+          console.log("原型设计：尝试读取自定义模板", res, val, this.design.id);
+        }
+        else{
+          const val = JSON.parse(this.design.content);
+          console.log("原型设计：读取默认模板", val, this.design.id);
+        }
+
         this.$store.commit("setComponentData", val.canvasData.array);
         this.$store.commit("setCanvasStyle", val.canvasStyle);
         this.loadHandler();
@@ -133,8 +93,7 @@ export default {
         console.log(e);
       }
     },
-
-    // 加载原型设计
+    // 加载原型设计 包装函数
     designHandler() {
       ElMessageBox.confirm(
         "加载模板会覆盖您当前的原型设计！是否继续加载？",
@@ -147,8 +106,7 @@ export default {
       )
         .then(() => {
           // 调用加载函数
-          this.loadDesign(Number(this.$route.query.artId));
-
+          this.loadDesign(Number(this.design.id));
           console.log("成功加载原型设计");
           ElMessage({
             type: "success",
@@ -163,58 +121,22 @@ export default {
         });
     },
 
-    // 将原型设计模板删除
-    delForeverHandler() {
-      this.dialogDelForeverVisible = true;
+    // 前端假修改
+    changeData(name, url) {
+      // console.log(name, url)
+      this.data.name = name ? name : this.data.name;
+      this.data.url = url ? url : this.data.url;
     },
-    async delForeverDesign() {
-      const data = { status: 2, artifacts: this.design.artId };
-      try {
-        const res = await updatePrototypeStatus(data);
-
-        console.log(res);
-        this.$message({
-          message: "原型设计已彻底删除",
-          type: "success",
-        });
-        this.dialogDelForeverVisible = false;
-        this.fatherDelHandler(design.id);
-      } catch (e) {
-        this.dialogDelForeverVisible = false;
-        console.log(e);
-      }
-    },
-    modifyHandler() {
-      this.dialogFormVisible = true;
-    },
-
-    // 更新原型设计信息
-    uploadModify() {
-      this.dialogFormVisible = false;
-      this.$message({
-        message: "成功修改原型设计信息",
-        type: "success",
-      });
-      // console.log(this.form.url)
-      this.data = lodash.cloneDeep(this.form);
-    },
-
     expandCard() {
       this.expanded = true;
     },
     shrinkCard() {
       this.expanded = false;
     },
-    // activated() {
-    //   this.data = lodash.cloneDeep(this.design);
-    //   this.data.url = this.data.url ? this.data.url : designImg
-    //   this.form = lodash.cloneDeep(this.design);
-    // },
   },
   mounted() {
     this.data = lodash.cloneDeep(this.design);
     this.data.url = designImg;
-    this.form = lodash.cloneDeep(this.design);
     // console.log("成功加载原型设计模板", this.data);
   },
 };

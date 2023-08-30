@@ -12,78 +12,28 @@
       @click="jumpForDesign"
     >
       <div class="design-title">{{ data.name }}</div>
-      <div v-if="expanded" class="design-intro">创建于 | {{  data.created }}</div>
-      <div v-if="expanded" class="design-intro">更新于 | {{  data.updated }}</div>
+      <div v-if="expanded" class="design-intro">
+        创建于 | {{ data.created }}
+      </div>
+      <div v-if="expanded" class="design-intro">
+        更新于 | {{ data.updated }}
+      </div>
     </div>
     <transition name="slide-up">
       <el-row class="mb-4 doc-buttom-group" v-if="expanded">
-        <DelButton :handler="delHandler" v-if="design.status == 0"></DelButton>
-        <DelButton
-          :handler="delForeverHandler"
-          v-if="design.status != 0"
-        ></DelButton>
+        <DelButton :fatherHandler="fatherHandler" :design="design"></DelButton>
         <ShareButton
-          :handler="shareHandler"
+          :fatherHandler="shareHandler"
+          :design="design"
           v-if="design.status == 0"
         ></ShareButton>
         <ModifyButton
-          :handler="modifyHandler"
+          :fatherHandler="changeData"
+          :design="design"
           v-if="design.status == 0"
         ></ModifyButton>
       </el-row>
     </transition>
-
-    <!-- 项目信息修改 -->
-    <el-dialog v-model="dialogFormVisible" title="项目字段修改">
-      <el-form :model="form">
-        <el-form-item label="标题" :label-width="formLabelWidth">
-          <el-input
-            v-model="form.name"
-            autocomplete="off"
-            placeholder="请输入标题"
-          />
-        </el-form-item>
-        <el-form-item label="简介" :label-width="formLabelWidth">
-          <el-input
-            v-model="form.description"
-            :rows="2"
-            type="textarea"
-            placeholder="请输入简介"
-          />
-        </el-form-item>
-        <el-form-item label="封面" :label-width="formLabelWidth">
-          <PictureUploader :form="form"></PictureUploader>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="dialogFormVisible = false">取消</el-button>
-          <el-button type="primary" @click="uploadModify"> 确认修改 </el-button>
-        </span>
-      </template>
-    </el-dialog>
-
-    <!-- 删除原型设计 -->
-    <el-dialog v-model="dialogDelVisible" title="提示" width="30%">
-      <span>确认删除原型设计？该原型设计将被放入回收站。</span>
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="dialogDelVisible = false">取消</el-button>
-          <el-button type="danger" @click="delDesign"> 删除 </el-button>
-        </span>
-      </template>
-    </el-dialog>
-
-    <!-- 从回收站删除原型设计 -->
-    <el-dialog v-model="dialogDelForeverVisible" title="提示" width="30%">
-      <span>确认彻底删除原型设计？彻底删除后将无法恢复！</span>
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="dialogDelForeverVisible = false">取消</el-button>
-          <el-button type="danger" @click="delForeverDesign"> 删除 </el-button>
-        </span>
-      </template>
-    </el-dialog>
   </div>
 </template>
 
@@ -99,7 +49,7 @@ import { updatePrototypeStatus, updatePrototypeInfo } from "../../api/artifact";
 
 export default {
   name: "DesignCard",
-  props: ["design", "fatherDelHandler", "projId"],
+  props: ["design", "fatherHandler", "projId"],
   components: {
     DelButton,
     ShareButton,
@@ -115,16 +65,9 @@ export default {
         intro: "",
         url: "",
       },
-      form: {
-        id: "",
-        name: "",
-        intro: "",
-        url: "",
-      },
       dialogFormVisible: false,
       dialogDelVisible: false,
       dialogDelForeverVisible: false,
-      formLabelWidth: "140px",
     };
   },
   computed: {
@@ -137,13 +80,20 @@ export default {
   },
   methods: {
     jumpForDesign() {
-      console.log('跳转至原型设计界面, artId:', this.design.id)
+      console.log("跳转至原型设计界面, artId:", this.design.id);
       this.$router.push({
         path: "/prototype",
         query: {
           artId: this.design.id,
-        }
+        },
       });
+    },
+
+    // 前端假修改
+    changeData(name, url) {
+      // console.log(name, url)
+      this.data.name = name ? name : this.data.name;
+      this.data.url = url ? url : this.data.url;
     },
     expandCard() {
       this.expanded = true;
@@ -151,83 +101,19 @@ export default {
     shrinkCard() {
       this.expanded = false;
     },
-
-    // 将原型设计放入回收站
-    delHandler() {
-      this.dialogDelVisible = true;
-    },
-    async delDesign() {
-      const data = { status: 1, artifacts: this.design.artId };
-      try {
-        const res = await updatePrototypeStatus(data);
-
-        console.log(res);
-        this.$message({
-          message: "已将原型设计放入回收站",
-          type: "success",
-        });
-        this.dialogDelVisible = false;
-      } catch (e) {
-        this.dialogDelVisible = false;
-        console.log(e);
-      }
-      this.fatherDelHandler(this.design.id);
-    },
-
-    // 将原型设计从回收站删除
-    delForeverHandler() {
-      this.dialogDelForeverVisible = true;
-    },
-    async delForeverDesign() {
-      const data = { status: 2, artifacts: this.design.artId };
-      try {
-        const res = await updatePrototypeStatus(data);
-
-        console.log(res);
-        this.$message({
-          message: "原型设计已彻底删除",
-          type: "success",
-        });
-        this.dialogDelForeverVisible = false;
-        this.fatherDelHandler(design.id);
-      } catch (e) {
-        this.dialogDelForeverVisible = false;
-        console.log(e);
-      }
-    },
-
     shareHandler() {
       this.$message({
         message: "成功分享原型设计",
         type: "success",
       });
     },
-    modifyHandler() {
-      this.dialogFormVisible = true;
-    },
-
-    // 更新原型设计信息
-    uploadModify() {
-      this.dialogFormVisible = false;
-      this.$message({
-        message: "成功修改原型设计信息",
-        type: "success",
-      });
-      // console.log(this.form.url)
-      this.data = lodash.cloneDeep(this.form);
-    },
-    // activated() {
-    //   this.data = lodash.cloneDeep(this.design);
-    //   this.data.url = this.data.url ? this.data.url : designImg
-    //   this.form = lodash.cloneDeep(this.design);
-    // },
   },
   mounted() {
-      this.data = lodash.cloneDeep(this.design);
-      this.data.url = designImg
-      this.form = lodash.cloneDeep(this.design);
-      // console.log('成功加载原型设计卡片',this.data)
-    },
+    this.data = lodash.cloneDeep(this.design);
+    this.data.url = designImg;
+    this.form = lodash.cloneDeep(this.design);
+    // console.log('成功加载原型设计卡片',this.data)
+  },
 };
 </script>
   
