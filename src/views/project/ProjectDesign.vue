@@ -5,8 +5,8 @@
       <h1 class="header-title">原型设计</h1>
       <div class="button-container">
         <SearchBar :handler="handleSearch"></SearchBar>
-        <PreviewCreateButton></PreviewCreateButton>
-        <DesignCreateButton :handler="getList"></DesignCreateButton>
+        <PreviewCreateButton ></PreviewCreateButton>
+        <DesignCreateButton :handler="getList" ></DesignCreateButton>
       </div>
     </div>
 

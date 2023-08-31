@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div ref="container">
     <!-- 预览链接 -->
     <el-dialog v-model="dialogVisible" title="生成预览链接" width="30%">
       <div>
@@ -9,11 +9,7 @@
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="dialogVisible = false">取消</el-button>
-          <el-button
-            type="primary"
-            @click="(dialogVisible = false), save(), clipBoard()"
-            >确认</el-button
-          >
+          <el-button type="primary" @click="(dialogVisible = false), save(), clipBoard()">确认</el-button>
         </span>
       </template>
     </el-dialog>
@@ -49,42 +45,29 @@
         插入图片
         <input id="input" type="file" hidden @change="handleFileChange" />
       </label>
-      <el-button style="margin-left: 10px" @click="preview(false)"
-        >预览</el-button
-      >
+      <el-button style="margin-left: 10px" @click="preview(false)">预览</el-button>
       <el-button v-if="!isPreview" @click="save">保存</el-button>
       <el-button @click="clearCanvas">清空画布</el-button>
-      <el-button :disabled="!areaData.components.length" @click="compose"
-        >组合</el-button
-      >
-      <el-button
-        :disabled="
-          !curComponent ||
-          curComponent.isLock ||
-          curComponent.component != 'Group'
-        "
-        @click="decompose"
-      >
+      <el-button :disabled="!areaData.components.length" @click="compose">组合</el-button>
+      <el-button :disabled="!curComponent ||
+        curComponent.isLock ||
+        curComponent.component != 'Group'
+        " @click="decompose">
         拆分
       </el-button>
 
-      <el-button :disabled="!curComponent || curComponent.isLock" @click="lock"
-        >锁定</el-button
-      >
-      <el-button
-        :disabled="!curComponent || !curComponent.isLock"
-        @click="unlock"
-        >解锁</el-button
-      >
-      <el-button @click="preview(true)">预览图</el-button>
-      <el-button
+      <el-button :disabled="!curComponent || curComponent.isLock" @click="lock">锁定</el-button>
+      <el-button :disabled="!curComponent || !curComponent.isLock" @click="unlock">解锁</el-button>
+      <el-button @click="preview(true)">原型导出</el-button>
+      <PreviewCreateButton :placedAtBar="true"></PreviewCreateButton>
+      <!-- <el-button
         v-if="!isPreview"
         @click="generatePreview(), (dialogVisible = true)"
         >生成预览链接</el-button
       >
       <el-button v-show="previewing" @click="cancelPreview"
         >关闭预览链接</el-button
-      >
+      > -->
 
       <div class="canvas-config">
         <span>画布大小</span>
@@ -99,11 +82,7 @@
     </div>
 
     <!-- 预览 -->
-    <Preview
-      v-if="isShowPreview"
-      :is-screenshot="isScreenshot"
-      @close="handlePreviewChange"
-    />
+    <Preview v-if="isShowPreview" :is-screenshot="isScreenshot" @close="handlePreviewChange" />
   </div>
 </template>
 
@@ -125,12 +104,14 @@ import { ElMessageBox } from "element-plus";
 import Clipboard from "vue-clipboard3";
 import { ElNotification } from "element-plus";
 import { ElMessage } from "element-plus";
+import { copyToClipboard } from "@/utils/design/copy"
 
 import { savePrototype } from "../../api/artifact";
+import PreviewCreateButton from '../project/button/PreviewCreateButton.vue';
 // const dialogVisible = ref(false);
 
 export default {
-  components: { Preview },
+  components: { Preview, PreviewCreateButton,},
   props: {
     isPreview: {
       type: Boolean,
@@ -152,7 +133,6 @@ export default {
       dialogVisible: false,
       previewing: this.isPreviewing,
       codeDialogVisible: false,
-
       forbidSaveTips: true,
     };
   },
@@ -162,6 +142,7 @@ export default {
     "areaData",
     "curComponent",
     "curComponentIndex",
+    "canvasDOM",
   ]),
   created() {
     $on(eventBus, "preview", this.preview);
@@ -175,10 +156,9 @@ export default {
     // }, 1000);
   },
   mounted() {
-    
+
   },
   methods: {
-    copyCode() {},
     cancelPreview() {
       let data = new FormData();
       data.append("id", this.$route.params.id);
@@ -246,7 +226,6 @@ export default {
             }
           });
         });
-
         this.$store.commit("setComponentData", componentData);
         // 更新画布数组后，需要重新设置当前组件，否则在改变比例后，直接拖动圆点改变组件大小不会生效 https://github.com/woai3c/visual-drag-demo/issues/74
         this.$store.commit("setCurComponent", {
@@ -427,6 +406,7 @@ export default {
   overflow-x: auto;
   background: #fff;
   border-bottom: 1px solid #ddd;
+
   .canvas-config {
     display: inline-block;
     margin-left: 10px;

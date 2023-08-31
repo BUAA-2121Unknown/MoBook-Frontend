@@ -26,8 +26,9 @@
           @dragover="handleDragOver"
           @mousedown="handleMouseDown"
           @mouseup="deselectCurComponent"
+          ref="editor"
         >
-          <Editor />
+          <Editor/>
         </div>
       </section>
       <!-- 右侧属性列表 -->
@@ -76,7 +77,6 @@ import { $on } from "../../utils/design/gogocodeTransfer";
 import eventBus from "@/utils/design/eventBus";
 
 import { getPrototype } from "../../api/artifact";
-import TemplateListVue from '../../components/Editor/TemplateList.vue';
 
 export default {
   components: {
@@ -176,6 +176,7 @@ export default {
         JSON.stringify(this.canvasStyleData),
       ]);
     },
+
     // 读取数据 初始化画布
     async restore() {
       if (!this.$route.query || !this.$route.query.artId) {
