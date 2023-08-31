@@ -1,8 +1,5 @@
 <template>
-  <div v-if="noOrg" class="container">
-    <NoOrgHome />
-  </div>
-  <div v-else class="container">
+  <div class="container">
     <DefaultHome />
   </div>
 </template>
@@ -16,7 +13,7 @@ export default {
 <script setup>
 import { onMounted, ref } from 'vue';
 import DefaultHome from './Default.vue'
-import NoOrgHome from './NoOrg.vue'
+// import NoOrgHome from './NoOrg.vue'
 import { useUserStore } from '@/stores/modules/user'
 
 const noOrg = ref(false)
