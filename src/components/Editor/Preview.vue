@@ -123,7 +123,7 @@ export default {
 .btn {
   padding: 12px;
   margin: 10px;
-  color: #063273;
+  color: #3c74c9;
   border: 2px solid #cfe1f7;
   background: #cfe1f7;
   text-align: center;

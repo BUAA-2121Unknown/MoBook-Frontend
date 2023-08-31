@@ -370,7 +370,7 @@ export default {
         }),
       };
       try {
-        console.log("原型设计信息字符串", data.content);
+        // console.log("原型设计信息字符串", data.content);
         const res = await savePrototype(data);
         console.log("原型设计保存成功", res);
         if (!this.forbidSaveTips) {

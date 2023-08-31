@@ -5,9 +5,8 @@
       <h1 class="header-title">原型设计</h1>
       <div class="button-container">
         <SearchBar :handler="handleSearch"></SearchBar>
-        <DesignCreateButton
-          :handler="getList"
-        ></DesignCreateButton>
+        <PreviewCreateButton></PreviewCreateButton>
+        <DesignCreateButton :handler="getList"></DesignCreateButton>
       </div>
     </div>
 
@@ -24,7 +23,6 @@
         </el-col>
       </el-row>
     </div>
-
   </div>
 </template>
 <script setup>
@@ -34,6 +32,7 @@ import { useUserStore } from "@/stores/modules/user";
 import DesignCard from "../../components/project/DesignCard.vue";
 import designImg from "@/assets/project/projectDesignImg.png";
 import DesignCreateButton from "../../components/project/button/DesignCreateButton.vue";
+import PreviewCreateButton from "../../components/project/button/PreviewCreateButton.vue";
 import SearchBar from "../../components/project/SearchBar.vue";
 
 import { getPrototypeList } from "../../api/artifact";
@@ -44,6 +43,7 @@ export default {
     DesignCard,
     DesignCreateButton,
     SearchBar,
+    PreviewCreateButton,
   },
   data() {
     return {
@@ -77,10 +77,15 @@ export default {
       };
       try {
         const res = await getPrototypeList(params);
-        this.designList = res.data.artifacts.filter(function (item) {
-          return item.isLive === false && item.type == 'p';
-        });
-        console.log('成功导入原型设计列表', this.designList);
+        if (res.data && res.data.artifacts) {
+          this.designList = res.data.artifacts.filter(function (item) {
+            return item.isLive === false && item.type == "p";
+          });
+        }
+        else{
+          this.designList = []
+        }
+        console.log("成功导入原型设计列表", res, this.designList);
       } catch (e) {
         console.log(e);
       }
@@ -104,8 +109,9 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin: 0 120px 0 0;
 }
-.button-container{
+.button-container {
   display: flex;
   align-items: center;
 }

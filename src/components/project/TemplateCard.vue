@@ -111,7 +111,6 @@ export default {
         .then(() => {
           // 调用加载函数
           this.loadDesign(Number(this.design.id));
-          console.log("成功加载原型设计");
           ElMessage({
             type: "success",
             message: "原型设计已加载",

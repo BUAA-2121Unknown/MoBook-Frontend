@@ -1,10 +1,10 @@
 <template>
   <!-- Form -->
-  <el-button @click="dialogFormVisible = true" color="#303133">
-    创建原型
+  <el-button @click="dialogFormVisible = true" color="#303133" class="design-button">
+    创建原型设计
   </el-button>
 
-  <el-dialog v-model="dialogFormVisible" title="创建原型设计">
+  <el-dialog v-model="dialogFormVisible" title="创建原型设计" append-to-body>
     <el-form :model="form">
       <el-form-item label="标题" :label-width="formLabelWidth">
         <el-input
@@ -111,6 +111,9 @@ export default {
 };
 </script>
 <style scoped>
+.design-button{
+  margin: 0 10px;
+}
 .el-button--text {
   margin-right: 15px;
 }
