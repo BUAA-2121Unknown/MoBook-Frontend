@@ -19,11 +19,12 @@
           <DesignCard
             :design="item"
             :projId="projId"
-            :fatherDelHandler="delHandler"
+            :fatherHandler="getList"
           ></DesignCard>
         </el-col>
       </el-row>
     </div>
+
   </div>
 </template>
 <script setup>
@@ -56,6 +57,7 @@ export default {
         // },
       ],
       orgId: undefined,
+      projId: -1,
     };
   },
   methods: {
@@ -75,9 +77,8 @@ export default {
       };
       try {
         const res = await getPrototypeList(params);
-        console.log('开始导入原型设计列表', res);
         this.designList = res.data.artifacts.filter(function (item) {
-          return item.isLive === false;
+          return item.isLive === false && item.type == 'p';
         });
         console.log('成功导入原型设计列表', this.designList);
       } catch (e) {
@@ -85,17 +86,8 @@ export default {
       }
     },
   },
-  // mounted() {
-  //   const userStore = useUserStore();
-  //   // this.projId = this.$router.query.projId
-  //   // console.log(this.projId)
-  //   this.projId = userStore.projectId;
-  //   this.getList();
-  // },
   activated() {
     const userStore = useUserStore();
-    // this.projId = this.$router.query.projId
-    // console.log(this.projId)
     this.projId = userStore.projectId;
     this.getList();
   },

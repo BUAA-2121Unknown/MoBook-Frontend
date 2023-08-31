@@ -4,9 +4,9 @@ import { fmtForm } from "@/utils/common";
 // 原型设计api
 // 更新原型设计基础字段
 export const updatePrototypeInfo = (data) => {
-  const form = ["projId", "name", "description"];
+  const form = ["artId", "name", "type"];
   return service({
-    url: "proj/profile/update",
+    url: "proj/artifact/profile/update",
     method: "post",
     data: fmtForm(data, form),
   });

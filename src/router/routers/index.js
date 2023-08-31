@@ -18,6 +18,14 @@ Object.keys(modules).forEach((key) => {
 
 const routers = [
   {
+    path: '/home',
+    name: 'home',
+    component: () => import('@/views/Home.vue'),
+    meta: {
+      title: '主页',
+    },
+  },
+  {
     path: '/login',
     name: 'login',
     component: () => import('@/views/login/Login.vue'),
@@ -170,6 +178,14 @@ const routers = [
     component: () => import('@/views/design/Home.vue'),
     meta: {
       title: '原型设计',
+    },
+  },
+  {
+    path: '/prototype-preview',
+    name: 'prototype-preview',
+    component: () => import('@/views/design/ProtoPreview.vue'),
+    meta: {
+      title: '原型设计预览',
     },
   },
   ERROR_LOG_ROUTE,

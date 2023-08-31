@@ -1,11 +1,82 @@
 
 <template>
   <div class="window-container" v-if="showComponent">
+    <form v-if="addNewRoom" @submit.prevent="createRoom">
+      <input v-model="addRoomUsername" class="inputOp" type="text" placeholder="输入用户名" />
+      <button type="submit" :disabled="disableForm || !addRoomUsername">
+        创建聊天
+      </button>
+      <button class="button-cancel" @click="addNewRoom = false">取消</button>
+    </form>
+
+    <form v-if="inviteRoomId" @submit.prevent="addRoomUser">
+      <input v-model="invitedUsername" class="inputOp" type="text" placeholder="输入用户名" />
+      <button class="inviteUser" type="submit" :disabled="disableForm || !invitedUsername">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+          class="w-6 h-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12h15m0 0l-6.75-6.75M19.5 12l-6.75 6.75"></path>
+        </svg>
+        <div class="button-cancel-text">
+          邀请成员
+        </div>
+      </button>
+      <button class="button-cancel" @click="inviteRoomId = null">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+          class="w-6 h-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12h15m0 0l-6.75-6.75M19.5 12l-6.75 6.75"></path>
+        </svg>
+        <div class="button-cancel-text">
+          取消
+        </div>
+      </button>
+      <div style="height: 7px;"></div>
+    </form>
+
+    <form v-if="removeRoomId" @submit.prevent="deleteRoomUser">
+      <!-- <select class="removeUser" v-model="removeUserId">
+        <option default value="">选择成员</option>
+        <option v-for="user in removeUsers" :key="user._id" :value="user._id">
+          <div class="option-content">
+            <img :src="user.avatar" alt="User Avatar" class="avatar">
+            {{ user.username }}
+          </div>
+        </option>
+      </select> -->
+      <select id="single">
+        <option default value="">选择成员</option>
+        <option v-for="user in removeUsers" :key="user._id" :value="user._id">
+          {{ user.username }}
+        </option>
+      </select>
+      <button class="inviteUser" type="submit" :disabled="disableForm || !removeUserId">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+          class="w-6 h-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12h15m0 0l-6.75-6.75M19.5 12l-6.75 6.75"></path>
+        </svg>
+        <div class="button-cancel-text">
+          移除成员
+        </div>
+      </button>
+      <button class="button-cancel" @click="removeRoomId = null">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+          class="w-6 h-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12h15m0 0l-6.75-6.75M19.5 12l-6.75 6.75"></path>
+        </svg>
+        <div class="button-cancel-text">
+          取消
+        </div>
+      </button>
+      <div style="height: 7px;"></div>
+    </form>
+
     <div v-if="showComponent">
       <vue-advanced-chat v-if="showComponent" height="calc(80vh - 20px)" :current-user-id="currentUserId"
         :rooms="JSON.stringify(rooms)" :load-first-room="false" :rooms-loaded="true" :messages="JSON.stringify(messages)"
+        :room-actions="JSON.stringify(roomActions)" :menu-actions="JSON.stringify(menuActions)"
         :messages-loaded="messagesLoaded" :show-new-messages-divider="false" @send-message="sendMessage($event.detail[0])"
-        @fetch-messages="fetchMessages($event.detail[0])" />
+        @open-file="openFile($event.detail[0])" @fetch-messages="fetchMessages($event.detail[0])"
+        @menu-action-handler="menuActionHandler($event.detail[0])" :text-messages="JSON.stringify(textDemo)">
+      </vue-advanced-chat>
     </div>
   </div>
 </template>
@@ -13,7 +84,7 @@
 
 <script>
 import { register } from 'vue-advanced-chat'
-import { requestChatList, requestRoomMessage, requestSendMessage } from '@/api/chat'
+import { requestChatList, requestRoomMessage, requestSendMessage, requestSendFile } from '@/api/chat'
 import { useUserStore } from '@/stores/modules/user'
 // import { register } from '../../vue-advanced-chat/dist/vue-advanced-chat.es.js'
 register()
@@ -22,13 +93,54 @@ export default {
   name: 'chat',
   data() {
     return {
+      // messagesPerPage: 20,
+      textDemo: {
+        ROOMS_EMPTY: 'Rooms empty',
+        ROOM_EMPTY: '暂未选择聊天室',
+        NEW_MESSAGES: '新消息',
+        MESSAGE_DELETED: 'Ce message a été supprimé',
+        MESSAGES_EMPTY: '暂无消息',
+        CONVERSATION_STARTED: '现在可以开始聊天了 ',
+        TYPE_MESSAGE: '发送消息...',
+        SEARCH: '搜索',
+        IS_ONLINE: '在线',
+        LAST_SEEN: 'dernière connexion ',
+        IS_TYPING: '正在输入...',
+        CANCEL_SELECT_MESSAGE: 'Annuler Sélection'
+      },
+      disableForm: false,
+      addNewRoom: null,
+      addRoomUsername: '',
+      inviteRoomId: null,
+      invitedUsername: '',
+      removeRoomId: null,
+      removeUserId: '',
+      removeUsers: [],
+      roomActions: [{
+        name: 'archiveRoom',
+        title: 'Archive Room'
+      }],//房间列表操作
+      menuActions: [
+        {
+          name: 'inviteUser',
+          title: '邀请成员'
+        },
+        {
+          name: 'removeUser',
+          title: '移除成员'
+        },
+        {
+          name: 'deleteRoom',
+          title: '解散群聊'
+        }],//房间邀请成员操作
+      fileList: [],
       currentUserId: '',
       //实时连接
       newSocket: null,
       lockReconnect: false,
       wsCfg: {
         // websocket地址
-        url: "ws://81.70.161.76:5000/ws/chat/10/"
+        url: "ws://82.156.25.78:5000/ws/chat/10/"
       },
       roomId: '',
       rooms: [
@@ -105,6 +217,47 @@ export default {
     console.log(this.currentUserId);
   },
   methods: {
+    inviteUser(roomId) {
+      this.resetForms()
+      this.inviteRoomId = roomId
+    },
+    removeUser(roomId) {
+      this.resetForms()
+      this.removeRoomId = roomId
+      this.removeUsers = this.rooms.find(room => room.roomId === roomId).users
+    },
+    resetForms() {
+      this.disableForm = false
+      this.addNewRoom = null
+      this.addRoomUsername = ''
+      this.inviteRoomId = null
+      this.invitedUsername = ''
+      this.removeRoomId = null
+      this.removeUserId = ''
+    },
+    //聊天室的一些操作
+    menuActionHandler({ action, roomId }) {
+      switch (action.name) {
+        case 'inviteUser':
+          return this.inviteUser(roomId)
+        case 'removeUser':
+          return this.removeUser(roomId)
+        // case 'deleteRoom':
+        // return this.deleteRoom(roomId)
+      }
+    },
+    // openFile({ file }) {
+    //   window.open(file.file.url, '_blank')
+    // },
+    openFile({ file }) {
+      console.log(file);
+      const downloadLink = document.createElement('a');
+      downloadLink.href = file.file.url;
+      downloadLink.target = '_blank';
+      downloadLink.download = file.file.name; // 设置下载文件的名称
+      downloadLink.click();
+    },
+
     getCurrentUserId() {
       const userStore = useUserStore()
       return userStore.userInfo.id
@@ -124,28 +277,16 @@ export default {
     //建立http链接 请求当前房间聊天记录
     async requestRoom() {
       console.log("开始请求当前聊天室");
+      // console.log(useUserStore().orgId)
       try {
         const userStore = useUserStore()
         const res = await requestRoomMessage({ "chat_id": 10, "org_id": userStore.orgId });
         const list = res.data.message_list;
         console.log(list)
-        // const messages = [];
-        // for (let i = 0; i < list.length; i++) {
-        //   // messages[i].avatar = list[i].avatar;
-        //   messages[i].content = list[i].content;
-        //   messages[i].date = list[i].content;
-        //   messages[i].distributed = list[i].distributed;
-        //   messages[i].saved = list[i].saved;
-        //   messages[i].seen = list[i].seen;
-        //   messages[i].senderId = list[i].senderId;
-        //   messages[i].timestamp = list[i].timestamp;
-        //   messages[i].username = list[i].username;
-        //   messages[i]._id = list[i]._id;
-        // }
         this.rooms.find(room => room.roomId === this.roomId).users = res.data.users;
         this.rooms.find(room => room.roomId === this.roomId).unreadCount = 0;
         this.messages = list;
-        console.log(list[30].senderId);
+        // console.log(list[30].senderId);
       } catch (e) {
         console.log(e)
       }
@@ -155,17 +296,41 @@ export default {
       console.log("开始发送消息");
       try {
         const res = await requestSendMessage({
-          "type": 3,
-          "org_id": 2,
+          "org_id": useUserStore().orgId,
           "text": message.content,
+          "file": '',
           "at_list": [1],
-          "chat_id": 10
+          "chat_id": 10,
+          "extension": '',
         });
         console.log(res)
       } catch (e) {
         console.log(e)
       }
     },
+    //建立http链接 发送消息要求更新数据库
+    async requestSendFiles(file) {
+      console.log("开始发送文件", file);
+      console.log(file.file.blob)
+      const fileInfo = file.file
+
+      const sendingFile = new File([fileInfo.blob], fileInfo.name, { type: fileInfo.type })
+      console.log(file.file.extension)
+      try {
+        const res = await requestSendFile({
+          "org_id": useUserStore().orgId,
+          "file": sendingFile,
+          "chat_id": 10,
+          "text": '',
+          "at_list": [1],
+          "extension": file.file.extension,
+        });
+        console.log(res)
+      } catch (e) {
+        console.log(e)
+      }
+    },
+
     createWebSocket() {
       try {
         // 创建Web Socket 连接
@@ -199,10 +364,14 @@ export default {
       socket.onmessage = msg => {
         // 业务逻辑处理
         // this.addNewMessage()
+        console.log('接收data:')
         console.log(JSON.parse(msg.data))
         const data = JSON.parse(msg.data).data;
-        // console.log(msg.data['data'])
         this.rooms.find(room => room.roomId === this.roomId).lastMessage = data;
+        if (data.files) {
+          console.log(data.files[0].name)
+          this.rooms.find(room => room.roomId === this.roomId).lastMessage.content = data.files[0].name;
+        }
         if (!(data.senderId === this.currentUserId)) {
           this.addNewMessage(data)
         }
@@ -244,7 +413,7 @@ export default {
       const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // 加 1 是因为月份从 0 开始计数
       const day = String(currentDate.getDate()).padStart(2, '0');
 
-      const formattedDate = `${year}-${month}-${day}`;
+      const formattedDate = `${month}-${day}`;
       return formattedDate
     },
 
@@ -254,16 +423,6 @@ export default {
       this.roomId = room.roomId;
       this.requestRoom()
       // room.unreadCount = 0;
-      // setTimeout(() => {
-      //   if (options.reset) {
-      //     this.messages = this.addMessages(true)
-      //     this.messagesLoaded = true
-      //   } else {
-      //     this.messages = [...this.addMessages(), ...this.messages]
-      //     this.messagesLoaded = true
-      //   }
-      //   // this.addNewMessage()
-      // })
     },
 
     addMessages(reset) {
@@ -302,10 +461,14 @@ export default {
 
     sendMessage({ roomId, content, files, replyMessage, usersTag
     }) {
+      const room = this.rooms.find(room => room.roomId === roomId);
+      const user = room.users.find(user => user._id === this.currentUserId);
+      // console.log('当前房间消息');
+      // console.log(user.avatar);
       const message = {
         _id: roomId,
         content: content,
-        avatar: 'https://img2.woyaogexing.com/2023/08/26/1e4f1922fe9d26fd45a9453f8b7e5a23.png',
+        avatar: user.avatar,
         senderId: '' + this.currentUserId,
         timestamp: new Date().toString().substring(16, 21),
         date: this.nowDate(),
@@ -315,16 +478,26 @@ export default {
         seen: true,
         disableActions: false,
         disableReactions: false,
-        files: files,
         replyMessage: replyMessage,
         reactions: usersTag,
       };
+      if (content) {
+        this.requestSendMessages(message);
+      }
+      if (files) {
+        console.log('文件详情 格式化前：', files)
+        message.files = this.formattedFiles(files);
+        console.log('文件详情 格式化后：', message.files)
+        for (let index = 0; index < files.length; index++) {
+          this.requestSendFiles({ file: files[index] });
+        }
+      }
+
       this.messages = [
         ...this.messages,
         message
       ];
       // console.log(usersTag);
-      this.requestSendMessages(message);
       // this.newSocket.send(JSON.stringify(content));
     },
 
@@ -333,8 +506,36 @@ export default {
         ...this.messages,
         message
       ];
-    }
+    },
+
+    //发送文件相关操作
+
+    formattedFiles(files) {
+      const formattedFiles = []
+
+      files.forEach(file => {
+        const messageFile = {
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          extension: file.extension || file.type,
+          url: file.url || file.localUrl
+        }
+
+        if (file.audio) {
+          messageFile.audio = true
+          messageFile.duration = file.duration
+        }
+
+        formattedFiles.push(messageFile)
+      })
+
+      return formattedFiles
+    },
   },
+
+
+
   beforeDestroy() {
     console.log('组件关闭')
     // 关闭 WebSocket 连接
@@ -389,5 +590,131 @@ input {
 
 body {
   font-family: 'Quicksand', sans-serif;
+}
+
+
+.inviteUser {
+  margin-top: 1px;
+  margin-left: 9px;
+  background-color: #576bdb;
+  color: #000000;
+  width: 9.6em;
+  height: 3.2em;
+  border: #ffffff 0.2em solid;
+  border-radius: 11px;
+  text-align: right;
+  transition: all 0.6s ease;
+}
+
+.inputOp {
+  height: 15px;
+  width: 250px;
+  border: none;
+  outline: none;
+  border-radius: 15px;
+  padding: 1em;
+  background-color: #ccc;
+  box-shadow: inset 2px 5px 10px rgba(0, 0, 0, 0.3);
+  transition: 300ms ease-in-out;
+}
+
+.inputOp:focus {
+  background-color: white;
+  transform: scale(1.05);
+  box-shadow: 13px 13px 100px #969696,
+    -13px -13px 100px #ffffff;
+}
+
+.button-cancel {
+  margin-top: 1px;
+  background-color: #576bdb;
+  color: #000000;
+  width: 7.5em;
+  height: 3.2em;
+  border: #ffffff 0.2em solid;
+  border-radius: 11px;
+  text-align: right;
+  transition: all 0.6s ease;
+}
+
+.button-cancel:hover {
+  background-color: #3654ff;
+  cursor: pointer;
+}
+
+.button-cancel svg {
+  width: 1.6em;
+  margin: -0.2em 0.8em 1em;
+  position: absolute;
+  display: flex;
+  transition: all 0.6s ease;
+}
+
+.button-cancel:hover svg {
+  transform: translateX(5px);
+}
+
+.button-cancel-text {
+  margin: 0 1.5em
+}
+
+.inviteUser:hover {
+  background-color: #3654ff;
+  cursor: pointer;
+}
+
+.inviteUser svg {
+  width: 1.6em;
+  margin: -0.2em 0.8em 1em;
+  position: absolute;
+  display: flex;
+  transition: all 0.6s ease;
+}
+
+.inviteUser:hover svg {
+  transform: translateX(5px);
+}
+
+.button-cancel-text {
+  margin: 0 1.5em
+}
+
+.removeUser {
+  width: 120px;
+  height: 3em;
+  border-radius: 10px;
+  text-align: center;
+  background-color: #f0f0f0;
+  /* 背景颜色 */
+  border: 1px solid #ccc;
+  /* 边框 */
+  font-size: 14px;
+  /* 字体大小 */
+  color: #333;
+  /* 字体颜色 */
+  padding: 5px;
+  /* 内边距 */
+  appearance: none;
+  /* 移除默认样式 */
+  -webkit-appearance: none;
+  /* 兼容性 */
+}
+
+.removeUser option {
+  background-color: #fff;
+  /* 选项背景颜色 */
+  font-size: 14px;
+  /* 字体大小 */
+  color: #333;
+  /* 字体颜色 */
+  padding: 8px;
+  /* 内边距 */
+  border-bottom: 1px solid #ccc;
+  /* 分隔线 */
+}
+
+.removeUser option:last-child {
+  border-bottom: none;
+  /* 最后一个选项取消分隔线 */
 }
 </style>
