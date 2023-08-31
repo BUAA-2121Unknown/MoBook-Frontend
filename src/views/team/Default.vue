@@ -7,7 +7,7 @@
           <img v-else src="@/assets/logo.png" class="orgAvatar" />
         </div>
       </el-col>
-      <el-col :span="20">
+      <el-col :span="16">
         <el-row class="row-wrapper">
           <span class="orgName">
             {{ orgName }}
@@ -18,6 +18,11 @@
             {{ orgDesc }}
           </span>
         </el-row>
+      </el-col>
+      <el-col :span="4">
+        <el-button @click="editOrgVisible = true">
+          编辑团队信息
+        </el-button>
       </el-col>
     </el-row>
 
@@ -49,7 +54,7 @@
             <div class="team-member-wrapper">
               <img v-if="scope.row.user.avatarUrl" :src="scope.row.user.avatarUrl" style="width: 24px; height: 24px; margin-right: 10px; border-radius: 50%" />
               <img v-else src="@/assets/noBody.png" style="width: 24px; height: 24px; margin-right: 10px; border-radius: 50%" />
-              <span v-if="scope.$index === 0">{{ scope.row.member.nickname }}（我）</span>
+              <span v-if="userStore.userInfo.id == scope.row.user.id">{{ scope.row.member.nickname }}（我）</span>
               <span v-else>{{ scope.row.member.nickname }}</span>
             </div>
           </template>
@@ -130,6 +135,39 @@
       </span>
     </template>
   </el-dialog>
+
+  <el-dialog
+    v-model="editOrgVisible"
+    title="编辑团队信息"
+    width="30%"
+  >
+    <div class="org-name-wrapper">
+      <span>团队名称</span>
+      <el-input v-model="changingOrgName" placeholder="{{ changingOrgName }}">
+      </el-input>
+    </div>
+    <div class="org-desc-wrapper">
+      <span>团队简介</span>
+      <el-input
+        v-model="changingOrgDesc"
+        type="textarea"
+        placeholder="{{ changingOrgDesc }}"
+      >
+      </el-input>
+    </div>
+    <div class="org-avatar-wrapper">
+      <span>团队头像</span>
+      <AvatarUpload />
+    </div>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="editOrgVisible = false">关闭</el-button>
+        <el-button type="primary" @click="confirmChangeOrgInfo">
+          确定
+        </el-button>
+      </span>
+    </template>
+  </el-dialog>
 </template>
 
 <script>
@@ -148,6 +186,7 @@ import { getInviteLink } from '@/api/org'
 import settings from '@/settings/basic'
 import { Search } from '@element-plus/icons-vue'
 import { updateOrgMemberInfo, deleteOrgMember } from '@/api/org'
+import AvatarUpload from '@/components/avatar/AvatarUpload.vue'
 
 const searchedInput = ref('')
 const orgMemberList = ref([])
@@ -344,11 +383,18 @@ const confirmChangeProfile = async () => {
 }
 
 const membersRow = (row, index) => {
-  if (row.rowIndex == 0) {
+  if (row.row.user.id == userStore.userInfo.id) {
     return 'first-row-wrapper'
   } else {
     return ''
   }
+}
+
+const editOrgVisible = ref(false)
+const changingOrgName = ref(userStore.orgInfo.name)
+const changingOrgDesc = ref(userStore.orgInfo.description)
+const confirmChangeOrgInfo = async () => {
+  editOrgVisible.value = false
 }
 </script>
 
@@ -433,6 +479,20 @@ const membersRow = (row, index) => {
   align-items: center;
 }
 
+.org-name-wrapper {
+  margin-top: 10px;
+  display: flex;
+}
+
+.org-desc-wrapper {
+  margin-top: 10px;
+  display: flex;
+}
+
+.org-avatar-wrapper {
+  margin-top: 10px;
+  display: flex;
+}
 </style>
 
 <style>

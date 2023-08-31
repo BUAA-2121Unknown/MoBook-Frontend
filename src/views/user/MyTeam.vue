@@ -60,6 +60,7 @@ onActivated(() => {
 const GetAllOrgs = async () => {
   try {
     const res = await getAllOrgs()
+    console.log(res)
     if (res.meta.status == 0) {
       teamInfoList.value = res.data.organizations
       moveCurrentTeamToTop(userStore.orgId)
