@@ -35,6 +35,14 @@ const routers = [
     },
   },
   {
+    path: '/create-or-join',
+    name: 'create-or-join',
+    component: () => import('@/views/team/CreateOrJoin.vue'),
+    meta: {
+      title: '创建或加入团队',
+    }
+  },
+  {
     path: '/',
     name: 'Layout',
     redirect: '/team',

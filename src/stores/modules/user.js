@@ -74,13 +74,13 @@ export const useUserStore = defineStore({
     setOrgId(val) {
       this.orgId = val
     },
-    
-    setProjectId(val) {
-      this.projectId = val
-    },
 
     setOrgInfo(val) {
       this.orgInfo = val
+    },
+    
+    setProjectId(val) {
+      this.projectId = val
     },
   
     setAuth(val) {
@@ -100,41 +100,32 @@ export const useUserStore = defineStore({
       console.log(this.orgId)
       try {
         const res = await login(loginInfo)
+        console.log(res)
         if (res.meta.status == 0) {
           this.resetUserInfo(res.data.user)
           this.setToken(res.data.token)
-          console.log(res)
-          this.orgId = -1
-          console.log(this.orgId)
-          if (this.orgId != -1) {
-            const orgInfo = await getOrgInfo({ orgId: this.orgId })
-            console.log(orgInfo)
-            if (orgInfo.meta.status == 0) {
-              this.setOrgInfo(orgInfo.data.org)
-            }
+
+          const lastOrg = res.data.lastOrg
+          if (lastOrg) {
+            this.setOrgId(lastOrg.lastOrg.org.id)
+            this.setOrgInfo(lastOrg.lastOrg.org)
+            this.setAuth(lastOrg.lastOrg.auth.auth)
           } else {
-            const orgList = await getAllOrgs()
-            console.log(orgList)
-            if (orgList.meta.status == 0) {
-              const lis = orgList.data.organizations
-              if (lis.length) {
-                console.log('fuck')
-                this.setOrgId(lis[0].org.id)
-                this.setOrgInfo(lis[0].org)
-                this.setAuth(lis[0].auth.auth)
-              } else {
-                this.setOrgId(-1)
-              }
-            }
+            this.setOrgId(-1)
+            this.setOrgInfo({})
+            useRouter().push({ path: '/create-or-invite' })
           }
+
           const isWin = ref(/windows/i.test(navigator.userAgent))
           if (isWin.value) {
             window.localStorage.setItem('osType', 'WIN')
           } else {
             window.localStorage.setItem('osType', 'MAC')
           }
-          return res
+        } else {
+          console.log(res)
         }
+        return res
       } catch (e) {
         console.log(e)
       }
