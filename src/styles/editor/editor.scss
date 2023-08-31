@@ -183,5 +183,22 @@
       cursor: col-resize;
     }
 
+
+    .tiptap p.is-editor-empty:first-child {
+      content: attr(data-placeholder);
+      float: left;
+      color: #adb5bd;
+      pointer-events: none;
+      height: 0;
+    }
+
+    .ProseMirror h1.is-editor-empty:first-child::before {
+      content: attr(data-placeholder);
+      float: left;
+      color: #adb5bd;
+      pointer-events: none;
+      height: 0;
+    }
+
   }
 }

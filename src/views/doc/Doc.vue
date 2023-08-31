@@ -10,7 +10,27 @@
         {{ title }}
       </div>
       <div class="top-bar__right">
-        <el-button type="primary" @click="dialogFormVisible = true">分享</el-button>
+        <div class="avatars">
+          
+        </div>
+        
+        <div class="operations">
+          <el-button type="primary" @click="dialogFormVisible = true">分享</el-button>
+          <el-button type="primary" @click="callEditorMethodSave">保存</el-button>
+          <el-dropdown>
+            <el-button type="primary">
+              导出<el-icon class="el-icon--right"><arrow-down /></el-icon>
+            </el-button>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item @click="callEditorMethodExportToWord">导出为word</el-dropdown-item>
+                <el-dropdown-item @click="callEditorMethodExportToPdf">导出为pdf</el-dropdown-item>
+                <el-dropdown-item @click="callEditorMethodExportToMarkdown">导出为markdown</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+        </div>
+        
       </div>
       <el-dialog v-model="dialogFormVisible" title="生成共享链接" width="20%" >
         <el-form :model="form">
@@ -35,8 +55,7 @@
       </el-dialog>
     </div>
     <div class="editor-container">
-      <h1>{{ title }}</h1>
-      <editor :doc_id="doc_id" :editable="editable" v-if="visible" :active-buttons="[
+      <editor :doc_id="doc_id" :editable="editable" v-if="visible" ref="childRef" :activeButtons="[
         'bold',
         'italic',
         'strike',
@@ -66,6 +85,9 @@ import { getDoc, createDocToken, getDocAuth } from '@/api/artifact.js';
 import settings from '@/settings/basic'
 import { useRoute, useRouter } from 'vue-router'
 import { ref, onMounted } from 'vue'
+import emitter from '@/utils/emitter'
+import { ArrowDown } from '@element-plus/icons-vue'
+
 
 const title = ref('')
 const form = ref({
@@ -90,7 +112,15 @@ const route = useRoute()
 const doc_id = route.query.doc_id
 const token = route.query.token
 
- 
+const getFirstH1Value = async() => {
+  const firstH1 = this.$el.querySelector('h1');
+  if (firstH1) {
+    this.firstH1Value = firstH1.innerText;
+  } else {
+    console.log("未找到 <h1> 标签");
+  }
+}
+
 const getNowDoc = async() => {
   try{
     if (doc_id && !token)
@@ -133,6 +163,7 @@ const getNowDoc = async() => {
 
 onMounted(async () => {
   await getNowDoc();
+  console.log(title.value)
   visible.value = true;
 });
 
@@ -167,7 +198,21 @@ const shareLink = () => {
   createToken()
 }
 
+const callEditorMethodSave = async() => {
+  emitter.emit('save')
+}
 
+const callEditorMethodExportToWord = async() => {
+  emitter.emit('exportToWord')
+}
+
+const callEditorMethodExportToPdf = async() => {
+  emitter.emit('exportToPdf')
+}
+
+const callEditorMethodExportToMarkdown = async() => {
+  emitter.emit('exportToMarkdown')
+}
 </script>
 
 <script>
@@ -186,6 +231,12 @@ export default {
   components: {
     Editor,
   },
+  methods: {
+    save(){
+      const html = editor.getHTML()
+      console.log(html)
+    }
+  }
 };
 </script>
   
@@ -194,10 +245,13 @@ export default {
 /* 编辑器的容器 */
 .editor-container {
   display: flex;
-  padding-top: 10%;
+  padding-top: 5%;
   box-sizing: border-box;
   flex-flow: column;
   align-items: center;
+  min-height: 100%;
+  overflow: auto;
+  background-color: white;
   font-family: -apple-system, 'Noto Sans', 'Helvetica Neue', Helvetica,
     'Nimbus Sans L', Arial, 'Liberation Sans', 'PingFang SC',
     'Hiragino Sans GB', 'Noto Sans CJK SC', 'Source Han Sans SC',
@@ -241,5 +295,7 @@ export default {
 .input-width{
   width: 100px;
 }
+
+
 </style>
   

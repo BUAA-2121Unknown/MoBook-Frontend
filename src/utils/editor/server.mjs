@@ -14,11 +14,14 @@ import dotenv from 'dotenv';
 dotenv.config()
 const pool = mysql.createPool({
     connectionLimit: 100, //important
-    host: '81.70.161.76',
+    // host: '81.70.161.76',
+    host: '127.0.0.1',
     port: 3306,
-    user: 'admin',
-    password: '2121_MySQL_Admin',
-    database: 'MoBook',
+    // user: 'admin',
+    user: 'root',
+    // password: '2121_MySQL_Admin',
+    password: 'adk2002',
+    database: 'se2023',
     debug: false
 });
 
@@ -38,10 +41,10 @@ const pool = mysql.createPool({
 
 const server = Server.configure({
   beforeHandleMessage(data) {
-    console.log(data)
+    // console.log(data)
   },
   async onAuthenticate(data) {
-    console.log(data)
+    // console.log(data)
     const { token } = data;
     // Example test if a user is authenticated using a
     // request parameter
@@ -52,17 +55,17 @@ const server = Server.configure({
     console.log(doc_id)
     console.log(username)
     
-    if (auth === "0") {
-      // data.connection.readOnly = true;
-      throw new HttpException('您无权查看此文档', HttpStatus.FORBIDDEN);
-      // throw new Error("Not authorized!");
-    }
-    else if (auth === "1") {
-      data.connection.readOnly = true;
-    }
-    else if (auth === "2") {
-      data.connection.readOnly = false;
-    }
+    // if (auth === "0") {
+    //   // data.connection.readOnly = true;
+    //   throw new HttpException('您无权查看此文档', HttpStatus.FORBIDDEN);
+    //   // throw new Error("Not authorized!");
+    // }
+    // else if (auth === "1") {
+    //   data.connection.readOnly = true;
+    // }
+    // else if (auth === "2") {
+    //   data.connection.readOnly = false;
+    // }
     // Example to set a document to read only for the current user
     // thus changes will not be accepted and synced to other clients
     // if (someCondition === true) {
@@ -70,10 +73,10 @@ const server = Server.configure({
     // }
     
     // You can set contextual data to use it in other hooks
+    // console.log(data)
     return {
       user: {
-        id: 1234,
-        name: username,
+        name: username + data.socketId,
       },
       doc_id: doc_id
     };
@@ -81,6 +84,7 @@ const server = Server.configure({
   async onConnect(data) {
     // Output some information
     console.log(`New websocket connection`);
+    console.log(data.context)
   },
   async onChange(data) {
     const save = () => {
@@ -91,7 +95,7 @@ const server = Server.configure({
       // Save your document. In a real-world app this could be a database query
       // a webhook or something else
       // console.log(data.context)
-      const user_id = data.context.user.id;
+      // const user_id = data.context.user.id;
       // insertDoc({user_id, prosemirrorJSON})
       // Maybe you want to store the user who changed the document?
       // Guess what, you have access to your custom context from the
@@ -115,6 +119,7 @@ const server = Server.configure({
       fetch: async ({context}) => {
         return new Promise((resolve, reject) => {
           console.log("Trying to fetch document")
+          console.log(context.doc_id)
           pool?.query(
             'SELECT data FROM documents WHERE id = ? ORDER BY id DESC',
             [context.doc_id],
@@ -122,13 +127,15 @@ const server = Server.configure({
               if (error) {
                 reject(error);
               }
-              resolve(row?.data);
+              resolve(row[0].data);
             }
           );
         });
       },
       // … and a Promise to store data:
       store: async ({ documentName, state, context}) => {
+        console.log("store")
+        console.log(context.doc_id)
         pool?.query(
           "INSERT INTO documents (name, data, id) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE data = ?",
           [documentName, state, context.doc_id, state],

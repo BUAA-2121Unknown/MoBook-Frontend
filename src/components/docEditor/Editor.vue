@@ -1,20 +1,6 @@
+
 <template>
     <div class="editor">
-      <!-- 几人在编辑 -->
-      <div class="editor__footer">
-        <div :class="`editor__status editor__status--${status}`">
-          <template v-if="status === 'connected'">
-            {{ editor.storage.collaborationCursor.users.length }} user{{ editor.storage.collaborationCursor.users.length === 1 ? '' : 's' }} online
-          </template>
-          <template v-else>
-            offline
-          </template>
-        </div>
-        <div class="editor__name">
-            {{ currentUser.name }}
-        </div>
-      </div>
-  
       <div class="menubar">
         <span v-for="actionName in activeButtons" :key="actionName">
           <button
@@ -149,220 +135,233 @@
           </button>
         </span>
       </div>
+      <!-- 几人在编辑 -->
+      <div class="editor__footer">
+        <div :class="`editor__status editor__status--${status}`">
+          <template v-if="status === 'connected'">
+            {{ editor.storage.collaborationCursor.users.length }} user{{ editor.storage.collaborationCursor.users.length === 1 ? '' : 's' }} online
+          </template>
+          <template v-else>
+            offline
+          </template>
+        </div>
+        <div class="editor__name">
+            {{ currentUser.name }}
+        </div>
+      </div>
+  
+      
   
       <editor-content class="editor__content" :editor="editor" />
     </div>
   </template>
-  
-  <script>
-  import CharacterCount from '@tiptap/extension-character-count'
-  import Collaboration from '@tiptap/extension-collaboration'
-  import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
-  import Highlight from '@tiptap/extension-highlight'
-  import TaskItem from '@tiptap/extension-task-item'
-  import TaskList from '@tiptap/extension-task-list'
-  import * as Y from 'yjs'
-  import { HocuspocusProvider } from '@hocuspocus/provider'
-  
-  import Icon from '@/components/docEditor/Icon.vue';
-  import { Editor, EditorContent } from '@tiptap/vue-3';
-  import StarterKit from '@tiptap/starter-kit';
-  import Underline from '@tiptap/extension-underline';
-  import Mention from '@tiptap/extension-mention'
-  import suggestion from './suggestion.js'
-  import Placeholder from '@tiptap/extension-placeholder'
-  import Document from '@tiptap/extension-document'
-  import { useUserStore } from '@/stores/modules/user'
+
+
+
+<script setup>
+import CharacterCount from '@tiptap/extension-character-count'
+import Collaboration from '@tiptap/extension-collaboration'
+import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
+import Highlight from '@tiptap/extension-highlight'
+import TaskItem from '@tiptap/extension-task-item'
+import TaskList from '@tiptap/extension-task-list'
+import * as Y from 'yjs'
+import { HocuspocusProvider } from '@hocuspocus/provider'
+
+import Icon from '@/components/docEditor/Icon.vue';
+import { Editor, EditorContent } from '@tiptap/vue-3';
+import StarterKit from '@tiptap/starter-kit';
+import Underline from '@tiptap/extension-underline';
+import Mention from '@tiptap/extension-mention'
+import suggestion from './suggestion.js'
+import Placeholder from '@tiptap/extension-placeholder'
+import Document from '@tiptap/extension-document'
+import { useUserStore } from '@/stores/modules/user'
 import { boolean } from 'mathjs'
+import Heading from '@tiptap/extension-heading'
+import { Node } from '@tiptap/core'
+import emitter from '@/utils/emitter'
+import { onBeforeUnmount, ref, toRefs } from 'vue';
 
+
+const userStore = useUserStore()
+const userName = userStore.userInfo.username
+
+
+const html = ref('');
+const json = ref('');
+const editor = ref(null);
+const docTitle = ref(null);
+const currentUser = {
+  name: userName,
+  // color: getRandomColor(),
+};
+const provider = ref(null);
+const status = ref('connecting');
+let tmp_token = '';
+
+
+
+const Title = Heading.extend({
+  name: "title",
+  group: "title",
+  parseHTML: () => [{ tag: "h1:first-child" }],
+}).configure({ levels: [1] });
   
-  const userStore = useUserStore()
-  const userName = userStore.userInfo.username
 
-  const getRandomElement = list => {
+const DocumentWithTitle = Document.extend({
+  content: "title block*",
+});
+
+
+
+const getRandomColor = () => {
+  return getRandomElement([
+    '#958DF1',
+    '#F98181',
+    '#FBBC88',
+    '#FAF594',
+    '#70CFF8',
+    '#94FADB',
+    '#B9F18D',
+  ])
+}
+
+const getRandomElement = list => {
     return list[Math.floor(Math.random() * list.length)]
+}
+
+const getRandomName = () => {
+  return getRandomElement([
+    'Lea Thompson', 'Cyndi Lauper', 'Tom Cruise', 'Madonna', 'Jerry Hall', 'Joan Collins', 'Winona Ryder', 'Christina Applegate', 'Alyssa Milano', 'Molly Ringwald', 'Ally Sheedy', 'Debbie Harry', 'Olivia Newton-John', 'Elton John', 'Michael J. Fox', 'Axl Rose', 'Emilio Estevez', 'Ralph Macchio', 'Rob Lowe', 'Jennifer Grey', 'Mickey Rourke', 'John Cusack', 'Matthew Broderick', 'Justine Bateman', 'Lisa Bonet',
+  ])
+}
+
+const props = defineProps({
+    doc_id:String,
+    editable:Boolean,
+    activeButtons: Array
+})
+
+
+const ydoc = new Y.Doc()
+const { editable } = toRefs(props)
+const { doc_id } = toRefs(props)
+if (editable.value)
+  tmp_token = "2"
+else 
+  tmp_token = "1"
+provider.value = new HocuspocusProvider({
+  url: 'ws://localhost:80',
+  name: doc_id.value,
+  document: ydoc,
+  token: tmp_token + '-' + doc_id.value + '-' + userName,
+})
+
+provider.value.on('status', event => {
+  status.value = event.status
+})
+editor.value = new Editor({
+  extensions: [
+    StarterKit.configure({
+      history: false,
+    }), 
+    DocumentWithTitle,
+    Title,
+    Heading,
+    Underline,
+    Highlight,
+    TaskList,
+    TaskItem,
+    Placeholder.configure({
+      showOnlyCurrent: true,
+      showOnlyWhenEditable: true,
+      placeholder: ({ node }) => {
+        if (node.type.name === "title") {
+          return "请输入标题";
+        }
+        return "输入内容";
+      },
+    }),
+    Collaboration.configure({
+      document: ydoc,
+      // document: provider.document
+    }),
+    CollaborationCursor.configure({
+      provider: provider.value,
+      user: currentUser,
+    }),
+    CharacterCount.configure({
+      limit: 10000,
+    }),
+    Mention.configure({
+      HTMLAttributes: {
+        class: 'mention',
+      },
+      suggestion,
+    }),
+  ],
+  editable: editable.value,
+
+  // 钩子函数
+  onUpdate({transaction}){
+    // console.log(transaction)
+    const title = transaction.doc.content.firstChild.content.firstChild?.textContent;
   }
+})
+localStorage.setItem('currentUser', JSON.stringify(currentUser))
 
-  const DocumentWithTitle = Document.extend({
-    content: 'title{1} block+',
-  });
+html.value = editor.value.getHTML();
+json.value = editor.value.getJSON();
+editor.value.on('update', () => {
+  html.value = editor.value.getHTML();
+  json.value = editor.value.getJSON();
+  
+})
+const save = () => {
+  console.log("保存文件")
+}
+emitter.on('save', () => save())
 
+const exportToWord = () => {
+  console.log("导出word版本")
+}
+emitter.on('exportToWord', () => exportToWord())
+
+const exportToPdf = () => {
+  console.log("导出pdf版本")
+  // 创建一个新节点
+  var newElement = document.createElement("div");
+  newElement.id = "element-to-print";
+  var content = editor.value.getHTML();
+  newElement.textContent = content;
+  console.log(newElement.textContent)
+  html2pdf().from(content, 'string').to('pdf').save()
+  // html2pdf(element);
+}
+emitter.on('exportToPdf', () => exportToPdf())
+
+const exportToMarkdown = () => {
+  console.log("导出Markdown版本")
+}
+emitter.on('exportToMarkdown', () => exportToMarkdown())
+
+onBeforeUnmount (() => {
+  // this.editor.commands.clearContent(true)
+  editor.value.destroy()
+  provider.value.destroy()
+})
+</script>
+
+<script>
   export default {
     name: 'Editor',
     components: {
       EditorContent,
       Icon,
     },
-    props: {
-      doc_id: {
-        type: String,
-        required: true,
-      },
-      editable: {
-        type: Boolean,
-        required: true,
-      },
-      activeButtons: {
-        type: Array,
-        validator: function (list) {
-          for (let el of list) {
-            // The value must match one of these strings
-            if (
-              [
-                'bold',
-                'italic',
-                'strike',
-                'underline',
-                'code',
-                'h1',
-                'h2',
-                'h3',
-                'bulletList',
-                'orderedList',
-                'blockquote',
-                'codeBlock',
-                'horizontalRule',
-                'undo',
-                'redo',
-              ].indexOf(el) === -1
-            ) {
-              return -1;
-            }
-          }
-          return 1;
-        },
-        default: () => ['bold', 'italic'],
-      },
-    },
-    emits: ['update', 'save'],
-    data() {
-      return {
-        html: '',
-        json: '',
-        editor: null,
-        titleEditor: null,
-        currentUser: {
-          name: userName,
-          color: this.getRandomColor(),
-        },
-        provider: null,
-        status: 'connecting',
-      };
-    },
-    created(){
-      console.log(this.editable)
-      // 创建时，后端会创建一个新的文档，拿到文档的id，传给js后端
-      const ydoc = new Y.Doc()
-      
-
-      const tmp_token = "2"
-
-      this.provider = new HocuspocusProvider({
-        url: 'ws://localhost:80',
-        name: "test",
-        document: ydoc,
-        token: tmp_token + '-' + this.doc_id + '-' + userName,
-      })
-      
-      this.provider.on('status', event => {
-        this.status = event.status
-      })
-      this.editor = new Editor({
-        extensions: [
-          StarterKit.configure({
-            history: false,
-          }), 
-          DocumentWithTitle,
-          Underline,
-          Highlight,
-          TaskList,
-          TaskItem,
-          Placeholder.configure({
-            placeholder: ({ node }) => {
-              if (node.type.name === 'heading') {
-                return 'What’s the title?'
-              }
-              return 'Can you add some further context?'
-            },
-          }),
-          Collaboration.configure({
-            document: ydoc,
-            // document: provider.document
-          }),
-          CollaborationCursor.configure({
-            provider: this.provider,
-            user: this.currentUser,
-          }),
-          CharacterCount.configure({
-            limit: 10000,
-          }),
-          Mention.configure({
-            HTMLAttributes: {
-              class: 'mention',
-            },
-            suggestion,
-          }),
-        ],
-        editable: this.editable
-      })
-      localStorage.setItem('currentUser', JSON.stringify(this.currentUser))
-
-      this.html = this.editor.getHTML();
-      this.json = this.editor.getJSON();
-      this.editor.on('update', () => {
-        this.html = this.editor.getHTML();
-        this.json = this.editor.getJSON();
-        this.$emit('update', this.html);
-      })
-    },
-    methods: {
-      save(){
-        this.$emit('save', this.html);
-      },
-      setName() {
-        const name = (window.prompt('Name') || '')
-          .trim()
-          .substring(0, 32)
-  
-        if (name) {
-          return this.updateCurrentUser({
-            name,
-          })
-        }
-      },
-  
-      updateCurrentUser(attributes) {
-        this.currentUser = { ...this.currentUser, ...attributes }
-        this.editor.chain().focus().updateUser(this.currentUser).run()
-  
-        localStorage.setItem('currentUser', JSON.stringify(this.currentUser))
-      },
-  
-      getRandomColor() {
-        return getRandomElement([
-          '#958DF1',
-          '#F98181',
-          '#FBBC88',
-          '#FAF594',
-          '#70CFF8',
-          '#94FADB',
-          '#B9F18D',
-        ])
-      },
-  
-      getRandomName() {
-        return getRandomElement([
-          'Lea Thompson', 'Cyndi Lauper', 'Tom Cruise', 'Madonna', 'Jerry Hall', 'Joan Collins', 'Winona Ryder', 'Christina Applegate', 'Alyssa Milano', 'Molly Ringwald', 'Ally Sheedy', 'Debbie Harry', 'Olivia Newton-John', 'Elton John', 'Michael J. Fox', 'Axl Rose', 'Emilio Estevez', 'Ralph Macchio', 'Rob Lowe', 'Jennifer Grey', 'Mickey Rourke', 'John Cusack', 'Matthew Broderick', 'Justine Bateman', 'Lisa Bonet',
-        ])
-      },
-    },
-    beforeUnmount() {
-      // this.editor.commands.clearContent(true)
-      this.editor.destroy()
-      this.provider.destroy()
-    },
   };
-  </script>
+</script>
   
   <!-- <style lang="css" scoped></style> -->
   <style lang="sass">
