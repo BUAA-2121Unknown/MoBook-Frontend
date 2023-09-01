@@ -29,7 +29,6 @@
             <el-input
               v-model="editingName"
               ref="editingRef"
-              @blur="handleEditComplete(data, editingName)"
               @keyup.enter="handleEditComplete(data, editingName)"
             />
           </span>
@@ -48,7 +47,13 @@
                 v-if="data.data.type === 1"
                 class="file-tree-node-button"
                 icon="DocumentAdd"
-                @click="appendFile(data)"
+                @click="appendItem(2, data)"
+              />
+              <el-button
+                v-if="data.data.type === 1"
+                class="file-tree-node-button"
+                icon="FolderAdd"
+                @click="appendItem(1, data)"
               />
               <el-button
                 class="file-tree-node-button"
@@ -115,8 +120,8 @@ const GetAllItems = async () => {
     })
     if (res.meta.status == 0) {
       console.log('GET_ALL', res)
-      rootId.value = res.data[0].id
-      dataSource.value = res.data[0].children || []
+      rootId.value = res.data.id
+      dataSource.value = res.data.children || []
     } else {
       dataSource.value = fileTreeList
       console.log(res)
@@ -133,7 +138,7 @@ onMounted(async () => {
 
 const handleNodeExpand = (node, data) => {
   console.log(node)
-  if (!expandedList.includes(node.id)) {
+  if (!expandedList.value.includes(node.id)) {
     expandedList.value.push(node.id)
   }
 }
@@ -160,7 +165,6 @@ const copyDataSource = () => {
 }
 
 const handleDragStart = (node, ev) => {
-  rememberExpandedState()
   copyDataSource()
 }
 
@@ -201,29 +205,9 @@ const handleDrop = async (draggingNode, dropNode, dropType, ev) => {
   restoreExpandedState()
 }
 
-const rememberExpandedState = () => {
-  console.log('start remember')
-  /* if (!dataSource.value) {
-    return
-  }
-  for (const node of dataSource.value) {
-    console.log(node)
-    expandedList.value[node.id] = node.expanded
-  } */
-  console.log(expandedList.value)
-}
 const restoreExpandedState = async () => {
   console.log('start restore')
   console.log(expandedList.value)
-  /* if (!dataSource.value) {
-    return
-  }
-  for (const node of dataSource.value) {
-    if (!expandedList.value[node.id]) {
-      continue
-    }
-    node.expanded = expandedList.value[node.id]
-  } */
   treeVisible.value = false
   await nextTick()
   treeVisible.value = true
@@ -255,7 +239,6 @@ const createNewItem = (type, prop) => {
  * @prop: 0: Folder, 1: Document, 2: Prototype
  */
 const addAtRoot = async (type, prop) => {
-  rememberExpandedState()
   copyDataSource()
 
   const newItem = createNewItem(type, prop)
@@ -267,8 +250,6 @@ const addAtRoot = async (type, prop) => {
   restoreExpandedState()
 
   await editFile(newItem)
-
-  // restoreExpandedState()
 }
 
 const editFile = async (data) => {
@@ -277,7 +258,6 @@ const editFile = async (data) => {
     copyDataSource()
   }
   restoreExpandedState()
-  // rememberExpandedState()
 
   data.isInputVisible = true
   editingName.value = data.data.name
@@ -314,6 +294,7 @@ const handleEditComplete = async (node, name) => {
           node.data.created = res.data.created
           node.data.updated = res.data.updated
         }
+        console.log('after folder')
         ElMessage({
           type: 'success',
           message: editingStatus.value === 'editing' ? '修改成功' : '创建成功',
@@ -338,6 +319,7 @@ const handleEditComplete = async (node, name) => {
           node.data.created = res.data.created
           node.data.updated = res.data.updated
         }
+        console.log('after file')
         ElMessage({
           type: 'success',
           message: editingStatus.value === 'editing' ? '修改成功' : '创建成功',
@@ -360,6 +342,7 @@ const handleEditComplete = async (node, name) => {
           node.data.created = res.data.created
           node.data.updated = res.data.updated
         }
+        console.log('after editing')
         ElMessage({
           type: 'success',
           message: editingStatus.value === 'editing' ? '修改成功' : '创建成功',
@@ -373,11 +356,10 @@ const handleEditComplete = async (node, name) => {
   restoreExpandedState()
 }
 
-const appendFile = async (data) => {
-  rememberExpandedState()
+const appendItem = async (type, data) => {
   copyDataSource()
 
-  const newItem = createNewItem(2, props.itemProperty)
+  const newItem = createNewItem(type, props.itemProperty)
 
   if (!data.children) {
     data.children = []
@@ -387,13 +369,12 @@ const appendFile = async (data) => {
   }
   data.children.push(newItem)
   dataSource.value = [...dataSource.value]
+  editingStatus.value = (type === 1 ? 'folder' : 'file')
 
   await editFile(newItem)
 }
 
 const deleteFile = async (node, data) => {
-  rememberExpandedState()
-
   ElMessageBox.confirm('确认删除？', '确认', {
     confirmButtonText: '确认',
     cancelButtonText: '取消',
