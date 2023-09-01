@@ -136,7 +136,7 @@
         </span>
       </div>
       <!-- 几人在编辑 -->
-      <div class="editor__footer">
+      <div class="editor__footer" v-if="showLive">
         <div :class="`editor__status editor__status--${status}`">
           <template v-if="status === 'connected'">
             {{ editor.storage.collaborationCursor.users.length }} user{{ editor.storage.collaborationCursor.users.length === 1 ? '' : 's' }} online
@@ -182,7 +182,9 @@ import Heading from '@tiptap/extension-heading'
 import { Node } from '@tiptap/core'
 import emitter from '@/utils/emitter'
 import { onBeforeUnmount, ref, toRefs } from 'vue';
-
+import  {convertToMarkdown}  from '@/utils/editor/html2markdown/exportToMd.js'
+import { convertToWord } from '@/utils/editor/exportToDoc.js'
+import FileSaver from 'file-saver';
 
 const userStore = useUserStore()
 const userName = userStore.userInfo.username
@@ -240,13 +242,15 @@ const getRandomName = () => {
 const props = defineProps({
     doc_id:String,
     editable:Boolean,
-    activeButtons: Array
+    activeButtons: Array,
+    showLive: Boolean
 })
 
 
 const ydoc = new Y.Doc()
 const { editable } = toRefs(props)
 const { doc_id } = toRefs(props)
+const { showLive } = toRefs(props)
 if (editable.value)
   tmp_token = "2"
 else 
@@ -324,27 +328,32 @@ const save = () => {
 emitter.on('save', () => save())
 
 const exportToWord = () => {
-  console.log("导出word版本")
+  convertToWord()
 }
 emitter.on('exportToWord', () => exportToWord())
 
 const exportToPdf = () => {
   console.log("导出pdf版本")
   // 创建一个新节点
-  var newElement = document.createElement("div");
-  newElement.id = "element-to-print";
   var content = editor.value.getHTML();
-  newElement.textContent = content;
-  console.log(newElement.textContent)
   html2pdf().from(content, 'string').to('pdf').save()
   // html2pdf(element);
 }
 emitter.on('exportToPdf', () => exportToPdf())
 
-const exportToMarkdown = () => {
+const exportToMarkdown = (title) => {
+  console.log(title)
   console.log("导出Markdown版本")
+  // console.log(editor.value)
+  // console.log(editor.value.contentComponent.ctx.rootEl)
+  var content = editor.value.getHTML();
+
+  var markdown = convertToMarkdown(content)
+  const blob = new Blob([markdown], { type: 'text/plain;charset=utf-8' });
+  FileSaver.saveAs(blob, `${title}.md`);
 }
-emitter.on('exportToMarkdown', () => exportToMarkdown())
+
+emitter.on('exportToMarkdown', (title) => exportToMarkdown(title))
 
 onBeforeUnmount (() => {
   // this.editor.commands.clearContent(true)

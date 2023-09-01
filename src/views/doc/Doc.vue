@@ -1,81 +1,119 @@
 <template>
   <div id="app">
-    <div class="top-bar">
-      <div class="top-bar__left">
-        <router-link to="/project/docs">
-          <el-icon>
-            <ArrowLeftBold />
-          </el-icon>
-        </router-link>
-        {{ title }}
-      </div>
-      <div class="top-bar__right">
-        <div class="avatars">
+    <div v-if="!versionVisible">
+      <div class="top-bar">
+        <div class="top-bar__left">
+          <router-link to="/project/docs">
+            <el-icon>
+              <ArrowLeftBold />
+            </el-icon>
+          </router-link>
+          {{ title }}
+        </div>
+        <div class="top-bar__right">
+          <div class="avatars">
+            
+          </div>
+          
+          <div class="operations">
+            <el-button type="primary" @click="dialogFormVisible = true">分享</el-button>
+            <el-button type="primary" @click="versionVisible=true">历史版本</el-button>
+            <el-button type="primary" @click="callEditorMethodSave">保存</el-button>
+            <el-dropdown>
+              <el-button type="primary">
+                导出<el-icon class="el-icon--right"><arrow-down /></el-icon>
+              </el-button>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item @click="callEditorMethodExportToWord">导出为word</el-dropdown-item>
+                  <el-dropdown-item @click="callEditorMethodExportToPdf">导出为pdf</el-dropdown-item>
+                  <el-dropdown-item @click="callEditorMethodExportToMarkdown">导出为markdown</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+          </div>
           
         </div>
-        
-        <div class="operations">
-          <el-button type="primary" @click="dialogFormVisible = true">分享</el-button>
-          <el-button type="primary" @click="callEditorMethodSave">保存</el-button>
-          <el-dropdown>
-            <el-button type="primary">
-              导出<el-icon class="el-icon--right"><arrow-down /></el-icon>
-            </el-button>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item @click="callEditorMethodExportToWord">导出为word</el-dropdown-item>
-                <el-dropdown-item @click="callEditorMethodExportToPdf">导出为pdf</el-dropdown-item>
-                <el-dropdown-item @click="callEditorMethodExportToMarkdown">导出为markdown</el-dropdown-item>
-              </el-dropdown-menu>
-            </template>
-          </el-dropdown>
-        </div>
-        
+        <el-dialog v-model="dialogFormVisible" title="生成共享链接" width="20%" >
+          <el-form :model="form">
+            <el-form-item label="链接有效时间" :label-width="formLabelWidth">
+              <el-input v-model="shareForm.expires" autocomplete="off" size="small" class="input-width" />天
+            </el-form-item>
+            <el-form-item label="权限" :label-width="formLabelWidth">
+              <el-radio-group v-model="radio1" class="ml-4">
+                <el-radio label="2" size="large">可编辑</el-radio>
+                <el-radio label="1" size="large">仅可查看</el-radio>
+              </el-radio-group>
+            </el-form-item>
+          </el-form>
+          <template #footer>
+            <span class="dialog-footer">
+              <el-button @click="dialogFormVisible = false">取消</el-button>
+              <el-button type="primary" @click="shareLink" >
+                生成链接
+              </el-button>
+            </span>
+          </template>
+        </el-dialog>
       </div>
-      <el-dialog v-model="dialogFormVisible" title="生成共享链接" width="20%" >
-        <el-form :model="form">
-          <el-form-item label="链接有效时间" :label-width="formLabelWidth">
-            <el-input v-model="shareForm.expires" autocomplete="off" size="small" class="input-width" />天
-          </el-form-item>
-          <el-form-item label="权限" :label-width="formLabelWidth">
-            <el-radio-group v-model="radio1" class="ml-4">
-              <el-radio label="2" size="large">可编辑</el-radio>
-              <el-radio label="1" size="large">仅可查看</el-radio>
-            </el-radio-group>
-          </el-form-item>
-        </el-form>
-        <template #footer>
-          <span class="dialog-footer">
-            <el-button @click="dialogFormVisible = false">取消</el-button>
-            <el-button type="primary" @click="shareLink" >
-              生成链接
-            </el-button>
-          </span>
-        </template>
-      </el-dialog>
+      <div class="editor-container">
+        <editor :doc_id="doc_id" :editable="editable" v-if="visible" ref="childRef" :showLive="true" :activeButtons="[
+          'bold',
+          'italic',
+          'strike',
+          'underline',
+          'code',
+          'h1',
+          'h2',
+          'h3',
+          'bulletList',
+          'orderedList',
+          'blockquote',
+          'codeBlock',
+          'horizontalRule',
+          'undo',
+          'redo',
+        ]" />
+      </div>
     </div>
-    <div class="editor-container">
-      <editor :doc_id="doc_id" :editable="editable" v-if="visible" ref="childRef" :activeButtons="[
-        'bold',
-        'italic',
-        'strike',
-        'underline',
-        'code',
-        'h1',
-        'h2',
-        'h3',
-        'bulletList',
-        'orderedList',
-        'blockquote',
-        'codeBlock',
-        'horizontalRule',
-        'undo',
-        'redo',
-      ]" />
+
+    <div v-else>
+      <div class="top-bar">
+        <div class="top-bar__left">
+          <div class="back-to-edit" @click="versionVisible = false">
+            <el-icon>
+              <ArrowLeftBold />
+            </el-icon>
+            返回文档
+          </div>
+        </div>
+        <div class="top-bar__right">
+          <div class="operations">
+            <el-button type="primary">恢复此记录</el-button>
+          </div>
+          
+        </div>
+      </div>
+
+      <div class="body-container">
+        <el-row :gutter="20">
+          <el-col :span="20">
+            <div class="editor-version-container">
+              <editor :doc_id="doc_id" :editable="versionEditable" v-if="visible" ref="childRef" :showLive="false"/>
+            </div>
+          </el-col>
+          <el-col :span="4">
+            <div class="version-container">
+              <el-scrollbar height="800px">
+                <p v-for="item in 5" :key="item" class="scrollbar-demo-item">{{ item }}</p>
+              </el-scrollbar>
+            </div>
+          </el-col>
+        </el-row>
+      </div>
     </div>
   </div>
 </template>
-  
 
 
 <script setup>
@@ -88,6 +126,7 @@ import { ref, onMounted } from 'vue'
 import emitter from '@/utils/emitter'
 import { ArrowDown } from '@element-plus/icons-vue'
 
+const versionVisible = ref(false)
 
 const title = ref('')
 const form = ref({
@@ -104,6 +143,7 @@ const shareForm = ref({
 
 const radio1 =  ref('1')
 const editable = ref(true)
+const versionEditable = ref(false)
 
 const visible = ref(false)
 
@@ -211,7 +251,7 @@ const callEditorMethodExportToPdf = async() => {
 }
 
 const callEditorMethodExportToMarkdown = async() => {
-  emitter.emit('exportToMarkdown')
+  emitter.emit('exportToMarkdown', "filename")
 }
 </script>
 
@@ -245,10 +285,10 @@ export default {
 /* 编辑器的容器 */
 .editor-container {
   display: flex;
-  padding-top: 5%;
   box-sizing: border-box;
   flex-flow: column;
   align-items: center;
+  padding-top: 5%;
   min-height: 100%;
   overflow: auto;
   background-color: white;
@@ -259,6 +299,8 @@ export default {
     'WenQuanYi Zen Hei', 'ST Heiti', SimHei, 'WenQuanYi Zen Hei Sharp',
     sans-serif;
 }
+
+
 
 /* 顶部栏 */
 .top-bar {
@@ -296,6 +338,63 @@ export default {
   width: 100px;
 }
 
+/* 历史版本的左上角 */
+.back-to-edit:hover{
+  background-color: #f2f2f2; 
+  cursor: pointer;
+}
 
+.el-row {
+  margin-bottom: 20px;
+}
+.el-row:last-child {
+  margin-bottom: 0;
+}
+.el-col {
+  border-radius: 4px;
+}
+
+.body-container {
+  padding-top: 5%;
+}
+
+.grid-content {
+  border-radius: 4px;
+  min-height: 36px;
+}
+
+/* 历史版本的编辑器 */
+.editor-version-container {
+  display: flex;
+  box-sizing: border-box;
+  flex-flow: column;
+  align-items: center;
+  min-height: 100%;
+  overflow: auto;
+  background-color: white;
+  font-family: -apple-system, 'Noto Sans', 'Helvetica Neue', Helvetica,
+    'Nimbus Sans L', Arial, 'Liberation Sans', 'PingFang SC',
+    'Hiragino Sans GB', 'Noto Sans CJK SC', 'Source Han Sans SC',
+    'Source Han Sans CN', 'Microsoft YaHei', 'Wenquanyi Micro Hei',
+    'WenQuanYi Zen Hei', 'ST Heiti', SimHei, 'WenQuanYi Zen Hei Sharp',
+    sans-serif;
+}
+/* 版本的容器 */
+.body-container {
+  background-color: white;
+}
+
+/* 版本的条目 */
+.scrollbar-demo-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 50px;
+  margin: 10px;
+  text-align: center;
+  border-radius: 4px;
+  background: var(--el-color-primary-light-9);
+  color: var(--el-color-primary);
+}
 </style>
   
