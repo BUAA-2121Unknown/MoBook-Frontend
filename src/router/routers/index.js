@@ -116,6 +116,7 @@ const routers = [
         path: 'list',
         name: 'list',
         component: () => import('@/views/homeProject/HomeProject.vue'),
+        component: () => import('@/views/project/ProjectDocList.vue'),
         meta: {
           title: '项目列表',
         },
@@ -139,7 +140,9 @@ const routers = [
       {
         path: 'docs',
         name: 'docs',
-        component: () => import('@/views/project/ProjectDoc.vue'),
+        // component: () => import('@/views/project/ProjectDoc.vue'),
+        // component: () => import('@/views/project/ProjectDocWithTree.vue'),  // 侧边栏文件树
+        component: () => import('@/views/project/ProjectDocList.vue'),      // 文档列表
         meta: {
           title: '项目文档',
         },

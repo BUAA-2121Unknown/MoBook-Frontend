@@ -113,7 +113,6 @@ export const useUserStore = defineStore({
           } else {
             this.setOrgId(-1)
             this.setOrgInfo({})
-            useRouter().push({ path: '/create-or-invite' })
           }
 
           const isWin = ref(/windows/i.test(navigator.userAgent))

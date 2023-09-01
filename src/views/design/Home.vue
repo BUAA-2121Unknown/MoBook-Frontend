@@ -20,15 +20,9 @@
       </section>
       <!-- 中间画布 -->
       <section class="center">
-        <div
-          class="content"
-          @drop="handleDrop"
-          @dragover="handleDragOver"
-          @mousedown="handleMouseDown"
-          @mouseup="deselectCurComponent"
-          ref="editor"
-        >
-          <Editor/>
+        <div class="content" @drop="handleDrop" @dragover="handleDragOver" @mousedown="handleMouseDown"
+          @mouseup="deselectCurComponent" ref="editor">
+          <Editor :doc="doc"/>
         </div>
       </section>
       <!-- 右侧属性列表 -->
@@ -94,7 +88,7 @@ export default {
       activeName: "attr",
       reSelectAnimateIndex: undefined,
       provider: null,
-      doc: null,
+      doc: undefined,
       dataArray: null,
       isPreview: false,
       isPreviewing: false,
@@ -111,16 +105,14 @@ export default {
     "editor",
   ]),
   mounted() {
-    console.log("原型设计接收到路由传递的参数", this.$route.query.artId);
-    
+    // console.log("原型设计接收到路由传递的参数", this.$route.query.artId);
+
   },
   activated() {
     this.restore();
     this.initCollaboration();
   },
   created() {
-    // this.restore();
-    // this.initCollaboration();
     // 全局监听按键事件
     listenGlobalKeyDown();
     $on(eventBus, "updateCanvas", (newComponentData) => {
@@ -133,10 +125,14 @@ export default {
     });
   },
   methods: {
-    // TODO 1.初始化在线协作
+    // 初始化在线协作
     initCollaboration() {
+      // if(this.$route.query.artId){
+      //   return
+      // }
       this.doc = new Y.Doc();
-      const name = `ws/prototype/1/`;
+      const roomId = this.$route.query.artId ? this.$route.query.artId : 1;
+      const name = `ws/prototype/${roomId}/`;
       this.provider = new WebsocketProvider(
         // 后端端口
         "ws://82.156.25.78:5000/",
@@ -145,14 +141,18 @@ export default {
         // 对应doc文档
         this.doc
       );
+
       // 设置共享数组
       this.dataArray = this.doc.getArray("dataArray");
-      // 监听数据变化
+      // 共享数组保存至vuex
+      this.$store.commit(
+        "initDataArray",
+        this.dataArray,
+      )
+
+      // 监听数据变化 发送给画布
       this.dataArray.observe((event) => {
-        // TODO 3.将变化数据发送给画布
-        // e.g. this.XXX = this.dataArray.toArray();
         if (this.dataArray.toArray().length > 0) {
-          console.log("OBSERVE");
           this.$store.commit(
             "setComponentData",
             JSON.parse(this.dataArray.get(0))
@@ -161,27 +161,32 @@ export default {
             "setCanvasStyle",
             JSON.parse(this.dataArray.get(1))
           );
+          console.log('原型设计协作：远程更新', this.dataArray.toArray())
+          // 更新至快照，但此次更新不再广播
+          // this.$store.commit(
+          //   "recordSnapshot",
+          //   true,
+          // );
         }
-        console.log('收到回复', this.dataArray.toArray())
       });
-      // console.log('raw', this.dataArray)
+      console.log('原型设计协作：创建成功', this.dataArray)
       this.provider.on("status", (event) => {
         console.log("原型设计协作：websocket状态  ", event.status); // 'connected' or 'disconnected'
       });
     },
-    // TODO 2.dataArray获取画布数据
-    setDocArray() {
-      // e.g. this.dataArray = XXX;
-      if (!this.dataArray) {
-        return;
-      }
-      this.dataArray.delete(0, this.dataArray.length);
-      this.dataArray.insert(0, [
-        JSON.stringify(this.componentData),
-        JSON.stringify(this.canvasStyleData),
-      ]);
-      console.log('原型设计协作：尝试更新dataArray', this.dataArray)
-    },
+    // dataArray获取画布数据(已废弃)
+    // setDocArray() {
+    //   // e.g. this.dataArray = XXX;
+    //   if (!this.dataArray) {
+    //     return;
+    //   }
+    //   this.dataArray.delete(0, this.dataArray.length);
+    //   this.dataArray.insert(0, [
+    //     JSON.stringify(this.componentData),
+    //     JSON.stringify(this.canvasStyleData),
+    //   ]);
+    //   console.log('原型设计协作：尝试更新dataArray', this.dataArray)
+    // },
 
     // 读取数据 初始化画布
     async restore() {
@@ -250,7 +255,7 @@ export default {
         component.id = generateID();
         this.$store.commit("addComponent", { component });
         this.$store.commit("recordSnapshot");
-        this.setDocArray();
+        // this.setDocArray();
       }
     },
 
@@ -265,6 +270,8 @@ export default {
       this.$store.commit("setInEditorStatus", true);
     },
 
+
+    // cola 鼠标抬起 如果是左键 并且
     deselectCurComponent(e) {
       if (!this.isClickComponent) {
         this.$store.commit("setCurComponent", { component: null, index: null });
@@ -283,6 +290,7 @@ export default {
 .home {
   height: 100vh;
   background: #fff;
+
   main {
     height: calc(100% - 64px);
     position: relative;
@@ -295,8 +303,8 @@ export default {
       top: 0;
       // background-color: #333;
       overflow: auto;
-      
-      & > div {
+
+      &>div {
         overflow: auto;
 
         &:first-child {

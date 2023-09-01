@@ -2,6 +2,7 @@ import { createApp } from 'vue'
 import ElementPlus from 'element-plus'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import { initComponents } from "@/custom-component";
+import VueDragDrop from "vue3-drag-drop"
 
 import { setupErrorHandle } from './utils/handler/error'
 import settings from '@/settings/basic'
@@ -41,6 +42,7 @@ app.use(ElementPlus)
 app.use(router)
 app.use(pinia)
 app.use(store)
+app.use(VueDragDrop)
 
 setupErrorHandle(app)
 initComponents()
