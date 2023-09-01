@@ -282,7 +282,9 @@ const editFile = async (data) => {
   data.isInputVisible = true
   editingName.value = data.data.name
 
-  await nextTick()
+  while (!editingRef.value) {
+    await nextTick()
+  }
   editingRef.value.focus()
 }
 
