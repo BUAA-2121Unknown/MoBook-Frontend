@@ -8,7 +8,7 @@ import { useRouter } from 'vue-router'
 import router from '@/router/index'
 
 export const useUserStore = defineStore({
-  id: 'user', 
+  id: 'user',
   persist: true,
   state: () => ({
     userInfo: {
@@ -78,15 +78,15 @@ export const useUserStore = defineStore({
     setOrgInfo(val) {
       this.orgInfo = val
     },
-    
+
     setProjectId(val) {
       this.projectId = val
     },
-  
+
     setAuth(val) {
       this.auth = val
     },
-  
+
     resetUserInfo(value = {}) {
       this.userInfo = {
         ...this.userInfo,
