@@ -41,7 +41,7 @@ export default {
                         });
                     }
                 }
-
+                console.log('撤销元素列表长度',state.snapshotData.length)
                 store.commit("setComponentData", componentData);
                 // cola 最后，上传这个快照至共享数组
                 store.commit("setDataArray", componentData, state.canvasStyleData);
@@ -60,7 +60,7 @@ export default {
             }
         },
         // cola 在添加快照时提交！！
-        recordSnapshot(state) {
+        recordSnapshot(state, notBroadcast = false) {
             // 添加新的快照
             state.snapshotData[++state.snapshotIndex] = deepCopy(state.componentData);
             // 在 undo 过程中，添加新的快照时，要将它后面的快照清理掉
@@ -70,8 +70,14 @@ export default {
                     state.snapshotIndex + 1
                 );
             }
-            // cola 最后，上传这个快照至共享数组
             store.commit("setDataArray", state.componentData, state.canvasStyleData);
+            // console.log('完成了快照提交')
+            // console.log("recordSnapshot", notBroadcast ? '本次不广播' : '本次要广播')
+            // cola 最后，上传这个快照至共享数组
+            // 默认情况下，会进行关闭
+            // if(!notBroadcast){
+            //     store.commit("setDataArray", state.componentData, state.canvasStyleData);
+            // }
         },
 
         initDataArray(state, dataArray){
@@ -88,12 +94,13 @@ export default {
             let canvasStyleData =
                 JSON.stringify(csd) === "{}" ? state.canvasStyleData : csd;
 
+            // console.log("原型设计协作：尝试更新dataArray", dataArray);
             dataArray.delete(0, dataArray.length);
             dataArray.insert(0, [
                 JSON.stringify(componentData),
                 JSON.stringify(canvasStyleData),
             ]);
-            console.log("原型设计协作：尝试更新dataArray", dataArray);
+            console.log("原型设计协作：完成更新dataArray", dataArray);
         },
     },
 };

@@ -1,6 +1,6 @@
 <template>
   <!-- Form -->
-  <el-button @click="dialogFormVisible = true" :color="buttonColor" class="design-button">
+  <el-button @click="dialogFormVisible = true" :color="buttonColor" class="design-button" :disabled="tmp">
     管理预览链接
   </el-button>
 
@@ -10,10 +10,13 @@
         {{ title }}
       </div>
       <el-switch v-model="activited" class="ml-2 switch"
-        style="--el-switch-on-color: #13ce66; --el-switch-off-color: #ff4949;" :change="changeLinkStatus" />
+        style="--el-switch-on-color: #13ce66; --el-switch-off-color: #ff4949;" @change="changeLinkStatus" />
       <el-button @click="copyLink" color="#303133" class="design-button" v-if="activited">
         复制链接
       </el-button>
+      <div class="expires" v-if="activited">
+        有效期至 {{ expires }}
+      </div>
     </div>
   </el-dialog>
 </template>
@@ -25,6 +28,7 @@ import { useRouter } from "vue-router";
 import { createPrototype, savePrototype } from "@/api/artifact";
 import { useUserStore } from "@/stores/modules/user";
 import { emptyTemplateContent } from "@/enums/prototypeTemplateEnum.js";
+import { getPrototypeToken, createPrototypeToken, revokePrototypeToken } from "../../../api/artifact";
 
 export default {
   name: "PreviewCreateButton",
@@ -37,6 +41,8 @@ export default {
       link: '',
       activited: false,
       dialogFormVisible: false,
+      expires: '',
+      token: '',
     };
   },
   setup() {
@@ -46,9 +52,18 @@ export default {
     title() {
       return this.activited ? "预览链接已开启" : "预览链接已关闭";
     },
-    buttonColor(){
-      return this.placedAtBar ?  '' : '#303133'
-    }
+    buttonColor() {
+      return this.placedAtBar ? '' : '#303133'
+    },
+    // 是否处于调试试用界面
+    tmp() {
+      return false
+    },
+    // 拼接字符串
+    url(){
+      const userStore = useUserStore()
+      return "http://" + window.location.host + "/prototype-preview?token=" + this.token + '&projId=' + userStore.projectId;
+    },
   },
   methods: {
     // 复制共享链接
@@ -60,38 +75,71 @@ export default {
     // 改变共享链接的状态
     async changeLinkStatus() {
       const userStore = useUserStore()
-      const projectId = useUserStore.projectId
-      const data = {
-        projectId: userStore.projectId,
-        activited: this.activited,
+      // 变为激活
+      if (this.activited) {
+        const data = {
+          itemId: 0,
+          projId: userStore.projectId,
+          expires: 7,
+          auth: 1,
+          orgOnly: false,
+        }
+        try {
+          const res = await createPrototypeToken(data)
+          console.log('成功创建项目Token', res)
+          this.token = res.data.token
+          this.activited = res.data.active
+          this.expires = res.data.expires
+          this.link = this.url
+          ElMessage.success("共享链接已开启，有效期至" + this.expires);
+        } catch (e) {
+          console.log(e)
+        }
       }
-      try {
-        const res = await updatePrototypeShareStatus(data)
-        console.log('成功改变项目分享状态', res)
-        this.activited = !this.activited
-      } catch (e) {
-        console.log(e)
+      // 变为失效
+      else {
+        const data = {
+          token: this.token,
+        }
+        try {
+          const res = await revokePrototypeToken(data)
+          console.log('成功取消项目Token', res)
+          this.token = res.data.token
+          this.activited = res.data.active
+          this.expires = res.data.expires
+          this.link = this.url
+          ElMessage.success("共享链接已关闭");
+        } catch (e) {
+          console.log(e)
+        }
       }
     },
-    // 获取当前项目的分享链接
-    async getLink() {
+    // 获取当前项目的分享链接状态
+    async getTokenStatus() {
       const userStore = useUserStore()
       const params = {
-        projectId: userStore.projectId
+        itemId: 0,
+        projId: userStore.projectId,
       }
       try {
-        // const res = await getPrototypeShareLink(params)
-        // console.log('成功加载项目分享地址', res)
-        // const token = res.data.token
-        const token = '1111'
-        this.link = "http://" + window.location.host + "/prototype-preview/" + token;
+        const res = await getPrototypeToken(params)
+        console.log('成功加载项目分享地址', res)
+        if (res.data.token) {
+          this.token = res.data.token.token
+          this.activited = res.data.token.active
+          this.expires = res.data.token.expires
+          this.link = this.url
+        }
+        else{
+          this.activited = false
+        }
       } catch (e) {
         console.log(e)
       }
     },
   },
   activated() {
-    this.getLink()
+    this.getTokenStatus()
   }
 };
 </script>
@@ -112,6 +160,12 @@ export default {
   font-size: 20px;
   font-weight: 600;
   color: rgba(25, 25, 25, 0.8);
+}
+.expires {
+  margin: 20px;
+  font-size: 14px;
+  font-weight: 400;
+  color: rgba(71, 71, 71, 0.8);
 }
 
 .design-button {
