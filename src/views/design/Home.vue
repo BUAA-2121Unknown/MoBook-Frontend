@@ -119,8 +119,6 @@ export default {
     this.initCollaboration();
   },
   created() {
-    // this.restore();
-    // this.initCollaboration();
     // 全局监听按键事件
     listenGlobalKeyDown();
     $on(eventBus, "updateCanvas", (newComponentData) => {
@@ -135,8 +133,12 @@ export default {
   methods: {
     // TODO 1.初始化在线协作
     initCollaboration() {
+      // if(this.$route.query.artId){
+      //   return
+      // }
       this.doc = new Y.Doc();
-      const name = `ws/prototype/1/`;
+      const roomId = this.$route.query.artId ? this.$route.query.artId : 1; 
+      const name = `ws/prototype/${roomId}/`;
       this.provider = new WebsocketProvider(
         // 后端端口
         "ws://82.156.25.78:5000/",
@@ -145,8 +147,15 @@ export default {
         // 对应doc文档
         this.doc
       );
+
       // 设置共享数组
       this.dataArray = this.doc.getArray("dataArray");
+      // 共享数组保存至vuex
+      this.$store.commit(
+        "initDataArray",
+        this.dataArray,
+      )
+
       // 监听数据变化
       this.dataArray.observe((event) => {
         // TODO 3.将变化数据发送给画布
@@ -162,7 +171,7 @@ export default {
             JSON.parse(this.dataArray.get(1))
           );
         }
-        console.log('收到回复', this.dataArray.toArray())
+        console.log('原型设计协作：远程更新', this.dataArray.toArray())
       });
       // console.log('raw', this.dataArray)
       this.provider.on("status", (event) => {
@@ -250,7 +259,7 @@ export default {
         component.id = generateID();
         this.$store.commit("addComponent", { component });
         this.$store.commit("recordSnapshot");
-        this.setDocArray();
+        // this.setDocArray();
       }
     },
 
@@ -265,6 +274,8 @@ export default {
       this.$store.commit("setInEditorStatus", true);
     },
 
+
+    // cola 鼠标抬起 如果是左键 并且
     deselectCurComponent(e) {
       if (!this.isClickComponent) {
         this.$store.commit("setCurComponent", { component: null, index: null });

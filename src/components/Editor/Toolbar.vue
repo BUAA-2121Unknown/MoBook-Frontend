@@ -265,6 +265,7 @@ export default {
       this.$store.commit("redo");
     },
 
+    // cola 图片上传函数
     handleFileChange(e) {
       const file = e.target.files[0];
       if (!file.type.includes("image")) {

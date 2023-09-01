@@ -234,7 +234,6 @@ export default {
         const socket = new WebSocket(this.wsCfg.url);
         // 初始化事件
         this.initEventHandle(socket);
-        console.log(socket);
       } catch (e) {
         console.log(e);
         // 出错时重新连接
@@ -254,7 +253,7 @@ export default {
       };
       // 连接建立时触发
       socket.onopen = () => {
-        // console.log("消息中心：连接成功");
+        console.log("消息中心：连接成功", socket);
         this.newSocket = socket;
       };
       // 客户端接收服务端数据时触发
