@@ -1,30 +1,23 @@
 <template>
   <div>
     <div class="icon-container" @click="showSettingDrawer">
-      <el-icon size="18"><Message /></el-icon>
+      <el-icon size="18">
+        <Message />
+      </el-icon>
       <div class="number-container" v-if="unreadMessageCnt != 0">
         {{ unreadMessageCnt }}
       </div>
     </div>
-    <el-drawer
-      v-model="drawer"
-      :direction="direction"
-      :before-close="handleClose"
-      :modal="false"
-      title="消息中心"
-    >
+    <el-drawer v-model="drawer" :direction="direction" :before-close="handleClose" :modal="false" title="消息中心">
       <div class="setting_body">
         <div class="setting_card">
           <div class="message-header">
             <div class="left-container">
-              <el-icon size="18"><Bell /></el-icon>
+              <el-icon size="18">
+                <Bell />
+              </el-icon>
               <el-select v-model="onlyUnread" class="m-2" placeholder="Select">
-                <el-option
-                  v-for="item in options"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                />
+                <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
               </el-select>
             </div>
             <el-dropdown class="op-header">
@@ -36,25 +29,15 @@
               </span>
               <template #dropdown>
                 <el-dropdown-menu>
-                  <el-dropdown-item @click="delReadMessage"
-                    >清除已读消息</el-dropdown-item
-                  >
-                  <el-dropdown-item @click="readAllMessage"
-                    >全部设为已读</el-dropdown-item
-                  >
+                  <el-dropdown-item @click="delReadMessage">清除已读消息</el-dropdown-item>
+                  <el-dropdown-item @click="readAllMessage">全部设为已读</el-dropdown-item>
                 </el-dropdown-menu>
               </template>
             </el-dropdown>
           </div>
           <el-divider />
-          <messageItem
-            v-for="message in list"
-            :key="message.id"
-            :info="message"
-            :readHandler="readMessagel"
-            :delHandler="delMessagel"
-            :onlyUnread="onlyUnread"
-          >
+          <messageItem v-for="message in list" :key="message.id" :info="message" :readHandler="readMessagel"
+            :delHandler="delMessagel" :onlyUnread="onlyUnread">
           </messageItem>
         </div>
       </div>
@@ -116,7 +99,7 @@ export default {
       const str = "" + this.userId + "/" + this.orgId + "/";
       // websocket地址
       return {
-        url: "ws://81.70.161.76:5000/ws/notif/" + str,
+        url: "ws://82.156.25.78:5000/ws/notif/" + str,
       };
     },
   },
@@ -226,7 +209,7 @@ export default {
     // websocket
     // 创建websocket
     createWebSocket() {
-      if(this.newSocket){
+      if (this.newSocket) {
         return
       }
       try {
@@ -309,7 +292,7 @@ export default {
 };
 </script>
   
-  <script setup>
+<script setup>
 import { ref } from "vue";
 import { useUserStore } from "@/stores/modules/user";
 
@@ -324,24 +307,28 @@ const showSettingDrawer = () => {
 };
 </script>
   
-  <style lang="scss" scoped>
+<style lang="scss" scoped>
 .left-container {
   display: flex;
   align-items: center;
 }
+
 .op-header {
   margin: 0 20px 5px 0;
 }
+
 .message-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
+
 .icon-container {
   cursor: pointer;
   position: relative;
   width: 30px;
 }
+
 .number-container {
   position: absolute;
   top: -4px;
@@ -355,11 +342,14 @@ const showSettingDrawer = () => {
   align-items: center;
   justify-content: center;
 }
+
 .drawer-container {
   transition: all 0.2s;
+
   &:hover {
     right: 0;
   }
+
   position: fixed;
   right: -20px;
   bottom: 15%;
@@ -374,33 +364,41 @@ const showSettingDrawer = () => {
   cursor: pointer;
   -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 10%);
 }
+
 .setting_body {
   padding: 0 5px;
+
   .setting_card {
     margin-bottom: 20px;
   }
+
   .setting_content {
     margin-top: 20px;
     display: flex;
     flex-direction: column;
-    > .theme-box {
+
+    >.theme-box {
       display: flex;
     }
-    > .color-box {
+
+    >.color-box {
       div {
         display: flex;
         flex-direction: column;
       }
     }
+
     .item {
       display: flex;
       align-items: center;
       justify-content: center;
       flex-direction: column;
       margin-right: 20px;
+
       .item-top {
         position: relative;
       }
+
       .check {
         position: absolute;
         font-size: 20px;
@@ -408,6 +406,7 @@ const showSettingDrawer = () => {
         right: 10px;
         bottom: 10px;
       }
+
       p {
         text-align: center;
         font-size: 12px;
