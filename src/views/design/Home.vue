@@ -8,8 +8,15 @@
     <main>
       <!-- 左侧组件列表 -->
       <section class="left">
-        <ComponentList />
-        <RealTimeComponentList />
+        <TemplateList></TemplateList>
+        <el-collapse v-model="activeNames">
+          <el-collapse-item title="组件库" name="1">
+            <ComponentList />
+          </el-collapse-item>
+          <el-collapse-item title="元素列表" name="2">
+            <RealTimeComponentList />
+          </el-collapse-item>
+        </el-collapse>
       </section>
       <!-- 中间画布 -->
       <section class="center">
@@ -19,8 +26,9 @@
           @dragover="handleDragOver"
           @mousedown="handleMouseDown"
           @mouseup="deselectCurComponent"
+          ref="editor"
         >
-          <Editor />
+          <Editor/>
         </div>
       </section>
       <!-- 右侧属性列表 -->
@@ -58,12 +66,13 @@ import generateID from "../../utils/design/generateID";
 import { listenGlobalKeyDown } from "../../utils/design/shortcutKey";
 import RealTimeComponentList from "../../components/Editor/RealTimeComponentList.vue";
 import CanvasAttr from "../../components/Editor/CanvasAttr.vue";
+import TemplateList from "../../components/Editor/TemplateList.vue";
 import { Project } from "../../api/project";
 import { useRoute } from "vue-router";
 import { ElNotification } from "element-plus";
 // 实时协作
-// import * as Y from "yjs";
-// import { WebsocketProvider } from "y-websocket";
+import * as Y from "yjs";
+import { WebsocketProvider } from "y-websocket";
 import { $on } from "../../utils/design/gogocodeTransfer";
 import eventBus from "@/utils/design/eventBus";
 
@@ -78,6 +87,7 @@ export default {
     Toolbar,
     RealTimeComponentList,
     CanvasAttr,
+    TemplateList,
   },
   data() {
     return {
@@ -89,6 +99,8 @@ export default {
       isPreview: false,
       isPreviewing: false,
       loading: false,
+
+      activeNames: ['1', '2'],
     };
   },
   computed: mapState([
@@ -100,9 +112,14 @@ export default {
   ]),
   mounted() {
     console.log("原型设计接收到路由传递的参数", this.$route.query.artId);
+    
+  },
+  activated() {
+    this.restore();
+    this.initCollaboration();
   },
   created() {
-    this.restore();
+    // this.restore();
     // this.initCollaboration();
     // 全局监听按键事件
     listenGlobalKeyDown();
@@ -119,11 +136,12 @@ export default {
     // TODO 1.初始化在线协作
     initCollaboration() {
       this.doc = new Y.Doc();
+      const name = `ws/prototype/1/`;
       this.provider = new WebsocketProvider(
         // 后端端口
-        "ws://101.42.173.97:1235",
+        "ws://82.156.25.78:5000/",
         // 后端房间号
-        `newproto${this.$route.params.id}`,
+        name,
         // 对应doc文档
         this.doc
       );
@@ -144,9 +162,11 @@ export default {
             JSON.parse(this.dataArray.get(1))
           );
         }
+        console.log('收到回复', this.dataArray.toArray())
       });
+      // console.log('raw', this.dataArray)
       this.provider.on("status", (event) => {
-        console.log("event.status: ", event.status); // 'connected' or 'disconnected'
+        console.log("原型设计协作：websocket状态  ", event.status); // 'connected' or 'disconnected'
       });
     },
     // TODO 2.dataArray获取画布数据
@@ -160,7 +180,9 @@ export default {
         JSON.stringify(this.componentData),
         JSON.stringify(this.canvasStyleData),
       ]);
+      console.log('原型设计协作：尝试更新dataArray', this.dataArray)
     },
+
     // 读取数据 初始化画布
     async restore() {
       if (!this.$route.query || !this.$route.query.artId) {
@@ -171,7 +193,7 @@ export default {
             confirmButtonText: "确定",
           }
         );
-        console.log("未给出artId，无法加载");
+        // console.log("未给出artId，无法加载");
         return;
       }
       // 是已保存的项目
@@ -268,11 +290,12 @@ export default {
     .left {
       position: absolute;
       height: 100%;
-      width: 200px;
-      left: 0;
+      width: 190px;
+      left: 10px;
       top: 0;
       // background-color: #333;
-
+      overflow: auto;
+      
       & > div {
         overflow: auto;
 

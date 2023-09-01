@@ -2,7 +2,7 @@
   <div>
     <div class="icon-container" @click="showSettingDrawer">
       <el-icon size="18"><Message /></el-icon>
-      <div class="number-container">
+      <div class="number-container" v-if="unreadMessageCnt != 0">
         {{ unreadMessageCnt }}
       </div>
     </div>
@@ -216,7 +216,7 @@ export default {
       };
       try {
         const res = await getMessage(data);
-        this.messageList = res.data.notifications;
+        this.messageList = res.data.notifications.reverse();
         console.log("消息中心：加载全部消息列表", this.messageList, res);
       } catch (e) {
         console.log(e);
@@ -254,7 +254,7 @@ export default {
       };
       // 连接建立时触发
       socket.onopen = () => {
-        console.log("消息中心：连接成功");
+        // console.log("消息中心：连接成功");
         this.newSocket = socket;
       };
       // 客户端接收服务端数据时触发

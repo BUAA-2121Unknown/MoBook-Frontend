@@ -35,6 +35,14 @@ const routers = [
     },
   },
   {
+    path: '/create-or-join',
+    name: 'create-or-join',
+    component: () => import('@/views/team/CreateOrJoin.vue'),
+    meta: {
+      title: '创建或加入团队',
+    }
+  },
+  {
     path: '/',
     name: 'Layout',
     redirect: '/team',
@@ -178,6 +186,14 @@ const routers = [
     component: () => import('@/views/design/Home.vue'),
     meta: {
       title: '原型设计',
+    },
+  },
+  {
+    path: '/prototype-preview',
+    name: 'prototype-preview',
+    component: () => import('@/views/design/ProtoPreview.vue'),
+    meta: {
+      title: '原型设计预览',
     },
   },
   ERROR_LOG_ROUTE,

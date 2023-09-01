@@ -5,9 +5,8 @@
       <h1 class="header-title">原型设计</h1>
       <div class="button-container">
         <SearchBar :handler="handleSearch"></SearchBar>
-        <DesignCreateButton
-          :handler="getList"
-        ></DesignCreateButton>
+        <PreviewCreateButton ></PreviewCreateButton>
+        <DesignCreateButton :handler="getList" ></DesignCreateButton>
       </div>
     </div>
 
@@ -19,7 +18,7 @@
           <DesignCard
             :design="item"
             :projId="projId"
-            :fatherDelHandler="delHandler"
+            :fatherHandler="getList"
           ></DesignCard>
         </el-col>
       </el-row>
@@ -33,6 +32,7 @@ import { useUserStore } from "@/stores/modules/user";
 import DesignCard from "../../components/project/DesignCard.vue";
 import designImg from "@/assets/project/projectDesignImg.png";
 import DesignCreateButton from "../../components/project/button/DesignCreateButton.vue";
+import PreviewCreateButton from "../../components/project/button/PreviewCreateButton.vue";
 import SearchBar from "../../components/project/SearchBar.vue";
 
 import { getPrototypeList } from "../../api/artifact";
@@ -43,6 +43,7 @@ export default {
     DesignCard,
     DesignCreateButton,
     SearchBar,
+    PreviewCreateButton,
   },
   data() {
     return {
@@ -56,6 +57,7 @@ export default {
         // },
       ],
       orgId: undefined,
+      projId: -1,
     };
   },
   methods: {
@@ -75,27 +77,22 @@ export default {
       };
       try {
         const res = await getPrototypeList(params);
-        console.log('开始导入原型设计列表', res);
-        this.designList = res.data.artifacts.filter(function (item) {
-          return item.isLive === false;
-        });
-        console.log('成功导入原型设计列表', this.designList);
+        if (res.data && res.data.artifacts) {
+          this.designList = res.data.artifacts.filter(function (item) {
+            return item.isLive === false && item.type == "p";
+          });
+        }
+        else{
+          this.designList = []
+        }
+        console.log("成功导入原型设计列表", res, this.designList);
       } catch (e) {
         console.log(e);
       }
     },
   },
-  // mounted() {
-  //   const userStore = useUserStore();
-  //   // this.projId = this.$router.query.projId
-  //   // console.log(this.projId)
-  //   this.projId = userStore.projectId;
-  //   this.getList();
-  // },
   activated() {
     const userStore = useUserStore();
-    // this.projId = this.$router.query.projId
-    // console.log(this.projId)
     this.projId = userStore.projectId;
     this.getList();
   },
@@ -112,8 +109,9 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin: 0 120px 0 0;
 }
-.button-container{
+.button-container {
   display: flex;
   align-items: center;
 }
