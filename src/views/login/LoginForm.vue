@@ -114,11 +114,15 @@ const submitForm = () => {
         fullscreen: true,
         text: '登录中，请稍候...',
       })
-      const flag = await login()
+      const res = await login()
       loadingInstance.close()
 
-      if (!flag) {
+      if (!res) {
         // loginVerify()
+        return false
+      }
+      if (userStore.orgId === -1) {
+        router.push({ path: '/create-or-join' })
         return false
       }
       const redirectURL = localStorage.getItem('redirectURL')
