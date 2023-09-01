@@ -139,7 +139,8 @@ const routers = [
       {
         path: 'docs',
         name: 'docs',
-        component: () => import('@/views/project/ProjectDoc.vue'),
+        // component: () => import('@/views/project/ProjectDoc.vue'),
+        component: () => import('@/views/project/ProjectDocWithTree.vue'),
         meta: {
           title: '项目文档',
         },
