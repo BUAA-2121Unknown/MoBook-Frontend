@@ -161,7 +161,8 @@ export default {
     transAvaterUrl(url) {
       return url ? url : defaultImgUrl;
     },
-    // 跳转到消息
+
+    // y跳转到消息
     jumpForMessage() {
       this.readMessage()
       console.log("从消息中心跳转：");
@@ -179,10 +180,9 @@ export default {
           break;
         case 7:
           this.$router.push({
-            path: "/chat",
+            path: "/doc",
             query: {
-              roomId: this.info.payload.chat.id,
-              id: this.info.id
+              doc_id: this.info.payload.artifact.id
             }
           })
           break;
