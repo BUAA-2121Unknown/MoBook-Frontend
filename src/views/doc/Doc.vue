@@ -173,7 +173,6 @@ import emitter from '@/utils/emitter'
 import { ArrowDown } from '@element-plus/icons-vue'
 import FileTree from '@/components/fileManager/FileTree.vue'
 import { useUserStore } from '@/stores/modules/user'
-import { fromUint8Array, toUint8Array } from 'js-base64'
 import historyEditor  from '@/components/docEditor/historyEditor.vue'
 import * as Y from 'yjs'
 import { CircleCloseFilled } from '@element-plus/icons-vue'
@@ -353,11 +352,11 @@ const callEditorMethodSave = async() => {
 }
 
 const callEditorMethodExportToWord = async() => {
-  emitter.emit('exportToWord')
+  emitter.emit('exportToWord', "filename")
 }
 
 const callEditorMethodExportToPdf = async() => {
-  emitter.emit('exportToPdf')
+  emitter.emit('exportToPdf', "filename")
 }
 
 const callEditorMethodExportToMarkdown = async() => {
