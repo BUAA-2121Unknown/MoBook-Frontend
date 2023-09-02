@@ -1,10 +1,10 @@
 <template>
   <!-- Form -->
-  <el-button @click="dialogFormVisible = true" color="#303133">
-    创建原型
+  <el-button @click="dialogFormVisible = true" color="#303133" class="design-button">
+    创建原型设计
   </el-button>
 
-  <el-dialog v-model="dialogFormVisible" title="创建原型设计">
+  <el-dialog v-model="dialogFormVisible" title="创建原型设计" append-to-body>
     <el-form :model="form">
       <el-form-item label="标题" :label-width="formLabelWidth">
         <el-input
@@ -37,8 +37,9 @@
 <script>
 import PictureUploader from "../PictureUploader.vue";
 import { useRouter } from "vue-router";
-import { createPrototype } from "@/api/artifact";
+import { createPrototype, savePrototype } from "@/api/artifact";
 import { useUserStore } from "@/stores/modules/user";
+import { emptyTemplateContent } from "@/enums/prototypeTemplateEnum.js"
 
 export default {
   name: "DesignCreateButton",
@@ -63,30 +64,44 @@ export default {
   methods: {
     // 创建原型设计
     async handleCreate() {
-      const userStore = useUserStore()
+      const userStore = useUserStore();
       const data = {
         projId: userStore.projectId,
         name: this.form.name,
-        type: "prototype",
+        type: "p",
         live: false,
       };
       try {
+        // 创建原型设计
         const res = await createPrototype(data);
+        console.log("成功创建原型设计", res);
+        // 创建之后立即初始化一次原型设计的内容
+        const data2 = {
+          artId: res.data.id,
+          filename: "prototype_" + res.data.id + ".json",
+          // filename: 'DesignForTestProject2.json',
+          content: emptyTemplateContent
+        };
+        const res2 = await savePrototype(data2);
+        console.log("成功初始化原型设计", res2);
+        // 
         this.dialogFormVisible = false;
         this.$message({
           message: "成功创建原型设计",
           type: "success",
         });
         // 让父组件刷新一下状态
-        this.handler()
-        
-        console.log(res)
+        this.handler();
         this.form = {
           name: "",
           intro: "",
           url: "",
         };
-        this.$router.push({ path: "/prototype", query: { artId: res.data.id} });
+        // 跳转到新页面
+        this.$router.push({
+          path: "/prototype",
+          query: { artId: res.data.id },
+        });
       } catch (e) {
         this.dialogFormVisible = false;
         console.log(e);
@@ -96,6 +111,9 @@ export default {
 };
 </script>
 <style scoped>
+.design-button{
+  margin: 0 10px;
+}
 .el-button--text {
   margin-right: 15px;
 }

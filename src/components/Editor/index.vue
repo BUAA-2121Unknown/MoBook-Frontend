@@ -2,6 +2,7 @@
   <div
     id="editor"
     class="editor"
+    ref="canvas"
     :class="{ edit: isEdit }"
     :style="{
       ...getCanvasStyle(canvasStyleData),
@@ -177,6 +178,7 @@ export default {
     "curComponent",
     "canvasStyleData",
     "editor",
+    "canvasDOM",
   ]),
   mounted() {
     // 获取编辑器元素
@@ -185,6 +187,8 @@ export default {
     $on(eventBus, "hideArea", () => {
       this.hideArea();
     });
+
+    this.$store.commit("setCanvasDOM", this.$refs.canvas);
   },
   methods: {
     getShapeStyle,

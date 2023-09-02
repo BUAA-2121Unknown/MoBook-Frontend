@@ -57,9 +57,7 @@
                                 <div class="command-box" style="display: flex" @click="handleCommand">
                                   <div>指令菜单</div>
                                   <div style="margin-left: 8px">
-                                    <span class="button">{{ first }}</span>
-                                    +
-                                    <span class="button">K</span>
+                                    <span class="button">{{ first }}</span>+<span class="button">K</span>
                                   </div>
                                 </div>
                               </el-dropdown-item>
@@ -313,7 +311,8 @@ const goToChangeTeam = () => {
   width: 25px!important;
   padding: 4px 8px !important;
   border: 1px solid #eaeaea;
-  margin-right: 4px;
+  margin-left: 2px;
+  margin-right: 2px;
   border-radius: 4px;
 }
 

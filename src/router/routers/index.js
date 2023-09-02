@@ -18,6 +18,14 @@ Object.keys(modules).forEach((key) => {
 
 const routers = [
   {
+    path: '/home',
+    name: 'home',
+    component: () => import('@/views/Home.vue'),
+    meta: {
+      title: '主页',
+    },
+  },
+  {
     path: '/login',
     name: 'login',
     component: () => import('@/views/login/Login.vue'),
@@ -25,6 +33,14 @@ const routers = [
       title: '登录',
       noAuthNeed: true,
     },
+  },
+  {
+    path: '/create-or-join',
+    name: 'create-or-join',
+    component: () => import('@/views/team/CreateOrJoin.vue'),
+    meta: {
+      title: '创建或加入团队',
+    }
   },
   {
     path: '/',
@@ -123,7 +139,8 @@ const routers = [
       {
         path: 'docs',
         name: 'docs',
-        component: () => import('@/views/project/ProjectDoc.vue'),
+        // component: () => import('@/views/project/ProjectDoc.vue'),
+        component: () => import('@/views/project/ProjectDocWithTree.vue'),
         meta: {
           title: '项目文档',
         },
@@ -157,9 +174,9 @@ const routers = [
     path: '/doc',
     name: 'doc',
     component: () => import('@/views/doc/Doc.vue'),
-    // props: (route) => ({
-    //   doc_id: route.query.doc_id,
-    // }),
+    props: (route) => ({
+      doc_id: route.query.doc_id,
+    }),
     meta: {
       title: '文档',
     },
@@ -183,6 +200,14 @@ const routers = [
       title: '文档分享',
       noAuthNeed: true,
     }
+  },
+  {
+    path: '/prototype-preview',
+    name: 'prototype-preview',
+    component: () => import('@/views/design/ProtoPreview.vue'),
+    meta: {
+      title: '原型设计预览',
+    },
   },
   ERROR_LOG_ROUTE,
   PAGE_NOT_FOUND_ROUTE,

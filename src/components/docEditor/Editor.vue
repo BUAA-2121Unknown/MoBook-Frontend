@@ -185,6 +185,7 @@ import { onBeforeUnmount, ref, toRefs } from 'vue';
 import  {convertToMarkdown}  from '@/utils/editor/html2markdown/exportToMd.js'
 import { convertToWord } from '@/utils/editor/exportToDoc.js'
 import FileSaver from 'file-saver';
+import {uploadDoc} from '@/api/artifact'
 
 const userStore = useUserStore()
 const userName = userStore.userInfo.username
@@ -200,7 +201,7 @@ const currentUser = {
 };
 const provider = ref(null);
 const status = ref('connecting');
-let tmp_token = '';
+let auth = ""
 
 
 
@@ -240,26 +241,38 @@ const getRandomName = () => {
 }
 
 const props = defineProps({
-    doc_id:String,
     editable:Boolean,
     activeButtons: Array,
-    showLive: Boolean
+    showLive: Boolean,
+    paramsToEditor: Object,
 })
 
 
 const ydoc = new Y.Doc()
 const { editable } = toRefs(props)
-const { doc_id } = toRefs(props)
 const { showLive } = toRefs(props)
+const { paramsToEditor } = toRefs(props)
+const doc_id = paramsToEditor.value.itemId
+const projId = paramsToEditor.value.projId
+const version = paramsToEditor.value.version
+// console.log("paramsToEditorVersion" + paramsToEditor.value.version)
 if (editable.value)
-  tmp_token = "2"
-else 
-  tmp_token = "1"
+  auth = "2"
+else
+  auth = "1"
 provider.value = new HocuspocusProvider({
   url: 'ws://localhost:80',
-  name: doc_id.value,
+  name: doc_id,
   document: ydoc,
-  token: tmp_token + '-' + doc_id.value + '-' + userName,
+  token: auth,
+  parameters: {
+    auth: auth,
+    doc_id: doc_id,
+    projId: projId,
+    version: version,
+    userName: userName,
+    jwtToken: userStore.token
+  }
 })
 
 provider.value.on('status', event => {
@@ -289,6 +302,7 @@ editor.value = new Editor({
     }),
     Collaboration.configure({
       document: ydoc,
+      // document: doc.value
       // document: provider.document
     }),
     CollaborationCursor.configure({
@@ -322,8 +336,22 @@ editor.value.on('update', () => {
   json.value = editor.value.getJSON();
   
 })
-const save = () => {
+const save = async() => {
   console.log("保存文件")
+  const json = editor.value.getJSON()
+  const saveFormData = {
+    'projId': '',
+    'itemId': '',
+    'content': '',
+    'version': '',
+  }
+  saveFormData.projId = parseInt(projId)
+  saveFormData.itemId = parseInt(doc_id)
+  saveFormData.version = 10000000
+  saveFormData.content = JSON.stringify(json)
+  console.log(saveFormData)
+  const res = await uploadDoc(saveFormData)
+  console.log(res.data)
 }
 emitter.on('save', () => save())
 

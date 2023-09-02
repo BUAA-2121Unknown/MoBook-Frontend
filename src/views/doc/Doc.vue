@@ -8,16 +8,15 @@
               <ArrowLeftBold />
             </el-icon>
           </router-link>
-          {{ title }}
+          <!-- {{ title }} -->
         </div>
         <div class="top-bar__right">
           <div class="avatars">
-            
           </div>
           
           <div class="operations">
             <el-button type="primary" @click="dialogFormVisible = true">分享</el-button>
-            <el-button type="primary" @click="versionVisible=true">历史版本</el-button>
+            <el-button type="primary" @click="showVersions">历史版本</el-button>
             <el-button type="primary" @click="callEditorMethodSave">保存</el-button>
             <el-dropdown>
               <el-button type="primary">
@@ -56,25 +55,30 @@
           </template>
         </el-dialog>
       </div>
-      <div class="editor-container">
-        <editor :doc_id="doc_id" :editable="editable" v-if="visible" ref="childRef" :showLive="true" :activeButtons="[
-          'bold',
-          'italic',
-          'strike',
-          'underline',
-          'code',
-          'h1',
-          'h2',
-          'h3',
-          'bulletList',
-          'orderedList',
-          'blockquote',
-          'codeBlock',
-          'horizontalRule',
-          'undo',
-          'redo',
-        ]" />
+      
+      <div class="body-container">
+        <FileTree></FileTree>
+        <div class="editor-container">
+          <editor :paramsToEditor="paramsToEditor" editable="editable" v-if="visible" ref="childRef" :showLive="true" :activeButtons="[
+            'bold',
+            'italic',
+            'strike',
+            'underline',
+            'code',
+            'h1',
+            'h2',
+            'h3',
+            'bulletList',
+            'orderedList',
+            'blockquote',
+            'codeBlock',
+            'horizontalRule',
+            'undo',
+            'redo',
+          ]" />
+        </div>
       </div>
+      
     </div>
 
     <div v-else>
@@ -95,17 +99,21 @@
         </div>
       </div>
 
-      <div class="body-container">
+      <div class="body-version-container">
         <el-row :gutter="20">
-          <el-col :span="20">
+          <el-col :span="18">
             <div class="editor-version-container">
-              <editor :doc_id="doc_id" :editable="versionEditable" v-if="visible" ref="childRef" :showLive="false"/>
+              <historyEditor :paramsToEditor="paramsToEditor" :editable="versionEditable" ref="childRef" :showLive="false" :key="componentKey"/>
             </div>
           </el-col>
-          <el-col :span="4">
+          <el-col :span="6">
             <div class="version-container">
               <el-scrollbar height="800px">
-                <p v-for="item in 5" :key="item" class="scrollbar-demo-item">{{ item }}</p>
+                <div v-for="(version, key) in versions" class="scrollbar-demo-item" :key = "key" @click="chooseVersion(version.version)">
+                  <div>创建时间：{{ version.updated }}</div>
+                  <div>创建者: {{ version.user.username }}</div>
+                  <div>版本号: {{ version.version }}</div>
+                </div>
               </el-scrollbar>
             </div>
           </el-col>
@@ -119,12 +127,19 @@
 <script setup>
 import Editor from '@/components/docEditor/Editor.vue';
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getDoc, createDocToken, getDocAuth } from '@/api/artifact.js';
+import { getDoc, createDocToken, getDocAuth, getAllVersions, getDocVersion } from '@/api/artifact.js';
 import settings from '@/settings/basic'
 import { useRoute, useRouter } from 'vue-router'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, inject } from 'vue'
 import emitter from '@/utils/emitter'
 import { ArrowDown } from '@element-plus/icons-vue'
+import FileTree from '@/components/project/FileTree.vue'
+import { useUserStore } from '@/stores/modules/user'
+import { fromUint8Array, toUint8Array } from 'js-base64'
+import historyEditor  from '@/components/docEditor/historyEditor.vue'
+import * as Y from 'yjs'
+
+const userStore = useUserStore()
 
 const versionVisible = ref(false)
 
@@ -149,8 +164,16 @@ const visible = ref(false)
 
 const route = useRoute()
 
+const versions = ref([])
+
+const componentKey = ref(0)
+
+// 传给historyEditor的值
+const content = ref('')
+
 const doc_id = route.query.doc_id
 const token = route.query.token
+const versionNum = ref('')
 
 const getFirstH1Value = async() => {
   const firstH1 = this.$el.querySelector('h1');
@@ -161,49 +184,87 @@ const getFirstH1Value = async() => {
   }
 }
 
-const getNowDoc = async() => {
-  try{
-    if (doc_id && !token)
-    {
-      form.value.artId = doc_id
-      console.log(form.value)
-      const res =  await getDoc(form.value)
-      if (res.meta.status == 0)
-      {
-        title.value = res.data.name
-        document.title = title.value;
-      }
-    }
-    // 通过分享链接进入
-    else if (doc_id && token)
-    {
-      const res = await getDocAuth({'token': token})
-      if (res.meta.status == 0)
-      {
-        const auth = res.data.auth
-        console.log(auth)
-        if (auth == '1')
-          editable.value = false
-        else if (auth === '2')
-          editable.value = true
+// 展示该文档的所有版本
+const showVersions = async() => {
+  versionVisible.value = true
+  const itemId = doc_id
+  const projId = userStore.projectId
+  const res = await getAllVersions({itemId: itemId, projId: projId})
+  // console.log(res.data)
+  versions.value = res.data.versions
+}
 
-        form.value.artId = doc_id
-        const res2 =  await getDoc(form.value)
-        if (res2.meta.status == 0)
-        {
-          title.value = res2.data.name
-          document.title = title.value;
-        }
-      }
-    }
+
+
+const doc = ref(new Y.Doc())
+// 展示该文档指定版本的内容
+const chooseVersion = async(version) => {
+  console.log("####")
+  const projId = userStore.projectId
+  const itemId = doc_id
+  const res = await getDocVersion({projId: projId, itemId, itemId, version: version})
+  console.log("展示该文档指定版本内容", res.data.content)
+  //点击一下让editor组件强制渲染
+  content.value = res.data.content
+  componentKey.value += 1;
+}
+
+// 获取现在的总的版本号
+const getNowDocVersion = async() => {
+  try{
+    console.log(parseInt(doc_id))
+    console.log(parseInt(userStore.projectId))
+    const res = await getAllVersions({itemId: parseInt(doc_id), projId: parseInt(userStore.projectId)})
+    versionNum.value = res.data.totalVersion
+    // console.log("version" + versionNum.value)
+    // if (doc_id && !token)
+    // {
+    //   form.value.artId = doc_id
+    //   console.log(form.value)
+    //   const res =  await getDoc(form.value)
+    //   if (res.meta.status == 0)
+    //   {
+    //     title.value = res.data.name
+    //     document.title = title.value;
+    //   }
+    // }
+    // // 通过分享链接进入
+    // else if (doc_id && token)
+    // {
+    //   const res = await getDocAuth({'token': token})
+    //   if (res.meta.status == 0)
+    //   {
+    //     const auth = res.data.auth
+    //     console.log(auth)
+    //     if (auth == '1')
+    //       editable.value = false
+    //     else if (auth === '2')
+    //       editable.value = true
+
+    //     form.value.artId = doc_id
+    //     const res2 =  await getDoc(form.value)
+    //     if (res2.meta.status == 0)
+    //     {
+    //       title.value = res2.data.name
+    //       document.title = title.value;
+    //     }
+    //   }
+    // }
   }catch(e) {
     console.log(e)
   }
 }
 
+const paramsToEditor = {
+  'itemId': doc_id,
+  'projId': userStore.projectId,
+  'version': versionNum.value,
+  'content': content  //Editor中不需要这个content，只是historyEditor需要
+}
+
 onMounted(async () => {
-  await getNowDoc();
-  console.log(title.value)
+  await getNowDocVersion();
+  paramsToEditor.version = versionNum.value
   visible.value = true;
 });
 
@@ -253,6 +314,7 @@ const callEditorMethodExportToPdf = async() => {
 const callEditorMethodExportToMarkdown = async() => {
   emitter.emit('exportToMarkdown', "filename")
 }
+
 </script>
 
 <script>
@@ -269,14 +331,8 @@ export default {
   //   }
   // },
   components: {
-    Editor,
+    Editor, historyEditor
   },
-  methods: {
-    save(){
-      const html = editor.getHTML()
-      console.log(html)
-    }
-  }
 };
 </script>
   
@@ -284,12 +340,11 @@ export default {
 <style lang="css" scoped>
 /* 编辑器的容器 */
 .editor-container {
+  margin: 0 auto;
   display: flex;
   box-sizing: border-box;
   flex-flow: column;
   align-items: center;
-  padding-top: 5%;
-  min-height: 100%;
   overflow: auto;
   background-color: white;
   font-family: -apple-system, 'Noto Sans', 'Helvetica Neue', Helvetica,
@@ -301,10 +356,9 @@ export default {
 }
 
 
-
 /* 顶部栏 */
 .top-bar {
-  position: fixed;
+  position: fixed; 
   top: 0;
   left: 0;
   right: 0;
@@ -356,6 +410,10 @@ export default {
 
 .body-container {
   padding-top: 5%;
+  display: flex;
+}
+.body-version-container {
+  padding-top: 5%;
 }
 
 .grid-content {
@@ -386,15 +444,13 @@ export default {
 
 /* 版本的条目 */
 .scrollbar-demo-item {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 50px;
+  height: 80px;
   margin: 10px;
   text-align: center;
   border-radius: 4px;
   background: var(--el-color-primary-light-9);
   color: var(--el-color-primary);
+  cursor: pointer;
 }
 </style>
   

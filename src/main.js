@@ -6,8 +6,10 @@ import { initComponents } from "@/custom-component";
 import { setupErrorHandle } from './utils/handler/error'
 import settings from '@/settings/basic'
 
+
 import 'element-plus/dist/index.css'
 import '@/styles/element_visiable.scss'
+
 
 import router from './router'
 import pinia from './stores'
@@ -22,6 +24,7 @@ Nprogress.start()
 
 const app = createApp(App)
 window.$vueApp = app;
+
 
 app.config.globalProperties.$MoBook = settings
 

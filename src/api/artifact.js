@@ -4,9 +4,9 @@ import { fmtForm } from "@/utils/common";
 // 原型设计api
 // 更新原型设计基础字段
 export const updatePrototypeInfo = (data) => {
-  const form = ["projId", "name", "description"];
+  const form = ["artId", "name", "type"];
   return service({
-    url: "proj/profile/update",
+    url: "proj/artifact/profile/update",
     method: "post",
     data: fmtForm(data, form),
   });
@@ -141,3 +141,38 @@ export const getDocAuth = (params) => {
   });
 };
 
+// 上传文档内容
+export const uploadDoc = (data) => {
+  const form = [
+    'projId',
+    'itemId',
+    'content',
+    'version',
+  ]
+  return service({
+    url: 'artifact/file/upload/content',
+    method: 'post',
+    data: fmtForm(data, form)
+  })
+}
+
+// 获取文档的所有版本
+export const getAllVersions = (params) => {
+  return service({
+    url: "artifact/item/get",
+    method: "get",
+    params: params,
+  });
+};
+
+// 获取指定文档指定版本
+// projId
+// itemId
+// version
+export const getDocVersion = (params) => {
+  return service({
+    url: "artifact/file/download/content",
+    method: "get",
+    params: params,
+  });
+};

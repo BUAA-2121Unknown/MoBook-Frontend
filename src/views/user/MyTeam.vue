@@ -47,6 +47,7 @@ import emitter from '@/utils/emitter'
 import CreateTeam from '@/components/team/CreateTeam.vue'
 import { useUserStore } from '@/stores/modules/user'
 import { getAllOrgs } from '@/api/org'
+import { changeLastOrg } from '@/api/user'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -60,6 +61,7 @@ onActivated(() => {
 const GetAllOrgs = async () => {
   try {
     const res = await getAllOrgs()
+    console.log(res)
     if (res.meta.status == 0) {
       teamInfoList.value = res.data.organizations
       moveCurrentTeamToTop(userStore.orgId)
@@ -74,6 +76,9 @@ const GetAllOrgs = async () => {
 
 const moveCurrentTeamToTop = (teamId) => {
   const teamInfo = teamInfoList.value.find((teamInfo) => teamInfo.org.id == teamId)
+  if (!teamInfo) {
+    return
+  }
   teamInfoList.value.splice(teamInfoList.value.indexOf(teamInfo), 1)
   teamInfoList.value.unshift(teamInfo)
 }
@@ -83,6 +88,7 @@ GetAllOrgs()
 const enterTeam = (teamId) => {
   console.log(teamId)
   userStore.setOrgId(teamId)
+  changeLastOrg({ orgId: teamId })
   router.push({
     name: 'team',
   })

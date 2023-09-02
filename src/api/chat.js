@@ -19,8 +19,18 @@ export const requestRoomMessage = (data) => {
 
 export const requestSendMessage = (data) => {
 	return service({
-		url: 'chat/send_text',
+		url: 'chat/send_message',
 		method: 'post',
 		data: data
 	})
 }
+
+export const requestSendFile = (data) => {
+	return service({
+		headers: { 'Content-Type': 'multipart/form-data' },
+		url: 'chat/send_message',
+		method: 'post',
+		data: data
+	})
+}
+

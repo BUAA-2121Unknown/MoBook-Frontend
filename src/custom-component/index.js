@@ -13,6 +13,10 @@ const modules = import.meta.glob([
   './svgs/SVGHexagon/*.vue',
   './svgs/SVGTriangle/*.vue',
   './svgs/SVGComment/*.vue',
+  './Rate/*.vue',
+  './Slider/*.vue',
+  './Switch/*.vue',
+  './Select/*.vue',
 ])
 export const initComponents = ()=>{
   const components = [
@@ -25,6 +29,10 @@ export const initComponents = ()=>{
     'LineShape',
     'VTable',
     'VCheckbox',
+    'Rate',
+    'Slider',
+    'Switch',
+    'Select',
   ]
   // console.log("modules",modules)
   const svgs = ['SVGStar', 'SVGTriangle','SVGHexagon','SVGComment']

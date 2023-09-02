@@ -71,3 +71,14 @@ export const changePassword = (data) => {
     data: data
   })
 }
+
+export const changeLastOrg = (data) => {
+  const form = [
+    'orgId',
+  ]
+  return service({
+    url: 'user/lastorg/update',
+    method: 'post',
+    data: fmtForm(data, form)
+  })
+}

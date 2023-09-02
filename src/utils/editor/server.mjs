@@ -5,6 +5,13 @@ import { TiptapTransformer } from "@hocuspocus/transformer";
 import { Database } from "@hocuspocus/extension-database";
 import { Redis } from "@hocuspocus/extension-redis";
 import { forwardRef, HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { ElMessage, ElMessageBox } from 'element-plus'
+import axios from 'axios'
+import * as Y from 'yjs'
+import { fromUint8Array, toUint8Array } from 'js-base64'
+import Document from "@tiptap/extension-document";
+import Paragraph from "@tiptap/extension-paragraph";
+import Text from "@tiptap/extension-text";
 
 let debounced;
 
@@ -39,6 +46,90 @@ const pool = mysql.createPool({
 //   );
 // } 
 
+function fmtForm(object, keys) {
+  const subset = {};
+
+  for (const key of keys) {
+    if (object.hasOwnProperty(key)) {
+      subset[key] = object[key];
+    } else {
+      subset[key] = null
+    }
+  }
+  return subset;
+}
+
+const service = axios.create({
+  baseURL: "http://81.70.161.76:5000/api/",
+  timeout: 10000,
+  headers: { 'Content-Type': 'application/json' },
+  withCredentials: true,
+})
+
+// 上传文件的接口
+const uploadDoc = (data, token) => {
+  const form = [
+    'projId',
+    'itemId',
+    'version',
+    'content'
+  ]
+  service.defaults.headers.common = {
+    'Content-Type': 'multipart/form-data',
+    'Authorization': token
+  }
+  return service({
+    url: 'artifact/file/upload/content',
+    method: 'post',
+    data: fmtForm(data, form)
+  })
+}
+
+// 获取文件的接口
+
+export const getDocContent = (params, token) => {
+  service.defaults.headers.common = {
+    'Content-Type': 'application/json',
+    'Authorization': token
+  }
+  return service({
+    url: "artifact/file/download/content",
+    method: "get",
+    params: params,
+  });
+};
+
+
+const uploadFormData = {
+  'projId': '',
+  'itemId': '',
+  'version': '',
+  'content': ''
+}
+const queryData = {
+  'projId': '',
+  'itemId': '',
+  'version': '',
+}
+
+// 为了使用transformer.toYoc
+const Title = Heading.extend({
+  name: "title",
+  group: "title",
+  parseHTML: () => [{ tag: "h1:first-child" }],
+}).configure({ levels: [1] });
+const DocumentWithTitle = Document.extend({
+  content: "title block*",
+});
+import Heading from '@tiptap/extension-heading'
+import { Node } from '@tiptap/core'
+import Underline from '@tiptap/extension-underline';
+import Highlight from '@tiptap/extension-highlight'
+import TaskItem from '@tiptap/extension-task-item'
+import TaskList from '@tiptap/extension-task-list'
+
+
+
 const server = Server.configure({
   beforeHandleMessage(data) {
     // console.log(data)
@@ -48,13 +139,6 @@ const server = Server.configure({
     const { token } = data;
     // Example test if a user is authenticated using a
     // request parameter
-    const auth = token.split("-")[0]
-    const doc_id = parseInt(token.split("-")[1])
-    const username = token.split("-")[2]
-    console.log(auth)
-    console.log(doc_id)
-    console.log(username)
-    
     // if (auth === "0") {
     //   // data.connection.readOnly = true;
     //   throw new HttpException('您无权查看此文档', HttpStatus.FORBIDDEN);
@@ -74,75 +158,116 @@ const server = Server.configure({
     
     // You can set contextual data to use it in other hooks
     // console.log(data)
-    return {
-      user: {
-        name: username + data.socketId,
-      },
-      doc_id: doc_id
-    };
+    // return {
+    //   user: {
+    //     name: username + data.socketId,
+    //   },
+    // };
   },
+
   async onConnect(data) {
     // Output some information
     console.log(`New websocket connection`);
-    console.log(data.context)
   },
   async onChange(data) {
     const save = () => {
-      // Convert the y-doc to something you can actually use in your views.
-      // In this example we use the TiptapTransformer to get JSON from the given
-      // ydoc.
-      const prosemirrorJSON = TiptapTransformer.fromYdoc(data.document);
-      // Save your document. In a real-world app this could be a database query
-      // a webhook or something else
-      // console.log(data.context)
-      // const user_id = data.context.user.id;
-      // insertDoc({user_id, prosemirrorJSON})
-      // Maybe you want to store the user who changed the document?
-      // Guess what, you have access to your custom context from the
-      // onConnect hook here. See authorization & authentication for more
-      // details
-      // console.log(`Document ${data.documentName} changed by ${data.context.user.name}`);
+      
     };
     debounced?.clear();
     debounced = debounce(save, 4000);
     debounced();
   },
-  extensions: [
-    // new Redis({
-    //   // [required] Hostname of your Redis instance
-    //   host: "127.0.0.1",
-    //   // [required] Port of your Redis instance
-    //   port: 6379,
-    // }),
-    new Database({
-      // Return a Promise to retrieve data …
-      fetch: async ({context}) => {
-        return new Promise((resolve, reject) => {
-          console.log("Trying to fetch document")
-          console.log(context.doc_id)
-          pool?.query(
-            'SELECT data FROM documents WHERE id = ? ORDER BY id DESC',
-            [context.doc_id],
-            (error, row) => {
-              if (error) {
-                reject(error);
-              }
-              resolve(row[0].data);
-            }
-          );
-        });
-      },
-      // … and a Promise to store data:
-      store: async ({ documentName, state, context}) => {
-        console.log("store")
-        console.log(context.doc_id)
-        pool?.query(
-          "INSERT INTO documents (name, data, id) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE data = ?",
-          [documentName, state, context.doc_id, state],
-        );
-      },
-    }),
-  ],
+
+  async onLoadDocument(data) {
+    const { requestParameters, document } = data
+
+    queryData.itemId = parseInt(requestParameters.get('doc_id'))
+    queryData.projId = parseInt(requestParameters.get('projId'))
+    queryData.version = parseInt(requestParameters.get('version'))
+    console.log(queryData.version)
+    const jwtToken = requestParameters.get('jwtToken')
+    
+    console.log("version: " + queryData.version)
+    const res = await getDocContent(queryData, jwtToken)
+    // const int8data = toUint8Array(res.data.data.content)
+    // console.log(res.data.data.content)
+    // if (int8data.byteLength) {
+    //   Y.applyUpdate(document, int8data);
+    // }
+    
+    const json = res.data.data.content.length == 0 ? {} : JSON.parse(JSON.stringify(res.data.data.content))
+    console.log(json)
+    const ydoc = TiptapTransformer.toYdoc(
+      // the actual JSON
+      json,
+      "default",
+      // The Tiptap extensions you’re using. Those are important to create a valid schema.
+      [Document, Paragraph, Text, Title, Underline, Highlight, TaskItem, TaskList]
+    );
+    console.log(ydoc)
+    return ydoc
+  },
+
+  async onStoreDocument(data) {
+    const { requestParameters } = data
+      /* 保存文件*/
+      // uploadFormData.itemId = 36
+      // uploadFormData.projId = 1
+      // uploadFormData.version = 1
+      uploadFormData.itemId = parseInt(requestParameters.get('doc_id'))
+      uploadFormData.projId = parseInt(requestParameters.get('projId'))
+      // uploadFormData.version = parseInt(requestParameters.get('version'))
+      uploadFormData.version = 1000000
+      const jwtToken = requestParameters.get('jwtToken')
+
+      // const state = Buffer.from(
+      //   Y.encodeStateAsUpdate(data.document)
+      // )
+      // const filebase64 = fromUint8Array(state)
+      // uploadFormData.content = filebase64
+
+
+      
+      const res = uploadDoc(uploadFormData, jwtToken)
+
+      console.log("store success")
+  }
+  // extensions: [
+  //   // new Redis({
+  //   //   // [required] Hostname of your Redis instance
+  //   //   host: "127.0.0.1",
+  //   //   // [required] Port of your Redis instance
+  //   //   port: 6379,
+  //   // }),
+  //   new Database({
+  //     // Return a Promise to retrieve data …
+  //     fetch: async ({requestParameters}) => {
+  //       return new Promise((resolve, reject) => {
+  //         console.log("Trying to fetch document")
+  //         console.log(requestParameters.get('doc_id'))
+  //         pool?.query(
+  //           'SELECT data FROM documents WHERE id = ? ORDER BY id DESC',
+  //           [requestParameters.get('doc_id')],
+  //           (error, row) => {
+  //             if (error) {
+  //               reject(error);
+  //             }
+  //             resolve(row.data);
+  //           }
+  //         );
+  //       });
+  //     },
+  //     // … and a Promise to store data:
+  //     store: async ({ documentName, state, requestParameters}) => {
+  //       console.log("store")
+  //       console.log(requestParameters.get('doc_id'))
+  //       pool?.query(
+  //         "INSERT INTO documents (name, data, id) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE data = ?",
+  //         [documentName, state, requestParameters.get('doc_id'), state],
+  //       );
+  //     },
+  //   }),
+  // ],
 });
 
 server.listen();
