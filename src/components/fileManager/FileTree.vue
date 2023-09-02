@@ -8,29 +8,24 @@
       </div>
     </div>
 
-    <el-dialog v-model="templateVisible" :show-close="false">
-      <template #header="{ close, titleId, titleClass }">
-        <div class="my-header">
-          <h4 :id="titleId" :class="titleClass">选择你想要使用的模版</h4>
-          <el-button type="danger" @click="close">
-            <el-icon class="el-icon--left">
-              <CircleCloseFilled />
-            </el-icon>
-          </el-button>
-        </div>
-        <div v-for="(item, key) in docTemplate" :key="key">
-          <div>
-            <el-button type="primary" @click="createFromTemplate(item.content)">{{ item.name }}</el-button>
-          </div>
-        </div>
-      </template>
-
-    </el-dialog>
-
-
-    <el-tree v-if="treeVisible" :data="dataSource" :allow-drop="allowDrop" ref="treeRef" node-key="id" draggable
-      :expand-on-click-node="true" :default-expanded-keys="expandedList" @node-expand="handleNodeExpand"
-      @node-collapse="handleNodeCollapse" @node-drag-start="handleDragStart" @node-drop="handleDrop" class="file-tree">
+    
+    
+    <el-tree
+      v-if="treeVisible"
+      :data="dataSource"
+      :allow-drop="allowDrop"
+      ref="treeRef"
+      node-key="id"
+      draggable
+      :expand-on-click-node="true"
+      :default-expanded-keys="expandedList"
+      @node-expand="handleNodeExpand"
+      @node-collapse="handleNodeCollapse"
+      @node-drag-start="handleDragStart"
+      @node-drop="handleDrop"
+      @node-click="(data,node,item)=> nodeClick(data,node,item)"
+      class="file-tree"
+    >
       <template #default="{ node, data }">
         <span class="file-tree-node-wrapper">
           <!-- 编辑文件名 -->
@@ -86,11 +81,11 @@ import { useUserStore } from '@/stores/modules/user'
 import { CircleCloseFilled } from '@element-plus/icons-vue'
 import { fromUint8Array, toUint8Array } from 'js-base64'
 import docTemplate from '@/utils/docTemplate.js'
-import { createNewItem } from './helper'
+
 const templateVisible = ref(false)
 
 // 从文档模版创建文件
-const createFromTemplate = async (content) => {
+const createFromTemplate = async(content) => {
   const res = await createFile({
     'projId': userStore.projectId,
     'itemId': rootId.value,
@@ -114,6 +109,8 @@ const createFromTemplate = async (content) => {
     console.log(res.data)
   }
 }
+
+import { createNewItem } from './helper'
 
 /**
  * 调用该组件时所需的 props
@@ -322,11 +319,7 @@ const handleEditComplete = async (node, name) => {
         'prop': props.itemProperty,
         'live': true,
         'sibling': false,
-      }).then((res) => {
-        return res;
-      }).catch((error) => {
-        console.log("🚀 > error:", error);
-      });
+      })
 
       if (res.meta.status == 0) {
         if (editingStatus.value === 'editing') {
@@ -429,6 +422,19 @@ const deleteFile = async (node, data) => {
   }).catch(() => {
     console.log('Cancelled');
   })
+}
+
+const handleDoubleClick = async (node, data) => {
+  console.log(node, data)
+  /* if (data.data.type === 1) {
+    if (!expandedList.value.includes(data.id)) {
+      expandedList.value.push(data.id)
+    }
+    data.expanded = true
+    dataSource.value = [...dataSource.value]
+  } else {
+    console.log('open file')
+  } */
 }
 
 const fileTreeList = [
@@ -621,5 +627,22 @@ const fileTreeList = [
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+}
+
+.template-container {
+  height: 400px;
+  width: 1200px;
+  margin: auto 0;
+}
+
+
+.template {
+  line-height: 20px;
+  margin: 30px 0;
+  font-size: 20px;
+}
+
+.template:hover {
+    background-color: #eaeae1; /* 米白色的颜色代码 */
 }
 </style>

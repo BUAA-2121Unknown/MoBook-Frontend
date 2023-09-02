@@ -26,6 +26,14 @@ const routers = [
     },
   },
   {
+    path: '/welcome',
+    name: 'welcome',
+    component: () => import('@/views/welcome/Welcome.vue'),
+    meta: {
+      title: '开始',
+    },
+  },
+  {
     path: '/login',
     name: 'login',
     component: () => import('@/views/login/Login.vue'),
@@ -132,7 +140,8 @@ const routers = [
       {
         path: 'design',
         name: 'design',
-        component: () => import('@/views/project/ProjectDesign.vue'),
+        // component: () => import('@/views/project/ProjectDesign.vue'),
+        component: () => import('@/views/project/ProjectDesignList.vue'),
         meta: {
           title: '项目设计',
         },

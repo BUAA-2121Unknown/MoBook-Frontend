@@ -40,6 +40,10 @@ export default {
       type: [Number, String],
       default: 0,
     },
+    isPrevieww:{
+      type: Boolean,
+      default: false,
+    }
   },
   data() {
     return {
@@ -73,10 +77,11 @@ export default {
   },
   computed: {
     ...mapState(['curComponent', 'editor']),
+    // 其他用户锁定时添加样式
     otherSelectStyle() {
       //被锁定
-      if (this.element.userId && this.element.userId != this.userId) {
-        return 'outline: 2px solid ' + this.generateColorFromId(this.userId)
+      if (this.element.userId && this.element.userId != this.userId && !this.isPrevieww) {
+        return 'outline: 2px solid ' + this.generateColorFromId(this.element.userId)
       }
       // 未被锁定
       return ''

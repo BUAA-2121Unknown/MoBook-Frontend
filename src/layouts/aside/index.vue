@@ -7,6 +7,7 @@
         name="el-fade-in-linear"
       >
         <el-menu
+          id="tour-step-1"
           :collapse="isCollapse"
           :collapse-transition="false"
           :default-active="active"

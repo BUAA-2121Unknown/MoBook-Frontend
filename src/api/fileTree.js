@@ -23,6 +23,7 @@ export const createFile = (data) => {
     'content',  //初始内容
     'live',         // 是否可共享
     'sibling',      // 是否为同级文件
+    'content',      // 文件内容
   ]
   return service({
     url: 'artifact/create/file',

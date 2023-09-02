@@ -47,7 +47,7 @@ export default {
       },
       mentionFormData: {
         projId: '',
-        artId: '',
+        fileId: '',
         users: []
       }
     }
@@ -97,10 +97,11 @@ export default {
         this.command({ id: member.username })
       }
       this.mentionFormData.projId = userStore.projectId
-      this.mentionFormData.artId = parseInt(this.$route.query.doc_id)
+      this.mentionFormData.fileId = parseInt(this.$route.query.doc_id)
       this.mentionFormData.users.push(member.id)
       console.log(this.mentionFormData)
       const res = await mention(this.mentionFormData)
+      console.log(res)
       if (res.data.status == 0) {
         console.log(res)
       } else {

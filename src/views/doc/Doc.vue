@@ -15,6 +15,7 @@
           </div>
           
           <div class="operations">
+            <el-button type="primary" @click="templateVisible = !templateVisible">模板库</el-button>
             <el-button type="primary" @click="dialogFormVisible = true">分享</el-button>
             <el-button type="primary" @click="showVersions">历史版本</el-button>
             <el-button type="primary" @click="callEditorMethodSave">保存</el-button>
@@ -33,10 +34,10 @@
           </div>
           
         </div>
-        <el-dialog v-model="dialogFormVisible" title="生成共享链接" width="20%" >
+        <el-dialog v-model="dialogFormVisible" title="生成共享链接" width="30%" >
           <el-form :model="form">
             <el-form-item label="链接有效时间" :label-width="formLabelWidth">
-              <el-input v-model="shareForm.expires" autocomplete="off" size="small" class="input-width" />天
+              <el-input-number v-model="num" :min="1" :max="14" @change="handleChange" size="small" /> <span style="margin-left: 10px">天</span>
             </el-form-item>
             <el-form-item label="权限" :label-width="formLabelWidth">
               <el-radio-group v-model="radio1" class="ml-4">
@@ -54,6 +55,7 @@
             </span>
           </template>
         </el-dialog>
+
       </div>
       
       <div class="body-container">
@@ -77,8 +79,44 @@
             'redo',
           ]" />
         </div>
+      
       </div>
       
+      <div class="template-container">
+        <el-dialog v-model="templateVisible" :show-close="false" close-on-click-modal="false" width="50%">
+          <template #header="{ titleId, titleClass }">
+            <div class="my-header">
+              <h4 :id="titleId" :class="titleClass">选择你想要使用的模版</h4>
+            </div>
+            <div class="templates">
+              <div class="common-layout">
+                <el-container>
+                  <el-aside width="200px">
+                    <div class="title" @click="myTemplate=false">默认模板</div>
+                    <div class="title" @click="myTemplate=true">我的模版</div>
+                  </el-aside>
+                  <el-main>
+                    <div v-if="myTemplate">
+                      我的
+                    </div>
+                    <div v-else class="row" style="display: flex; flex-wrap: wrap;">
+                      <div class="box" v-for="item in docTemplate" :key="item.id" style="width: 20%;" @click="createFromTemplate(item.content)">
+                        <div class="text">{{ item.name }}</div>
+                        <img src="../../assets/template.png">
+                      </div>
+                    </div>
+                  </el-main>
+                </el-container>
+              </div>
+              <!-- <div v-for="(item, key) in docTemplate" :key="key">
+                <div>
+                  <el-button type="primary" @click="createFromTemplate(item.content)">{{ item.name }}</el-button>
+                </div>
+              </div> -->
+            </div>
+          </template>
+        </el-dialog>
+      </div>
     </div>
 
     <div v-else>
@@ -93,7 +131,7 @@
         </div>
         <div class="top-bar__right">
           <div class="operations">
-            <el-button type="primary">恢复此记录</el-button>
+            <el-button type="primary" @click="restore">恢复此记录</el-button>
           </div>
           
         </div>
@@ -127,7 +165,7 @@
 <script setup>
 import Editor from '@/components/docEditor/Editor.vue';
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getDoc, createDocToken, getDocAuth, getAllVersions, getDocVersion } from '@/api/artifact.js';
+import { getDoc, createDocToken, getDocAuth, getAllVersions, getDocVersion, uploadDoc } from '@/api/artifact.js';
 import settings from '@/settings/basic'
 import { useRoute, useRouter } from 'vue-router'
 import { ref, onMounted, inject } from 'vue'
@@ -137,7 +175,14 @@ import FileTree from '@/components/fileManager/FileTree.vue'
 import { useUserStore } from '@/stores/modules/user'
 import historyEditor  from '@/components/docEditor/historyEditor.vue'
 import * as Y from 'yjs'
-
+import { CircleCloseFilled } from '@element-plus/icons-vue'
+import docTemplate from '@/utils/docTemplate.js'
+import { createFile } from '@/api/fileTree.js'
+const router = useRouter()
+const num = ref(1)
+const handleChange = (value) => {
+  console.log(value)
+}
 const userStore = useUserStore()
 
 const versionVisible = ref(false)
@@ -149,10 +194,10 @@ const form = ref({
 const dialogFormVisible =  ref()
 const formLabelWidth =  ref('120px')
 const shareForm = ref({
-        artId: -1,
+        itemId: -1,
+        projId: -1,
         expires: 7,
         auth: 1,
-        orgOnly: false
       })
 
 const radio1 =  ref('1')
@@ -170,9 +215,17 @@ const componentKey = ref(0)
 // 传给historyEditor的值
 const content = ref('')
 
+// 通过路由的值传递
 const doc_id = route.query.doc_id
 const token = route.query.token
+
 const versionNum = ref('')
+
+// template库的弹窗
+const templateVisible = ref(false)
+
+// 选择展示哪个版块
+const myTemplate = ref(false)
 
 const getFirstH1Value = async() => {
   const firstH1 = this.$el.querySelector('h1');
@@ -195,7 +248,6 @@ const showVersions = async() => {
 
 
 
-const doc = ref(new Y.Doc())
 // 展示该文档指定版本的内容
 const chooseVersion = async(version) => {
   console.log("####")
@@ -206,6 +258,8 @@ const chooseVersion = async(version) => {
   //点击一下让editor组件强制渲染
   content.value = res.data.content
   componentKey.value += 1;
+  versionId.value = version //记录当前点击的versionId
+  json.value = JSON.parse(res.data.content)   //记录当前点击的内容
 }
 
 // 获取现在的总的版本号
@@ -215,66 +269,61 @@ const getNowDocVersion = async() => {
     console.log(parseInt(userStore.projectId))
     const res = await getAllVersions({itemId: parseInt(doc_id), projId: parseInt(userStore.projectId)})
     versionNum.value = res.data.totalVersion
-    // console.log("version" + versionNum.value)
-    // if (doc_id && !token)
-    // {
-    //   form.value.artId = doc_id
-    //   console.log(form.value)
-    //   const res =  await getDoc(form.value)
-    //   if (res.meta.status == 0)
-    //   {
-    //     title.value = res.data.name
-    //     document.title = title.value;
-    //   }
-    // }
-    // // 通过分享链接进入
-    // else if (doc_id && token)
-    // {
-    //   const res = await getDocAuth({'token': token})
-    //   if (res.meta.status == 0)
-    //   {
-    //     const auth = res.data.auth
-    //     console.log(auth)
-    //     if (auth == '1')
-    //       editable.value = false
-    //     else if (auth === '2')
-    //       editable.value = true
-
-    //     form.value.artId = doc_id
-    //     const res2 =  await getDoc(form.value)
-    //     if (res2.meta.status == 0)
-    //     {
-    //       title.value = res2.data.name
-    //       document.title = title.value;
-    //     }
-    //   }
-    // }
   }catch(e) {
     console.log(e)
   }
 }
 
+// 获取现在的权限
+const getAuth = async() => {
+  console.log("version" + versionNum.value)
+    // 通过分享链接进入
+    if (doc_id && token)
+    {
+      const res = await getDocAuth({'token': token})
+      if (res.meta.status == 0)
+      {
+        const auth = res.data.auth
+        console.log("auth",auth)
+        if (auth == '1')
+          editable.value = false
+        else if (auth == '2')
+          editable.value = true
+        else if (auth == '0')
+        {
+          router.push("/")
+          ElMessage.error("您没有权限访问该文档");
+        }
+      }
+    }
+}
+
+
 const paramsToEditor = {
   'itemId': doc_id,
   'projId': userStore.projectId,
   'version': versionNum.value,
-  'content': content  //Editor中不需要这个content，只是historyEditor需要
+  'content': content,  //Editor中不需要这个content，只是historyEditor需要
 }
-
+console.log(paramsToEditor)
 onMounted(async () => {
   await getNowDocVersion();
+  await getAuth();
   paramsToEditor.version = versionNum.value
   visible.value = true;
 });
 
 const createToken = async () => {
-  shareForm.value.artId = parseInt(doc_id)
+  shareForm.value.itemId = parseInt(doc_id)
   shareForm.value.auth = parseInt(radio1.value)
+  shareForm.value.expires = num.value
+  shareForm.value.projId = parseInt(userStore.projectId)
   console.log(shareForm.value)
   try {
     const res = await createDocToken(shareForm.value);
-    const shareUrl =  settings.appURL + 'share/doc?doc_id=' + doc_id + '&' + 'token=' + res.data.token
-    
+    console.log(res)
+    const shareUrl =  settings.appURL + 'doc?doc_id=' + doc_id + '&' + 'token=' + res.data.token
+    console.log(shareUrl)
     const input = document.createElement('input')
     input.setAttribute('readonly', 'readonly')
     input.setAttribute('value', shareUrl)
@@ -314,6 +363,50 @@ const callEditorMethodExportToMarkdown = async() => {
   emitter.emit('exportToMarkdown', "filename")
 }
 
+
+const versionId = ref(0)  //记录version的id
+const json = ref("") //记录文本内容
+
+const restore = async() => {
+  const restoreFormData = {
+    'projId': parseInt(userStore.projectId),
+    'itemId': parseInt(doc_id),
+    'content': JSON.stringify(json.value),
+    'version': 1145141919
+  }
+  const res = await uploadDoc(restoreFormData)
+  console.log(res)
+}
+
+
+// 创建模版
+// 从文档模版创建文件
+const createFromTemplate = async(content) => {
+  const res = await createFile({
+    'projId': userStore.projectId,
+    'itemId': parseInt(doc_id),
+    'filename': "新建文档",
+    'prop': 1,
+    'live': true,
+    'sibling': true,
+    'content': JSON.stringify(content)
+  })
+  console.log(res)
+  // if (res.meta.status == 0) {
+  //   console.log(res.data)
+  //   ElMessage({
+  //     type: 'success',
+  //     message: '创建成功',
+  //   })
+  //   console.log(res.data)
+  // } else {
+  //   ElMessage({
+  //     type: 'error',
+  //     message: '创建失败',
+  //   })
+  //   console.log(res.data)
+  // }
+}
 </script>
 
 <script>
@@ -345,6 +438,7 @@ export default {
   flex-flow: column;
   align-items: center;
   overflow: auto;
+  overflow-y: scroll;
   background-color: white;
   font-family: -apple-system, 'Noto Sans', 'Helvetica Neue', Helvetica,
     'Nimbus Sans L', Arial, 'Liberation Sans', 'PingFang SC',
@@ -353,7 +447,6 @@ export default {
     'WenQuanYi Zen Hei', 'ST Heiti', SimHei, 'WenQuanYi Zen Hei Sharp',
     sans-serif;
 }
-
 
 /* 顶部栏 */
 .top-bar {
@@ -450,6 +543,47 @@ export default {
   background: var(--el-color-primary-light-9);
   color: var(--el-color-primary);
   cursor: pointer;
+}
+
+/* 模版框的样式 */
+.template-container {
+
+}
+
+.templates{
+  margin-top: 20px;
+}
+
+.title {
+  font-size: 25px;
+  font-weight: bold;
+  cursor: pointer
+}
+.title:hover{
+  background-color: #f2f2f2
+}
+
+.row {
+  display: flex;
+}
+
+.box {
+  width: 150px;
+  height: 175px;
+  text-align: center;
+  margin: 5px 5px;
+  cursor: pointer;
+}
+
+.text {
+  font-weight: bold;
+  margin-top: 5px;
+  font-size: 13px;
+}
+
+img {
+  max-width: 100%;
+  max-height: 100%;
 }
 </style>
   

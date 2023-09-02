@@ -31,6 +31,7 @@
 
 <script>
 import { updatePrototypeStatus } from "../../../api/artifact";
+import { useUserStore } from "../../../stores/modules/user";
 
 export default {
   name: "DelButton",
@@ -39,14 +40,19 @@ export default {
     return {
       dialogDelForeverVisible: false,
       dialogDelVisible: false,
+      projId: 0,
     };
+  },
+  mounted(){
+    const userStore = useUserStore()
+    this.projId = userStore.projectId
   },
   methods: {
     handleClick() {
       this.dialogDelForeverVisible = true;
     },
     async delForeverDesign() {
-      const data = { status: 2, artifacts: [this.design.id] };
+      const data = { projId: this.projId, status: 2, items: [this.design.id] };
       try {
         const res = await updatePrototypeStatus(data);
 

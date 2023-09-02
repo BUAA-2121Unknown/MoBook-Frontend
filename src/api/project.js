@@ -21,6 +21,18 @@ export const updateProjectInfo = (data) => {
     data: fmtForm(data, form)
   })
 }
+
+export const updateProjectStatus = (data) => {
+  const form = [
+    'status',   // 0, 1, 2
+    'projects', // 列表
+  ]
+  return service({
+    url: 'proj/status/update',
+    method: 'post',
+    data: fmtForm(data, form)
+  })
+}
 // 创建原型设计
 export const createPrototype = (data) => {
   const form = [
@@ -155,6 +167,17 @@ export const updateStatus = (data) => {
   })
 }
 
+// 生成项目副本
+export const duplicateProject = (data) => {
+  const form = [
+    'projId'  // 项目 ID
+  ]
+  return service({
+    url: 'proj/duplicate',
+    method: 'post',
+    data: fmtForm(data, form)
+  })
+}
 
 export class Project {
   static async recycleSortByTime(data) {
