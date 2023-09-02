@@ -25,6 +25,7 @@ export const useUserStore = defineStore({
     projectId: -1,
     orgId: -1,
     orgInfo: {},
+    nameInOrg: '',
     auth: '',
   }),
 
@@ -83,6 +84,10 @@ export const useUserStore = defineStore({
       this.projectId = val
     },
 
+    setNameInOrg(val) {
+      this.nameInOrg = val
+    },
+
     setAuth(val) {
       this.auth = val
     },
@@ -110,6 +115,7 @@ export const useUserStore = defineStore({
             this.setOrgId(lastOrg.lastOrg.org.id)
             this.setOrgInfo(lastOrg.lastOrg.org)
             this.setAuth(lastOrg.lastOrg.auth.auth)
+            this.setNameInOrg(lastOrg.lastOrg.auth.nickname)
           } else {
             this.setOrgId(-1)
             this.setOrgInfo({})

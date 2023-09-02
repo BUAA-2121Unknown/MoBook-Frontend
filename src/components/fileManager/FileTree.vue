@@ -29,7 +29,8 @@
             <el-input
               v-model="editingName"
               ref="editingRef"
-              @keyup.enter="handleEditComplete(data, editingName)"
+              @blur="handleEditComplete(data, editingName)"
+              @keydown.enter.stop="$event.target.blur()"
             />
           </span>
 
@@ -84,6 +85,7 @@ import { ref, nextTick, defineProps, onMounted } from 'vue'
 import { ElButton, ElInput, ElMessage, ElMessageBox } from 'element-plus'
 import { getAllItems, moveItem, createFolder, createFile, updateItemStatus, updateItemName } from '@/api/fileTree'
 import { useUserStore } from '@/stores/modules/user'
+import { createNewItem } from './helper'
 
 /**
  * 调用该组件时所需的 props
@@ -97,8 +99,6 @@ const props = defineProps({
 })
 
 const userStore = useUserStore()
-
-let increasingId = 114514191
 
 const treeVisible = ref(true)
 const rootId = ref(1)
@@ -213,27 +213,6 @@ const restoreExpandedState = async () => {
   treeVisible.value = true
 }
 
-const createNewItem = (type, prop) => {
-  return {
-    "data": {
-      "name": "",
-      "extension": "",
-      "type": type,
-      "prop": prop,
-      "created": "",
-      "updated": "",
-      "status": 0,
-      "live": false,
-      "version": 1,
-      "proj_id": userStore.projectId,
-      "org_id": 1,
-      "file_id": 0
-    },
-    "id": increasingId++,
-    "children": []
-  }
-}
-
 /**
  * @type: 0: Root, 1: Folder, 2: File
  * @prop: 0: Folder, 1: Document, 2: Prototype
@@ -309,6 +288,7 @@ const handleEditComplete = async (node, name) => {
         'filename': node.data.name,
         'prop': props.itemProperty,
         'live': true,
+        'sibling': false,
       })
 
       if (res.meta.status == 0) {

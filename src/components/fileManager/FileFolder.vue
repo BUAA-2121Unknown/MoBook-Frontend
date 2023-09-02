@@ -1,88 +1,56 @@
 <template>
   <div class="main-wrapper">
-    <!-- <VueDraggableNext class="dragArea list-group w-full" :list="dataSource" @change="log">
-      <div
-        class="list-group-item bg-gray-300 m-1 p-3 rounded-md text-center"
-        v-for="element in dataSource"
-        :key="element.id"
-      >
-        {{ element.data.name }}
+    <div class="header-wrapper">
+      <div class="breadcrumb-wrapper">
+        <el-breadcrumb :separator-icon="ArrowRight" class="breadcrumb-item-wrapper">
+          <el-breadcrumb-item
+            v-for="item in pathInfo"
+            :key="item.id"
+            @click="breadClickHandler(item.id)"
+            class="breadcrumb-item-wrapper"
+          >
+            <drop @drop="breadDropHandler(item.id, ...arguments)">
+              <span class="breadcrumb-item">
+                {{ item.data.name }}
+              </span>
+            </drop>
+          </el-breadcrumb-item>
+        </el-breadcrumb>
       </div>
-    </VueDraggableNext>
 
-    <el-table
-      :data="dataSource"
-      @row-dragend="handleDrop"
-    >
-      <el-column label="文件名">
-        <template slot-scope="{ row, $index }">
-          <div v-draggable="row" @dragstart="handleDragStart(row, $index)">
-            {{ row }}
-          </div>
-        </template>
-      </el-column>
+      <div>
+        <el-button type="primary" icon="DocumentAdd" @click="addItem(2, props.itemProperty)"></el-button>
+        <el-button type="primary" icon="FolderAdd" @click="addItem(1, 0)"></el-button>
+      </div>
+    </div>
 
-      <el-column label="修改时间">
-        <template slot-scope="{ row, $index }">
-            {{ row }}
-        </template>
-      </el-column>
-    </el-table> -->
+    <div class="file-top-wrapper">
+      <el-row :gutter="12">
+        <el-col :span="16">
+          <span class="name">名称</span>
+        </el-col>
+        <el-col :span="4">
+          <span class="creator">创建者</span>
+        </el-col>
+        <el-col :span="4">
+          <span class="last-modify-time">上次更新时间</span>
+        </el-col>
+      </el-row>
+    </div>
 
-    <!-- <table>
-      <tr>
-        <th>文件名</th>
-        <th>修改时间</th>
-      </tr>
-
-      <tr
-        v-for="element in dataSource"
-        class="draggable-file"
-        draggable="true"
-        :key="element.id"
-      >
-        <td>{{ element.data.name }}</td>
-        <td>{{ element.data.updated }}</td>
-      </tr>
-
-    </table> -->
-
-    <draggable 
-      v-model="dataSource" 
-      :sort="false"
-      @start="startHandler" 
-      @choose="startHandler" 
-      @end="endHandler" 
-      @update="updateHandler"
-      @change="changeHandler"
-      :move="moveHandler"
-      item-key="id"
-    >
-      <template #item="{element}">
-        <FileCard
-          :name="element.data.name"
-          creator="创建者"
-          :updatedTime="element.data.updated"
-        />
-      </template>
-    </draggable>
-
-    <!-- <div v-for="element in dataSource" :key="element.id">
-      <drag
-        @drag="dragHandler('foo', ...arguments)"
-      >
-        <drop
-          @drop="dropHandler('foo', ...arguments)"
-        >
-          <FileCard
-            :name="element.data.name"
-            creator="创建者"
-            :updatedTime="element.data.updated"
-          />
-        </drop>
-      </drag>
-    </div> -->
-
+    <div v-for="item in dataSource" :key="item.id">
+      <!-- <div @dblclick="doubleClickHandler(item.id, item)"> -->
+        <drag @drag="dragHandler(item.id, ...arguments)">
+          <!-- 可 drop -->
+          <!-- TODO: drag 时设置自己为不可 drop-->
+          <drop v-if="item.data.type === 1" @drop="dropHandler(item.id, ...arguments)">
+            <FileCard :item="item" />
+          </drop>
+          <!-- 不可 drop -->
+          <FileCard v-else :item="item" />
+        </drag>
+      <!-- </div> -->
+    </div>
   </div>
 </template>
 
@@ -93,57 +61,206 @@ export default {
 </script>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, defineProps } from 'vue'
 import { useUserStore } from '@/stores/modules/user'
-import draggable from 'vuedraggable'
 import FileCard from './FileCard.vue'
+import { getAllItems, moveItem, createFile, createFolder } from '@/api/fileTree'
+import { ArrowRight } from '@element-plus/icons-vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import emitter from '@/utils/emitter'
+import { createNewItem } from './helper'
+
+const props = defineProps({
+  itemProperty: {
+    type: Number,
+    default: () => 1,
+  },
+})
 
 const userStore = useUserStore()
 
 const dataSource = ref([])
+const dataSourceCopy = ref([])
+const root = ref()
+const path = ref([])
+const pathInfo = ref([])
 
-onMounted(() => {
+const movingItemId = ref()
+
+const GetAllItems = async () => {
+  try {
+    const res = await getAllItems({
+      projId: userStore.projectId,
+      // TODO: 获取的类型？文档 / 原型设计
+      status: 0,
+    })
+    console.log('GET_ALL', res)
+    if (res.meta.status == 0) {
+      root.value = res.data
+      dataSource.value = res.data.children || []
+      dataSourceCopy.value = dataSource.value
+    } else {
+      dataSource.value = testData
+      dataSourceCopy.value = dataSource.value
+      console.log(res)
+    }
+  } catch(e) {
+    dataSource.value = testData
+    console.log(e)
+  }
+}
+
+onMounted(async () => {
+  // TODO: For Test
   dataSource.value = testData
+  dataSourceCopy.value = testData
+  await GetAllItems()
+  console.log(root.value)
+  path.value.push(root?.value?.id || 1)
+  pathInfo.value.push(root?.value || testRoot)
   console.log(dataSource.value)
 })
 
-const dragHandler = (myArg, transferData, nativeEvent) => {
+const updatePath = async (op, itemId = 0) => {
+  if (op === 1) {
+    path.value.push(itemId)
+    const nxt = dataSource.value.find(item => item.id === itemId)
+    console.log(nxt)
+    pathInfo.value.push(nxt)
+  } else if (op < 0) {
+    path.value.splice(op)
+    pathInfo.value.splice(op)
+  }
+  await GetAllItems()
+  for (let i = 1; i < path.value.length; i++) {
+    const item = dataSource.value.find(item => item.id === path.value[i])
+    console.log(dataSource.value, item)
+    dataSource.value = item.children
+  }
+  console.log(dataSource.value)
+  console.log(pathInfo.value)
+}
+
+const move = async (itemId, to) => {
+  ElMessageBox.confirm('确认移动？', '确认', {
+    confirmButtonText: '确认',
+    cancelButtonText: '取消',
+    type: 'warning',
+  }).then(async () => {
+    try {
+      const res = await moveItem({
+        'projId': userStore.projectId,
+        'folderId': to,
+        'items': [itemId],
+      })
+      if (res.meta.status == 0) {
+        ElMessage({
+          type: 'success',
+          message: '移动成功',
+        })
+      } else {
+        ElMessage({
+          type: 'error',
+          message: '移动失败',
+        })
+        console.log(res)
+      }
+      updatePath(0)
+    } catch(e) {
+      console.log(e)
+    }
+  }).catch(() => {
+    console.log('cancel')
+  })
+}
+
+const addItem = async (type, prop) => {
+  const newItem = createNewItem(type, prop)
+
+  dataSource.value.push(newItem)
+  dataSource.value = [...dataSource.value]
+  if (type === 1) {
+    const res = await createFolder({
+      'projId': userStore.projectId,
+      'itemId': path.value[path.value.length - 1],
+      'filename': newItem.data.name,
+    })
+    if (res.meta.status == 0) {
+      ElMessage({
+        type: 'success',
+        message: '创建成功',
+      })
+    } else {
+      ElMessage({
+        type: 'error',
+        message: '创建失败',
+      })
+      console.log(res)
+    }
+  } else if (type === 2) {
+    const res = await createFile({
+      'projId': userStore.projectId,
+      'itemId': path.value[path.value.length - 1],
+      'filename': newItem.data.name,
+      'prop': newItem.data.prop,
+      'live': true,
+      'sibling': false,
+    })
+    if (res.meta.status == 0) {
+      ElMessage({
+        type: 'success',
+        message: '创建成功',
+      })
+    } else {
+      ElMessage({
+        type: 'error',
+        message: '创建失败',
+      })
+      console.log(res)
+    }
+  }
+  updatePath(0)
+}
+
+const dragHandler = (itemId, transferData, nativeEvent) => {
+  // console.log('drag: myArg', itemId)
   // console.log(transferData, nativeEvent)
+  movingItemId.value = itemId
+  console.log(movingItemId.value)
 }
 
-const dropHandler = (myArg, transferData, nativeEvent) => {
-  console.log(transferData)
-  console.log(nativeEvent)
+const dropHandler = async (itemId, transferData, nativeEvent) => {
+  console.log('drop: itemId', itemId)
+  await move(movingItemId.value, itemId)
 }
 
-const startHandler = (evt) => {
-  console.log(evt)
+const breadDropHandler = async (itemId, transferData, nativeEvent) => {
+  console.log('breadDrop: itemId', itemId)
+  await move(movingItemId.value, itemId)
 }
 
-const endHandler = (evt) => {
-  console.log(evt)
-  console.log(evt.to)
-  console.log(evt.item)
-  console.log(evt.target.__draggable_component__.context)
+const breadClickHandler = async (itemId) => {
+  console.log('breadClick: itemId', itemId)
+  const index = path.value.findIndex(item => item === itemId)
+  await updatePath(-(path.value.length - 1 - index))
 }
 
-const updateHandler = (newItems, movedItem, fromIndex, toIndex) => {
-  console.log(newItems, movedItem, fromIndex, toIndex)
+const doubleClickHandler = async (itemId, item) => {
+  if (item.data.type === 2) {
+    console.log('open file', itemId)
+    return
+  }
+  console.log('double click', itemId)
+  await updatePath(1, itemId)
 }
 
-const changeHandler = (evt) => {
-  console.log(evt)
-}
+emitter.on('openFileOrFolder', async (data) => {
+  await doubleClickHandler(data.itemId, data.item)
+})
 
-const moveHandler = (evt) => {
-  console.log(evt)
-}
-
-
-
-const log = (event) => {
-  console.log(event)
-}
+emitter.on('updatePath', async (data) => {
+  await updatePath(data.op, data?.itemId)
+})
 
 const testData = [
   {
@@ -234,11 +351,75 @@ const testData = [
     "id": 7
   }
 ]
+
+const testRoot = {
+  "data": {
+    "name": "根目录",
+    "extension": "",
+    "type": 0,
+    "prop": 0,
+    "created": "2023-08-30 22:57:05",
+    "updated": "2023-08-30 22:57:05",
+    "status": 0,
+    "live": false,
+    "version": 1,
+    "proj_id": 2,
+    "org_id": 1,
+    "file_id": 0
+  },
+  "id": 1,
+  "children": testData,
+}
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .main-wrapper {
 
+}
+
+.header-wrapper {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  margin-bottom: 20px;
+  padding: 0 10px;
+}
+.breadcrumb-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.breadcrumb-item-wrapper {
+  font-size: 20px;
+}
+
+.breadcrumb-item {
+  font-size: 20px;
+}
+
+.breadcrumb-item:hover {
+  cursor: pointer;
+}
+
+.file-top-wrapper {
+  padding: 5px 10px;
+  border-bottom: 1px solid #dddddd;
+  margin-bottom: 5px;
+
+  .name {
+    color: #888888;
+    padding-left: 48px;
+  }
+
+  .creator {
+    color: #888888;
+
+  }
+
+  .last-modify-time {
+    color: #888888;
+
+  }
 }
 
 .draggable-file {

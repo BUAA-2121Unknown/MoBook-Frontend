@@ -7,6 +7,8 @@ import VueDragDrop from "vue3-drag-drop"
 import { setupErrorHandle } from './utils/handler/error'
 import settings from '@/settings/basic'
 
+import '@imengyu/vue3-context-menu/lib/vue3-context-menu.css'
+import ContextMenu from '@imengyu/vue3-context-menu'
 
 import 'element-plus/dist/index.css'
 import '@/styles/element_visiable.scss'
@@ -38,6 +40,7 @@ app.use(router)
 app.use(pinia)
 app.use(store)
 app.use(VueDragDrop)
+app.use(ContextMenu)
 
 setupErrorHandle(app)
 initComponents()
