@@ -1,5 +1,5 @@
 <template>
-  <div ref="container">
+  <div ref="container" id="tour-prototype-step-0">
     <!-- 预览链接 -->
     <el-dialog v-model="dialogVisible" title="生成预览链接" width="30%">
       <div>

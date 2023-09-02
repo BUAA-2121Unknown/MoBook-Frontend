@@ -45,7 +45,69 @@
       </section>
     </main>
   </div>
+
+  <Tour
+    :steps="tourSteps"
+    mask
+    arrow
+    v-model:show="showTour"
+    v-model:current="tourCurrent"
+    :padding="{ x: 10, y: 6 }"
+  />
 </template>
+
+<script setup>
+import { onMounted, ref } from 'vue'
+import { Tour } from "vue3-quick-tour"
+const showTour = ref(false)
+const tourCurrent = ref(0)
+
+// 新手指引变量设置
+const tourSteps = [
+  {
+    el: () => document.getElementById("tour-prototype-step-0"),
+    title: "成员信息",
+    message: "这里是团队成员的信息，你可以在这里修改成员的权限，或者移除成员。",
+    mask: {
+      color: "rgba(0, 0, 0, .8)",
+    },
+    placement: "top",
+  },
+  {
+    el: () => document.getElementById("tour-prototype-step-1"),
+    title: "菜单栏",
+    message: "这里是菜单栏，你可以在这里切换功能进行团队信息查看、与团队成员聊天、创建团队项目、查看或切换团队。",
+    mask: {
+      color: "rgba(0, 0, 0, .8)",
+    },
+    placement: "right",
+  },
+  {
+    el: () => document.getElementById("tour-prototype-step-2"),
+    title: "菜单栏",
+    message: "这里是菜单栏，你可以在这里切换功能进行团队信息查看、与团队成员聊天、创建团队项目、查看或切换团队。",
+    mask: {
+      color: "rgba(0, 0, 0, .8)",
+    },
+    placement: "right",
+  },
+  {
+    el: () => document.getElementById("tour-prototype-step-3"),
+    title: "菜单栏",
+    message: "这里是菜单栏，你可以在这里切换功能进行团队信息查看、与团队成员聊天、创建团队项目、查看或切换团队。",
+    mask: {
+      color: "rgba(0, 0, 0, .8)",
+    },
+    placement: "right",
+  },
+]
+
+// 开始指引
+onMounted(() => {
+  showTour.value = true
+  tourCurrent.value = 0
+})
+</script>
 
 <script>
 import Editor from "../../components/Editor/index.vue";
@@ -98,6 +160,7 @@ export default {
       activeNames: ['1', '2'],
       projId: 0,
       itemId: 0,
+
     };
   },
   computed: mapState([
@@ -112,6 +175,12 @@ export default {
     const userStore = useUserStore()
     // 提交当前用户id，组件锁定要用
     this.$store.commit("setUserId", userStore.userInfo.id)
+
+    // 开始指引
+    // console.log('start')
+    // this.showTour = true
+    // this.tourCurrent = 0
+    // console.log('here')
   },
   activated() {
     const userStore = useUserStore()

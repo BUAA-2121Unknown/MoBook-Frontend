@@ -188,11 +188,11 @@ const server = Server.configure({
       uploadFormData.version = 1000000
       const jwtToken = requestParameters.get('jwtToken')
 
-      // const state = Buffer.from(
-      //   Y.encodeStateAsUpdate(data.document)
-      // )
-      // const filebase64 = fromUint8Array(state)
-      // uploadFormData.content = filebase64
+    // const state = Buffer.from(
+    //   Y.encodeStateAsUpdate(data.document)
+    // )
+    // const filebase64 = fromUint8Array(state)
+    // uploadFormData.content = filebase64
 
       // console.log("🚀 > onStoreDocument > data:", data);
       const prosemirrorJSON = TiptapTransformer.fromYdoc(data.document)
