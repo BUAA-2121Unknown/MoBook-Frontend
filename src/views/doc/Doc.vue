@@ -149,14 +149,46 @@
             </div>
           </el-col>
           <el-col :span="6">
+            <div class="version-title">
+              历史版本记录
+            </div>
             <div class="version-container">
               <el-scrollbar height="800px">
-                <div v-for="(version, key) in versions" class="scrollbar-demo-item" :key="key"
-                  @click="chooseVersion(version.version)">
-                  <div>创建时间：{{ version.updated }}</div>
-                  <div>创建者: {{ version.user.username }}</div>
-                  <div>版本号: {{ version.version }}</div>
+                <div class="card" v-for="(version, key) in versions" :key="key" @click="chooseVersion(version.version)">
+                  <div class="card-img"></div>
+                  <div class="card-info">
+                    <div class="card-text">
+                      <p class="text-title"> Version | {{ version.version }}</p>
+                      <p class="text-subtitle">{{ version.user.username }} | {{ version.updated }}</p>
+                    </div>
+                    <div class="card-icon">
+                      <svg viewBox="0 0 28 25" class="icon">
+                        <path d="M13.145 2.13l1.94-1.867 12.178 12-12.178 12-1.94-1.867 8.931-8.8H.737V10.93h21.339z">
+                        </path>
+                      </svg>
+                    </div>
+                  </div>
                 </div>
+                <!-- <div v-for="(version, key) in versions" class="scrollbar-demo-item card" :key="key"
+                  @click="chooseVersion(version.version)">
+                  <div>版本号 | {{ version.version }}</div>
+                  <div>
+                    <div>创建时间：{{ version.updated }}</div>
+                    <div>创建者: {{ version.user.username }}</div>
+                  </div>
+                </div> -->
+                <!-- <div class="book" v-for="(version, key) in versions" :key="key" @click="chooseVersion(version.version)">
+                  <p>Hello</p>
+                  <div class="cover">
+                    <p>Hover Me</p>
+                  </div>
+                </div> -->
+                <!-- <div class="cards" >
+                  <div class="card blue">
+                    <p class="tip">Hover Me</p>
+                    <p class="second-text">Lorem Ipsum</p>
+                  </div>
+                </div> -->
               </el-scrollbar>
             </div>
           </el-col>
