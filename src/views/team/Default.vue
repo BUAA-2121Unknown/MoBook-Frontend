@@ -139,7 +139,7 @@
   <el-dialog
     v-model="editOrgVisible"
     title="编辑团队信息"
-    width="30%"
+    width="50%"
   >
     <div class="org-name-wrapper">
       <span>团队名称</span>
@@ -185,8 +185,9 @@ import { useUserStore } from '@/stores/modules/user'
 import { getInviteLink } from '@/api/org'
 import settings from '@/settings/basic'
 import { Search } from '@element-plus/icons-vue'
-import { updateOrgMemberInfo, deleteOrgMember } from '@/api/org'
+import { updateOrgMemberInfo, deleteOrgMember, updateOrgInfo } from '@/api/org'
 import AvatarUpload from '@/components/avatar/AvatarUpload.vue'
+import emitter from '@/utils/emitter'
 
 const searchedInput = ref('')
 const orgMemberList = ref([])
@@ -395,10 +396,34 @@ const changingOrgName = ref(userStore.orgInfo.name)
 const changingOrgDesc = ref(userStore.orgInfo.description)
 const confirmChangeOrgInfo = async () => {
   editOrgVisible.value = false
+  try {
+    const res = await updateOrgInfo({
+      'orgId': userStore.orgId,
+      'name': changingOrgName.value,
+      'description': changingOrgDesc.value,
+    })
+    console.log(res)
+    if (res.meta.status == 0) {
+      emitter.emit('uploadAvatar', userStore.orgId)
+      await GetOrgInfo()
+      ElMessage({
+        type: 'success',
+        message: '修改成功',
+      })
+    } else {
+      ElMessage({
+        type: 'error',
+        message: '修改失败',
+      })
+      console.log(res)
+    }
+  } catch (e) {
+    console.log(e)
+  }
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .main-wrapper {
   padding-top: 1%;
 }
@@ -480,18 +505,36 @@ const confirmChangeOrgInfo = async () => {
 }
 
 .org-name-wrapper {
-  margin-top: 10px;
   display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+
+  span {
+    width: 72px;
+    margin-right: 20px;
+  }
 }
 
 .org-desc-wrapper {
-  margin-top: 10px;
   display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+
+  span {
+    width: 72px;
+    margin-right: 20px;
+  }
 }
 
 .org-avatar-wrapper {
-  margin-top: 10px;
   display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+
+  span {
+    width: 72px;
+    margin-right: 20px;
+  }
 }
 </style>
 
