@@ -27,6 +27,7 @@
                 <p class="text-title">
                     在线文档
                 </p>
+                <el-divider />
                 <p class="text-text">
                     🔥多人多端同步协作编辑文档，为生产助力
                 </p>
@@ -44,12 +45,13 @@
         </div>
         <div class="body3">
             <div class="img-side">
-                <img src="./assets/img/org-1.png" class="text-img">
+                <img src="./assets/img/proto-1.png" class="text-img">
             </div>
             <div class="text-side">
                 <p class="text-title">
                     原型设计
                 </p>
+                <el-divider />
                 <p class="text-text">
                     🤔多人光标协同，实时云端编辑
                 </p>
@@ -67,6 +69,7 @@
                 <p class="text-title">
                     团队交流
                 </p>
+                <el-divider />
                 <p class="text-text">
                     🎁实时同步聊天，私聊群聊两不误
                 </p>
@@ -144,7 +147,7 @@ export default {
     cursor: pointer;
 
     margin: 30px 10px;
-    --color: #a0a0a0;
+    --color: #4b4b4b;
     font-family: inherit;
     display: inline-block;
     width: 100px;
@@ -186,21 +189,22 @@ export default {
 
 .text-title {
     margin: 20px;
-    font-size: 24px;
+    font-size: 29px;
     color: #393939;
+    text-shadow: 0 2px rgb(198, 198, 198);
 }
 
 .text-text {
-    margin: 10px 5px;
-    font-size: 16px;
+    margin: 15px 5px;
+    font-size: 20px;
     color: #393939;
     text-shadow: 0 1px rgb(198, 198, 198);
-    line-height: 20px;
+    line-height: 22px;
 }
 
 .text-img {
     margin: 5px;
-    width: 80%;
+    width: 100%;
     font-size: 24px;
     color: #5c5c5c;
     border: 1px solid rgba(231, 231, 231, 0.8);

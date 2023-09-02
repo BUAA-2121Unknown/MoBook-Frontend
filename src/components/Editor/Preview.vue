@@ -241,7 +241,7 @@ export default {
     background: linear-gradient(to top,
         rgba(27, 27, 27, 0.2),
         rgba(71, 71, 71, 0.1));
-    z-index: -2;
+    z-index: 2;
     display: flex;
     align-items: center;
     justify-content: center;

@@ -3,12 +3,8 @@
     <div class="header-wrapper">
       <div class="breadcrumb-wrapper">
         <el-breadcrumb :separator-icon="ArrowRight" class="breadcrumb-item-wrapper">
-          <el-breadcrumb-item
-            v-for="item in pathInfo"
-            :key="item.id"
-            @click="breadClickHandler(item.id)"
-            class="breadcrumb-item-wrapper"
-          >
+          <el-breadcrumb-item v-for="item in pathInfo" :key="item.id" @click="breadClickHandler(item.id)"
+            class="breadcrumb-item-wrapper">
             <drop @drop="breadDropHandler(item.id, ...arguments)">
               <span class="breadcrumb-item">
                 {{ item.data.name }}
@@ -40,15 +36,15 @@
 
     <div v-for="item in dataSource" :key="item.id">
       <!-- <div @dblclick="doubleClickHandler(item.id, item)"> -->
-        <drag @drag="dragHandler(item.id, ...arguments)">
-          <!-- 可 drop -->
-          <!-- TODO: drag 时设置自己为不可 drop-->
-          <drop v-if="item.data.type === 1" @drop="dropHandler(item.id, ...arguments)">
-            <FileCard :item="item" />
-          </drop>
-          <!-- 不可 drop -->
-          <FileCard v-else :item="item" />
-        </drag>
+      <drag @drag="dragHandler(item.id, ...arguments)">
+        <!-- 可 drop -->
+        <!-- TODO: drag 时设置自己为不可 drop-->
+        <drop v-if="item.data.type === 1" @drop="dropHandler(item.id, ...arguments)">
+          <FileCard :item="item" />
+        </drop>
+        <!-- 不可 drop -->
+        <FileCard v-else :item="item" />
+      </drag>
       <!-- </div> -->
     </div>
   </div>
@@ -69,6 +65,7 @@ import { ArrowRight } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import emitter from '@/utils/emitter'
 import { createNewItem } from './helper'
+import { useRouter } from 'vue-router'
 
 const props = defineProps({
   itemProperty: {
@@ -78,6 +75,7 @@ const props = defineProps({
 })
 
 const userStore = useUserStore()
+const router = useRouter()
 
 const dataSource = ref([])
 const dataSourceCopy = ref([])
@@ -104,7 +102,7 @@ const GetAllItems = async () => {
       dataSourceCopy.value = dataSource.value
       console.log(res)
     }
-  } catch(e) {
+  } catch (e) {
     dataSource.value = testData
     console.log(e)
   }
@@ -166,7 +164,7 @@ const move = async (itemId, to) => {
         console.log(res)
       }
       updatePath(0)
-    } catch(e) {
+    } catch (e) {
       console.log(e)
     }
   }).catch(() => {
@@ -249,6 +247,14 @@ const breadClickHandler = async (itemId) => {
 const doubleClickHandler = async (itemId, item) => {
   if (item.data.type === 2) {
     console.log('open file', itemId)
+    if (item.data.prop == 2 || item.data.prop == 3) {
+      router.push({
+        path: "/prototype",
+        query: {
+          itemId: itemId,
+        },
+      });
+    }
     return
   }
   console.log('double click', itemId)
@@ -374,9 +380,7 @@ const testRoot = {
 </script>
 
 <style scoped lang="scss">
-.main-wrapper {
-
-}
+.main-wrapper {}
 
 .header-wrapper {
   display: flex;
@@ -385,6 +389,7 @@ const testRoot = {
   margin-bottom: 20px;
   padding: 0 10px;
 }
+
 .breadcrumb-wrapper {
   display: flex;
   align-items: center;
