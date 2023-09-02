@@ -5,11 +5,7 @@
   <el-dialog v-model="dialogFormVisible" title="字段修改">
     <el-form :model="form">
       <el-form-item label="标题" :label-width="formLabelWidth">
-        <el-input
-          v-model="form.name"
-          autocomplete="off"
-          placeholder="请输入标题"
-        />
+        <el-input v-model="form.name" autocomplete="off" placeholder="请输入标题" />
       </el-form-item>
       <!-- <el-form-item label="简介" :label-width="formLabelWidth">
         <el-input
@@ -19,9 +15,9 @@
           placeholder="请输入简介"
         />
       </el-form-item> -->
-      <el-form-item label="封面" :label-width="formLabelWidth">
+      <!-- <el-form-item label="封面" :label-width="formLabelWidth">
         <PictureUploader :form="form"></PictureUploader>
-      </el-form-item>
+      </el-form-item> -->
     </el-form>
     <template #footer>
       <span class="dialog-footer">
@@ -35,6 +31,7 @@
 <script>
 import { updatePrototypeInfo } from "../../../api/artifact";
 import PictureUploader from "../PictureUploader.vue";
+import { useUserStore } from "../../../stores/modules/user";
 
 export default {
   name: "ModifyButton",
@@ -47,9 +44,10 @@ export default {
       dialogFormVisible: false,
       form: {
         name: "",
-        imgUrl: "",
+        // imgUrl: "",
       },
       formLabelWidth: "140px",
+      projId: 0,
     };
   },
   methods: {
@@ -59,15 +57,14 @@ export default {
     async modifyDesign() {
       this.form.name = this.form.name ? this.form.name : "未命名原型设计";
       const data = {
-        artId: this.design.id,
-        name: this.form.name,
-        type: this.design.type,
+        projId: this.projId,
+        itemId: this.design.id,
+        filename: this.form.name,
       };
-    //   console.log(data);
       try {
         const res = await updatePrototypeInfo(data);
         console.log("修改原型设计字段：", res);
-        this.fatherHandler(this.form.name, this.form.imgUrl);
+        this.fatherHandler(this.form.name, '');
         this.$message({
           message: "修改成功",
           type: "success",
@@ -81,6 +78,8 @@ export default {
   },
   mounted() {
     this.form.name = this.design.name;
+    const userStore = useUserStore()
+    this.projId = userStore.projId
   },
 };
 </script>

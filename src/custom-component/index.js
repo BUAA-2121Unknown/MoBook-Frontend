@@ -12,7 +12,6 @@ const modules = import.meta.glob([
   './svgs/SVGStar/*.vue',
   './svgs/SVGHexagon/*.vue',
   './svgs/SVGTriangle/*.vue',
-  './svgs/SVGComment/*.vue',
   './Rate/*.vue',
   './Slider/*.vue',
   './Switch/*.vue',
@@ -35,7 +34,7 @@ export const initComponents = ()=>{
     'Select',
   ]
   // console.log("modules",modules)
-  const svgs = ['SVGStar', 'SVGTriangle','SVGHexagon','SVGComment']
+  const svgs = ['SVGStar', 'SVGTriangle','SVGHexagon']
   components.forEach((key) => {
     window.$vueApp.component(
       key,

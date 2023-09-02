@@ -56,9 +56,13 @@
         " @click="decompose">
         拆分
       </el-button>
-<!-- 对于解锁和不解锁按钮来说，当有人操作时一定不允许使用 -->
-      <el-button :disabled="!curComponent || curComponent.isLock || (curComponent.userId && curComponent.userId != userId)" @click="lock">锁定</el-button>
-      <el-button :disabled="!curComponent || !curComponent.isLock || (curComponent.userId && curComponent.userId != userId)" @click="unlock">解锁</el-button>
+      <!-- 对于解锁和不解锁按钮来说，当有人操作时一定不允许使用 -->
+      <el-button
+        :disabled="!curComponent || curComponent.isLock || (curComponent.userId && curComponent.userId != userId)"
+        @click="lock">锁定</el-button>
+      <el-button
+        :disabled="!curComponent || !curComponent.isLock || (curComponent.userId && curComponent.userId != userId)"
+        @click="unlock">解锁</el-button>
       <el-button @click="preview(true)">原型导出</el-button>
       <PreviewCreateButton :placedAtBar="true"></PreviewCreateButton>
       <!-- <el-button
@@ -113,7 +117,7 @@ import { useUserStore } from "../../stores/modules/user";
 // const dialogVisible = ref(false);
 
 export default {
-  components: { Preview, PreviewCreateButton,},
+  components: { Preview, PreviewCreateButton, },
   props: {
     isPreview: {
       type: Boolean,
@@ -136,7 +140,10 @@ export default {
       previewing: this.isPreviewing,
       codeDialogVisible: false,
       forbidSaveTips: true,
+
       userId: 0,
+      itemId: 0,
+      projId: 0,
     };
   },
   computed: mapState([
@@ -161,6 +168,8 @@ export default {
   mounted() {
     const userStore = useUserStore()
     this.userId = userStore.userInfo.id
+    this.projId = userStore.projectId
+    this.itemId = this.$route.query.itemId
   },
   methods: {
     cancelPreview() {
@@ -221,7 +230,6 @@ export default {
           Object.keys(component.style).forEach((key) => {
             if (this.needToChange.includes(key)) {
               if (key === "fontSize" && component.style[key] === "") return;
-
               // 根据原来的比例获取样式原来的尺寸
               // 再用原来的尺寸 * 现在的比例得出新的尺寸
               component.style[key] = this.format(
@@ -328,26 +336,23 @@ export default {
     // 保存原型设计项目
     async save() {
       // 无query参数进入，禁止保存
-      if (!this.$route.query || !this.$route.query.artId) {
+      if (!this.itemId) {
         // 首次进入时会自动进行一次上传，这次保存无需提醒
-        if (!this.forbidSaveTips) {
-          ElNotification({
-            title: "保存失败",
-            message:
-              "您正在使用临时设计工具。若要保存，请先在项目页面创建一个原型设计。",
-            type: "danger",
-          });
-        }
-        this.forbidSaveTips = false;
+        ElNotification({
+          title: "保存失败",
+          message:
+            "您正在使用临时设计工具。若要保存，请先在项目页面创建一个原型设计。",
+          type: "danger",
+        });
         console.log("未给出artId，无法保存");
         return;
       }
 
       // 带query参数才允许保存
-      const id = this.$route.query.artId;
       const data = {
-        artId: Number(id),
-        filename: "prototype_" + this.$route.query.artId + ".json",
+        itemId: Number(this.itemId),
+        projId: Number(this.projId),
+        version: 1,
         content: JSON.stringify({
           canvasData: { array: this.componentData },
           canvasStyle: this.canvasStyleData,
@@ -357,38 +362,12 @@ export default {
         // console.log("原型设计信息字符串", data.content);
         const res = await savePrototype(data);
         console.log("原型设计保存成功", res);
-        if (!this.forbidSaveTips) {
-          this.$message.success("原型设计保存成功！");
-        }
-        this.forbidSaveTips = false;
+        this.$message.success("原型设计保存成功！");
       } catch (e) {
         console.log(e);
         this.$message.error("原型设计保存失败，请检查您的网络配置。");
       }
     },
-
-    // save() {
-    //   // TODO 保存
-    //   // localStorage.setItem("canvasData", JSON.stringify(this.componentData));
-    //   // localStorage.setItem("canvasStyle", JSON.stringify(this.canvasStyleData));
-    //   const data = new FormData();
-    //   data.append("protoId", this.$route.params.id);
-    //   console.log("protoId: ", this.$route.params.id);
-    //   data.append("canvasData", JSON.stringify({ array: this.componentData }));
-    //   data.append("canvasStyle", JSON.stringify(this.canvasStyleData));
-    //   Project.saveProto(data)
-    //     .then((res) => {
-    //       if (res.status === 200) {
-    //         this.$message.success("保存成功");
-    //       } else {
-    //         this.$message.error("保存失败");
-    //       }
-    //     })
-    //     .catch((err) => {
-    //       console.log(err);
-    //       this.$message.error("保存失败");
-    //     });
-    // },
 
     clearCanvas() {
       this.$store.commit("setCurComponent", { component: null, index: null });

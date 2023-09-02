@@ -123,7 +123,7 @@ export default {
       }
       try {
         const res = await getPrototypeToken(params)
-        console.log('成功加载项目分享地址', res)
+        console.log('成功加载项目分享地址', res, params)
         if (res.data.token) {
           this.token = res.data.token.token
           this.activited = res.data.token.active

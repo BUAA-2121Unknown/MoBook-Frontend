@@ -37,13 +37,13 @@
               <span class="project-header-item-text"
                 >项目创建于 | {{ projectInfo.created }}</span
               >
-              <MiniUserCard :userInfo="creatingUser"></MiniUserCard>
+              <!-- <MiniUserCard :userInfo="creatingUser"></MiniUserCard> -->
             </div>
             <div class="project-header-item header-blur-container">
               <span class="project-header-item-text"
                 >最后修改于 | {{ projectInfo.updated }}</span
               >
-              <MiniUserCard :userInfo="lastModifyUser"></MiniUserCard>
+              <!-- <MiniUserCard :userInfo="lastModifyUser"></MiniUserCard> -->
             </div>
           </div>
         </el-col>

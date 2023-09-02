@@ -4,16 +4,16 @@ import { fmtForm } from "@/utils/common";
 // 原型设计api
 // 更新原型设计基础字段
 export const updatePrototypeInfo = (data) => {
-  const form = ["artId", "name", "type"];
+  const form = ["projId", "itemId", "filename"];
   return service({
-    url: "proj/artifact/profile/update",
+    url: "artifact/update/filename",
     method: "post",
     data: fmtForm(data, form),
   });
 };
 // 创建原型设计
 export const createPrototype = (data) => {
-  const form = ["projId", "itemId", "filename", "prop", "live"];
+  const form = ["projId", "itemId", "filename", "prop", "live", "sibling"];
   return service({
     url: "artifact/create/file",
     method: "post",
@@ -22,17 +22,25 @@ export const createPrototype = (data) => {
 };
 // 更新原型设计状态
 export const updatePrototypeStatus = (data) => {
-  const form = ["status", "artifacts"];
+  const form = ["projId", "status", "items"];
   return service({
-    url: "proj/artifact/status/update",
+    url: "artifact/update/status",
     method: "post",
     data: fmtForm(data, form),
   });
 };
-// 获取原型设计列表
+// y获取某项目下全部原型设计
 export const getPrototypeList = (params) => {
   return service({
-    url: "proj/artifacts",
+    url: "artifact/item/prototypes",
+    method: "get",
+    params: params,
+  });
+};
+// y根据token获取全部原型设计的列表
+export const getPrototypeListWithToken = (params) => {
+  return service({
+    url: "artifact/share/prototypes",
     method: "get",
     params: params,
   });
@@ -40,7 +48,7 @@ export const getPrototypeList = (params) => {
 // y获取指定id的原型设计数据
 export const getPrototype = (params) => {
   return service({
-    url: "artifact/file/download",
+    url: "artifact/file/download/content",
     method: "get",
     params: params,
   });
@@ -49,7 +57,7 @@ export const getPrototype = (params) => {
 export const savePrototype = (data) => {
   const form = ["projId", "itemId", "filename", "version", "file"];
   return service({
-    url: "artifact/file/upload",
+    url: "artifact/file/upload/content",
     method: "post",
     data: fmtForm(data, form),
   });
@@ -78,6 +86,14 @@ export const revokePrototypeToken = (data) => {
     url: "live/token/revoke",
     method: "post",
     data: fmtForm(data, form),
+  });
+};
+// y验证指定token的权限
+export const verifyPrototypeToken = (params) => {
+  return service({
+    url: "live/token/auth",
+    method: "get",
+    params: params,
   });
 };
 
