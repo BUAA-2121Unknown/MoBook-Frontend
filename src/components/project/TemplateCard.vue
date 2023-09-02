@@ -90,6 +90,7 @@ export default {
           console.log("原型设计：读取默认模板", val, this.design.id);
         }
 
+        // cola 加载模板
         this.$store.commit("setComponentData", val.canvasData.array);
         this.$store.commit("setCanvasStyle", val.canvasStyle);
         this.loadHandler();

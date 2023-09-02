@@ -11,12 +11,11 @@ export const updatePrototypeInfo = (data) => {
     data: fmtForm(data, form),
   });
 };
-
 // 创建原型设计
 export const createPrototype = (data) => {
-  const form = ["projId", "name", "type", "live"];
+  const form = ["projId", "itemId", "filename", "prop", "live"];
   return service({
-    url: "proj/artifact/create",
+    url: "artifact/create/file",
     method: "post",
     data: fmtForm(data, form),
   });
@@ -38,19 +37,45 @@ export const getPrototypeList = (params) => {
     params: params,
   });
 };
-// 获取指定id的原型设计数据
+// y获取指定id的原型设计数据
 export const getPrototype = (params) => {
   return service({
-    url: "proj/artifact/file/download/content",
+    url: "artifact/file/download",
     method: "get",
     params: params,
   });
 };
-// 保存指定id的原型设计数据
+// y保存指定id的原型设计数据
 export const savePrototype = (data) => {
-  const form = ["artId", "filename", "content"];
+  const form = ["projId", "itemId", "filename", "version", "file"];
   return service({
-    url: "proj/artifact/file/upload/content",
+    url: "artifact/file/upload",
+    method: "post",
+    data: fmtForm(data, form),
+  });
+};
+// y获取指定id的项目的原型设计token
+export const getPrototypeToken = (params) => {
+  return service({
+    url: "live/token/get",
+    method: "get",
+    params: params,
+  });
+};
+// y创建指定id的项目的原型设计token
+export const createPrototypeToken = (data) => {
+  const form = ["itemId", "projId", "expires", "auth", "orgOnly"];
+  return service({
+    url: "live/token/open",
+    method: "post",
+    data: fmtForm(data, form),
+  });
+};
+// y删除指定id的项目的原型设计token
+export const revokePrototypeToken = (data) => {
+  const form = ["token"];
+  return service({
+    url: "live/token/revoke",
     method: "post",
     data: fmtForm(data, form),
   });
