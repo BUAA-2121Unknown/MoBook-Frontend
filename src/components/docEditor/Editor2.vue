@@ -203,8 +203,6 @@ const { paramsToEditor } = toRefs(props)
 const doc_id = paramsToEditor.value.itemId
 const projId = paramsToEditor.value.projId
 const version = paramsToEditor.value.version
-const tokenString = paramsToEditor.value.tokenString
-
 // console.log("paramsToEditorVersion" + paramsToEditor.value.version)
 if (editable.value)
   auth = "2"
@@ -216,6 +214,7 @@ provider.value = new HocuspocusProvider({
   document: ydoc,
   token: auth,
   parameters: {
+    auth: auth,
     doc_id: doc_id,
     projId: projId,
     version: version,

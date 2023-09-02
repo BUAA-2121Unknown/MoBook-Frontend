@@ -94,7 +94,7 @@
         </div>
         <div class="top-bar__right">
           <div class="operations">
-            <el-button type="primary">恢复此记录</el-button>
+            <el-button type="primary" @click="restore">恢复此记录</el-button>
           </div>
           
         </div>
@@ -128,7 +128,7 @@
 <script setup>
 import Editor from '@/components/docEditor/Editor.vue';
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getDoc, createDocToken, getDocAuth, getAllVersions, getDocVersion } from '@/api/artifact.js';
+import { getDoc, createDocToken, getDocAuth, getAllVersions, getDocVersion, uploadDoc } from '@/api/artifact.js';
 import settings from '@/settings/basic'
 import { useRoute, useRouter } from 'vue-router'
 import { ref, onMounted, inject } from 'vue'
@@ -139,8 +139,8 @@ import { useUserStore } from '@/stores/modules/user'
 import { fromUint8Array, toUint8Array } from 'js-base64'
 import historyEditor  from '@/components/docEditor/historyEditor.vue'
 import * as Y from 'yjs'
-import PreviewCreateButton from '@/components/docEditor/shareButton.vue'
 
+const router = useRouter()
 const num = ref(1)
 const handleChange = (value) => {
   console.log(value)
@@ -204,7 +204,6 @@ const showVersions = async() => {
 
 
 
-const doc = ref(new Y.Doc())
 // 展示该文档指定版本的内容
 const chooseVersion = async(version) => {
   console.log("####")
@@ -215,6 +214,8 @@ const chooseVersion = async(version) => {
   //点击一下让editor组件强制渲染
   content.value = res.data.content
   componentKey.value += 1;
+  versionId.value = version //记录当前点击的versionId
+  json.value = JSON.parse(res.data.content)   //记录当前点击的内容
 }
 
 // 获取现在的总的版本号
@@ -224,45 +225,34 @@ const getNowDocVersion = async() => {
     console.log(parseInt(userStore.projectId))
     const res = await getAllVersions({itemId: parseInt(doc_id), projId: parseInt(userStore.projectId)})
     versionNum.value = res.data.totalVersion
-    // console.log("version" + versionNum.value)
-    // if (doc_id && !token)
-    // {
-    //   form.value.artId = doc_id
-    //   console.log(form.value)
-    //   const res =  await getDoc(form.value)
-    //   if (res.meta.status == 0)
-    //   {
-    //     title.value = res.data.name
-    //     document.title = title.value;
-    //   }
-    // }
-    // // 通过分享链接进入
-    // else if (doc_id && token)
-    // {
-    //   const res = await getDocAuth({'token': token})
-    //   if (res.meta.status == 0)
-    //   {
-    //     const auth = res.data.auth
-    //     console.log(auth)
-    //     if (auth == '1')
-    //       editable.value = false
-    //     else if (auth === '2')
-    //       editable.value = true
-
-    //     form.value.artId = doc_id
-    //     const res2 =  await getDoc(form.value)
-    //     if (res2.meta.status == 0)
-    //     {
-    //       title.value = res2.data.name
-    //       document.title = title.value;
-    //     }
-    //   }
-    // }
   }catch(e) {
     console.log(e)
   }
 }
 
+// 获取现在的权限
+const getAuth = async() => {
+  console.log("version" + versionNum.value)
+    // 通过分享链接进入
+    if (doc_id && token)
+    {
+      const res = await getDocAuth({'token': token})
+      if (res.meta.status == 0)
+      {
+        const auth = res.data.auth
+        console.log("auth",auth)
+        if (auth == '1')
+          editable.value = false
+        else if (auth == '2')
+          editable.value = true
+        else if (auth == '0')
+        {
+          router.push("/")
+          ElMessage.error("您没有权限访问该文档");
+        }
+      }
+    }
+}
 
 
 const paramsToEditor = {
@@ -270,11 +260,11 @@ const paramsToEditor = {
   'projId': userStore.projectId,
   'version': versionNum.value,
   'content': content,  //Editor中不需要这个content，只是historyEditor需要
-  'token': token,
 }
-
+console.log(paramsToEditor)
 onMounted(async () => {
   await getNowDocVersion();
+  await getAuth();
   paramsToEditor.version = versionNum.value
   visible.value = true;
 });
@@ -288,7 +278,7 @@ const createToken = async () => {
   try {
     const res = await createDocToken(shareForm.value);
     console.log(res)
-    const shareUrl =  settings.appURL + '/doc?doc_id=' + doc_id + '&' + 'token=' + res.data.token
+    const shareUrl =  settings.appURL + 'doc?doc_id=' + doc_id + '&' + 'token=' + res.data.token
     console.log(shareUrl)
     const input = document.createElement('input')
     input.setAttribute('readonly', 'readonly')
@@ -329,6 +319,20 @@ const callEditorMethodExportToMarkdown = async() => {
   emitter.emit('exportToMarkdown', "filename")
 }
 
+
+const versionId = ref(0)  //记录version的id
+const json = ref("") //记录文本内容
+
+const restore = async() => {
+  const restoreFormData = {
+    'projId': parseInt(userStore.projectId),
+    'itemId': parseInt(doc_id),
+    'content': JSON.stringify(json.value),
+    'version': 1145141919
+  }
+  const res = await uploadDoc(restoreFormData)
+  console.log(res)
+}
 </script>
 
 <script>

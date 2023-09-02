@@ -5,26 +5,9 @@
       <div class="button-wrapper">
         <el-button class="button" icon="DocumentAdd" @click="addAtRoot(2, props.itemProperty)"></el-button>
         <el-button class="button" icon="FolderAdd" @click="addAtRoot(1, 0)"></el-button>
-        <el-button type="primary" icon="FolderAdd" @click="templateVisible = true"></el-button>
       </div>
     </div>
 
-    <el-dialog v-model="templateVisible" :show-close="false">
-      <template #header="{ close, titleId, titleClass }">
-        <div class="my-header">
-          <h4 :id="titleId" :class="titleClass">选择你想要使用的模版</h4>
-          <el-button type="danger" @click="close">
-            <el-icon class="el-icon--left"><CircleCloseFilled /></el-icon>
-          </el-button>
-        </div>
-        <div v-for="(item, key) in docTemplate" :key="key">
-          <div>
-            <el-button type="primary" @click="createFromTemplate(item.content)">{{ item.name }}</el-button>
-          </div>
-        </div>
-      </template>
-      
-    </el-dialog>
     
     
     <el-tree
@@ -126,7 +109,7 @@ const createFromTemplate = async(content) => {
     'prop': props.itemProperty,
     'live': true,
     'sibling': false,
-    'content': content
+    'content': JSON.stringify(content)
   })
   if (res.meta.status == 0) {
     ElMessage({
@@ -641,5 +624,22 @@ const fileTreeList = [
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+}
+
+.template-container {
+  height: 400px;
+  width: 1200px;
+  margin: auto 0;
+}
+
+
+.template {
+  line-height: 20px;
+  margin: 30px 0;
+  font-size: 20px;
+}
+
+.template:hover {
+    background-color: #eaeae1; /* 米白色的颜色代码 */
 }
 </style>
