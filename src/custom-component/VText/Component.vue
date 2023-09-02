@@ -34,6 +34,7 @@ import { mapState } from 'vuex'
 import { keycodes } from '@/utils/design/shortcutKey.js'
 import request from '@/utils/design/request'
 import OnEvent from '../common/OnEvent.vue'
+import { useUserStore } from "../../stores/modules/user";
 
 export default {
   extends: OnEvent,
@@ -62,10 +63,15 @@ export default {
       ctrlKey: 17,
       isCtrlDown: false,
       cancelRequest: null,
+      userId: 0,
     }
   },
   computed: {
     ...mapState(['editMode']),
+  },
+  mounted(){
+    const userStore = useUserStore()
+    this.userId = userStore.userInfo.id
   },
   created() {
     // 注意，修改时接口属性时不会发数据，在预览时才会发
@@ -146,7 +152,7 @@ export default {
     },
 
     setEdit() {
-      if (this.element.isLock) return
+      if (this.element.isLock || (this.element.userId && this.element.userId != this.userId)) return
 
       this.canEdit = true
       // 全选

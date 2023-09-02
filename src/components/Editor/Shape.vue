@@ -1,23 +1,10 @@
 <template>
-  <div
-    class="shape"
-    :class="{ active }"
-    @click="selectCurComponent"
-    @mousedown="handleMouseDownOnShape"
-  >
-    <span
-      v-show="isActive()"
-      class="iconfont icon-xiangyouxuanzhuan"
-      @mousedown="handleRotate"
-    ></span>
-    <span v-show="element.isLock" class="iconfont icon-suo"></span>
-    <div
-      v-for="item in isActive() ? getPointList() : []"
-      :key="item"
-      class="shape-point"
-      :style="getPointStyle(item)"
-      @mousedown="handleMouseDownOnPoint(item, $event)"
-    ></div>
+  <div class="shape" :class="{ active }" @click="selectCurComponent" @mousedown="handleMouseDownOnShape"
+    :style="otherSelectStyle">
+    <span v-show="isActive()" class="iconfont icon-xiangyouxuanzhuan" @mousedown="handleRotate"></span>
+    <span v-show="element.isLock || (element.userId && element.userId != userId)" class="iconfont icon-suo"></span>
+    <div v-for="item in isActive() ? getPointList() : []" :key="item" class="shape-point" :style="getPointStyle(item)"
+      @mousedown="handleMouseDownOnPoint(item, $event)"></div>
     <slot></slot>
   </div>
 </template>
@@ -30,6 +17,7 @@ import { mapState } from 'vuex'
 import calculateComponentPositonAndSize from '../../utils/design/calculateComponentPositonAndSize'
 import { mod360 } from '../../utils/design/translate'
 import { isPreventDrop } from '../../utils/design/utils'
+import { useUserStore } from "../../stores/modules/user";
 
 export default {
   props: {
@@ -40,12 +28,12 @@ export default {
     element: {
       required: true,
       type: Object,
-      default: () => {},
+      default: () => { },
     },
     defaultStyle: {
       required: true,
       type: Object,
-      default: () => {},
+      default: () => { },
     },
     index: {
       required: true,
@@ -55,6 +43,7 @@ export default {
   },
   data() {
     return {
+      userId: 0,
       pointList: ['lt', 't', 'rt', 'r', 'rb', 'b', 'lb', 'l'], // 八个方向
       pointList2: ['r', 'l'], // 左右两个方向
       initialAngle: {
@@ -82,8 +71,20 @@ export default {
       cursors: {},
     }
   },
-  computed: mapState(['curComponent', 'editor']),
+  computed: {
+    ...mapState(['curComponent', 'editor']),
+    otherSelectStyle() {
+      //被锁定
+      if (this.element.userId && this.element.userId != this.userId) {
+        return 'outline: 2px solid ' + this.generateColorFromId(this.userId)
+      }
+      // 未被锁定
+      return ''
+    },
+  },
   mounted() {
+    const userStore = useUserStore()
+    this.userId = userStore.userInfo.id
     // 用于 Group 组件
     if (this.curComponent) {
       this.cursors = this.getCursor() // 根据旋转角度获取光标位置
@@ -98,6 +99,16 @@ export default {
     })
   },
   methods: {
+    generateColorFromId(id) {
+      id = Number(id)
+      const r = (id * 17) % 256;
+      const g = (id * 31) % 256;
+      const b = (id * 13) % 256;
+      const alpha = 0.7; // 不透明度，可以根据需要调整
+      // 返回RGBA颜色字符串
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    },
+
     getPointList() {
       return this.element.component === 'line-shape'
         ? this.pointList2
@@ -105,7 +116,7 @@ export default {
     },
 
     isActive() {
-      return this.active && !this.element.isLock
+      return this.active && !this.element.isLock && !(this.element.userId && this.element.userId != this.userId)
     },
 
     // 处理旋转
@@ -222,6 +233,7 @@ export default {
       return result
     },
 
+    // 当鼠标落在shape上的时候，立即设置当前用户正在操作shape，并同步一次状态
     handleMouseDownOnShape(e) {
       this.$store.commit('setInEditorStatus', true)
       this.$store.commit('setClickComponentStatus', true)
@@ -234,8 +246,8 @@ export default {
         component: this.element,
         index: this.index,
       })
-      if (this.element.isLock) return
-
+      if (this.element.isLock || (this.element.userId && this.element.userId != this.userId)) return
+      // console.log('尝试移动', this.element.userId, this.userId, this.element.isLock, (this.element.userId && this.element.userId != this.userId))
       this.cursors = this.getCursor() // 根据旋转角度获取光标位置
 
       const pos = { ...this.defaultStyle }
@@ -247,6 +259,8 @@ export default {
 
       // 如果元素没有移动，则不保存快照
       let hasMove = false
+
+      // console.log('尝试移动', this.element.userId, this.userId, this.element.isLock, (this.element.userId && this.element.userId != this.userId))
       const move = (moveEvent) => {
         hasMove = true
         const curX = moveEvent.clientX
@@ -254,8 +268,15 @@ export default {
         pos.top = curY - startY + startTop
         pos.left = curX - startX + startLeft
 
+        // console.log('尝试移动', curX, startX, startLeft, pos.left, pos)
         // 修改当前组件样式
         this.$store.commit('setShapeStyle', pos)
+
+        // 设置当前用户持有该组件
+        // this.element.userId = this.userId
+        // 同步状态
+        // this.$store.commit('recordSnapshot')
+
         // 等更新完当前组件的样式并绘制到屏幕后再判断是否需要吸附
         // 如果不使用 $nextTick，吸附后将无法移动
         this.$nextTick(() => {
@@ -268,6 +289,11 @@ export default {
       }
 
       const up = () => {
+        // 设置当前用户不再持有该组件
+        // this.element.userId = 0
+        // 同步状态
+        // this.$store.commit('recordSnapshot')
+
         hasMove && this.$store.commit('recordSnapshot')
         // 触发元素停止移动事件，用于隐藏标线
         $emit(eventBus, 'unmove')
@@ -389,14 +415,17 @@ export default {
 <style lang="scss" scoped>
 .shape {
   position: absolute;
+
   &:hover {
     cursor: move;
   }
 }
+
 .active {
   outline: 1px solid #70c0ff;
   user-select: none;
 }
+
 .shape-point {
   position: absolute;
   background: #fff;
@@ -406,6 +435,7 @@ export default {
   border-radius: 50%;
   z-index: 1;
 }
+
 .icon-xiangyouxuanzhuan {
   position: absolute;
   top: -34px;
@@ -415,10 +445,12 @@ export default {
   color: #59c7f9;
   font-size: 20px;
   font-weight: 600;
+
   &:active {
     cursor: grabbing;
   }
 }
+
 .icon-suo {
   position: absolute;
   top: 0;
