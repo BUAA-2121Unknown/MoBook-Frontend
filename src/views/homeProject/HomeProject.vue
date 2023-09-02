@@ -1,14 +1,22 @@
 <template>
   <div class="container">
     <div class="search-container">
-      <div class="section-title">团队项目</div>
-      <div class="right-elements">
-        <input type="text" placeholder="搜索">
-        <el-button type="primary" @click="visible = true">创建项目</el-button>
-      </div>
+      <el-col :span="4">
+        <div class="section-title">团队项目</div>
+      </el-col>
+
+      <el-col :span="12"></el-col>
+      <div class="flex-grow"></div>
+      <el-input v-model="searchedInput" placeholder="搜索项目" class="search-input" @keyup.enter="searchProject">
+        <template #append>
+          <el-button :icon="Search" @click="searchProject" />
+        </template>
+      </el-input>
+      <el-button class="create-button" type="primary" @click="visible = true">创建项目</el-button>
     </div>
+
     <div class="project-container">
-      <ProjectCard v-for="project in projectList" :key="project.id" @delete="handleDelete" :project="project" />
+      <ProjectCard v-for="project in projectList" :key="project.id" @update="handleUpdate" :project="project" />
     </div>
 
     <el-drawer v-model="visible" :show-close="false" direction="rtl" size="80%">
@@ -42,6 +50,7 @@
 </template>
 
 <script>
+import { Search } from '@element-plus/icons-vue'
 import project_bg from '@/assets/homeProject/project_bg.png'
 import ProjectCard from '@/components/homeProject/ProjectCard.vue'
 import { ref } from 'vue'
@@ -64,18 +73,24 @@ const projectFormData = reactive({
 export default {
   name: "Project",
   components: {
-    ProjectCard
+    ProjectCard,
   },
   data(){
     return {
-      projectList: [
-      ]
+      searchedInput: '',
+      projectList: [],
+      projectListCopy: [],
     }
   },
   methods: {
     handleDelete(id) {
       this.projectList = this.projectList.filter(project => project.id !== id);
     },
+
+    handleUpdate() {
+      this.GetProjects()
+    },
+
     async submitForm() {
       try {
         projectFormData.orgId = userStore.orgId
@@ -97,8 +112,34 @@ export default {
       } catch (e) {
         console.log(e)
       }
+    },
+
+    async GetProjects() {
+      try {
+        const res = await getProjects({ orgId: userStore.orgId, status: 0 })
+        console.log(res)
+        if (res.meta.status == 0) {
+          this.projectList = res.data.projects
+          this.projectListCopy = res.data.projects
+        } else {
+          console.log(data)
+        }
+      } catch(e) {
+        console.log(e)
+      }
+    },
+
+    async searchProject() {
+      console.log(this.searchedInput)
+      this.projectList = this.projectListCopy
+      if (!this.searchedInput) {
+        await this.GetProjects()
+        return
+      }
+      this.projectList = this.projectList.filter(item => item.name.includes(this.searchedInput))
     }
   },
+  
   setup() {
     const visible = ref(false)
     return {
@@ -108,22 +149,18 @@ export default {
       CircleCloseFilled,
       ElButton,
       ElDrawer,
-      projectFormData
+      projectFormData,
+      Search
     };
   },
+
   async mounted(){
-    const res = await getProjects({ orgId: userStore.orgId, status: 0 })
-    console.log(res)
-    if (res.meta.status == 0) {
-      this.projectList = res.data.projects
-    } else {
-      console.log(data)
-    }
+    await this.GetProjects()
   }
 }
 </script>
 
-<style>
+<style scope lang="scss">
 .container {
   text-align: center;
 }
@@ -133,11 +170,12 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 4px 18px;
 }
 
 /* 版块标题的字 */
 .section-title {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: bold;
   margin: 2px 0;
 }
@@ -197,4 +235,13 @@ input {
   color: var(--el-text-color-secondary);
   font-size: 14px;
   margin-bottom: 20px;
-}</style>
+}
+
+.search-input {
+  padding-right: 10px;
+}
+
+.create-button {
+  margin-right: 6%;
+}
+</style>

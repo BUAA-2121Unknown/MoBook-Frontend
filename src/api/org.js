@@ -39,7 +39,7 @@ export const uploadOrgAvatar = (data) => {
 
 export const updateOrgInfo = (data) => {
   const form = [
-    'id',
+    'orgId',
     'name',
     'description',
   ]
