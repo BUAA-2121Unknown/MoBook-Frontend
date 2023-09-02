@@ -38,6 +38,7 @@
     "dragselect": "^2.7.4",
     "echarts": "^5.4.3",
     "element-plus": "^2.3.9",
+    "emoji-picker-element": "^1.18.3",
     "heyui": "^2.2.0-alpha.1",
     "html-to-image": "^1.11.11",
     "jquery": "^3.7.1",

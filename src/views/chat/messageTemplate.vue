@@ -1,57 +1,74 @@
 <template>
 	<div class="message-demo-block">
 		<div class="message-demo-avatar">
-			<el-image style="width: 40px; height: 40px; border-radius: 5px;" :src="this.url" :zoom-rate="1.2" :initial-index="4"
+			<el-image style="width: 40px; height: 40px; border-radius: 5px;" :src="url" :zoom-rate="1.2" :initial-index="4"
 				fit="cover" />
 		</div>
 		<div class="message-demo-name">
-			<span class="name-text">{{ this.name }}</span>
+			<span class="name-text">{{ this.messageList.name }}</span>
 		</div>
 		<div class="message-demo-time">
-			<span class="time-text">{{ this.time }}</span>
+			<span class="time-text">{{ this.messageList.time }}</span>
 		</div>
 		<div class="message-demo-content">
-			<span v-if="isContent" class="content-text">
-				{{ this.content }}
+			<span v-if="this.type == '0'" class="content-text">
+				{{ this.content }}😚
 			</span>
-			<el-image v-if="isImage" :src="image" :zoom-rate="1.2" :preview-src-list="srcList" fit="scale-down" />
-			<vue3VideoPlay v-if="isVideo" v-bind="options" />
+			<el-image v-if="this.type == '1'" :src="image" :zoom-rate="1.2" :preview-src-list="srcList" fit="scale-down" />
 
-			<div v-if="isFile" class="message-demo-content-file" @click="openFile(this.fileUrl)">
+			<vue3VideoPlay v-if="this.type == '2'" v-bind="options" />
+
+			<div v-if="this.type == '3'" class="message-demo-content-file" @click="openFile(this.fileUrl)">
 				<el-image style="width: 110px; height: 110px; margin-top: 5px;margin-left: 5px;"
 					src="https://img.sj33.cn/uploads/202010/7-20100410005BR.jpg" :fit="fit" />
 				<div class="file-name-text">
-					<span class="file-name-text-style">军事理论.doc</span>
+					<span class="file-name-text-style">{{ this.filename }}</span>
 				</div>
 				<div class="file-tag-moBook">
 					<span style="font-size: 12px;color: #949494;">墨书文件</span>
 				</div>
+			</div>
+
+			<div v-if="this.type == '4'" class="message-demo-forward">
+				<ForwardInfo :content="content" :son_list="son_list"></ForwardInfo>
 			</div>
 		</div>
 	</div>
 </template>
 
 <script >
+import ForwardInfo from './ForwardInfo.vue';
 import { reactive } from 'vue';
 export default {
 	props: {
-		// message: Object,
-		isContent: Boolean,
-		isImage: Boolean,
-		isVideo: Boolean,
-		isFile: Boolean,
+		messageList: Array,
+	},
+	components: {
+		ForwardInfo,
 	},
 	mounted() {
 		// this.checkType(this.message);
+		this.son_list = null;
+		this.content = '';
+		console.log('传递给子组件', this.messageList);
+		this.type = this.messageList.message_type;
+		this.messageId = this.messageList.messageId;
+		this.url = this.messageList.avatar;
+		this.chooseShow();
+	},
+	created() {
 	},
 	data() {
 		return {
+			son_list: [],
+			messageId: '',
+			type: '',
 			options: reactive({
 				width: '360px', //播放器高度
 				height: '240px', //播放器高度
 				color: "#409eff", //主题色
 				title: '', //视频名称
-				src: "http://82.156.25.78:5000/media/chat/30/message/files/3c8d25a078.mp4", //视频源
+				src: "", //视频源
 				muted: false, //静音
 				webFullScreen: false,
 				speedRate: ["0.75", "1.0", "1.25", "1.5", "2.0"], //播放倍速
@@ -64,38 +81,54 @@ export default {
 				controlBtns: ['audioTrack', 'quality', 'speedRate', 'volume', 'setting', 'fullScreen'] //显示所有按钮,
 			}),
 			content: '或许有一天，你会把我们的故事与她诉说，好在山穷水尽之时遇见你，她虽教会你长大，却不是对的人，还总是上演机场与船的故事。  三五成群的日子并不是很多，即使缘分使之相遇，又突然分道扬镳，只剩下那些未完成的梦，和你走过的路，最后青春也只属于一场放肆。',
-			time: '08-31 20:44',
-			name: '秋子夜',
-			url: 'https://picx.zhimg.com/80/v2-751e1e7b100ac74d741f6095096e7d43_720w.webp?source=1940ef5c',
-			image: 'https://pic2.zhimg.com/v2-dc5eda37f0dc2990c81107be154c4b29_r.jpg',
-			// image: 'https://th.bing.com/th?id=OIP.j1QJ73AX7jMZhltZ35RLLAHaG-&w=257&h=242&c=8&rs=1&qlt=90&o=6&dpr=1.3&pid=3.1&rm=2',
-			srcList: ['https://pic2.zhimg.com/v2-dc5eda37f0dc2990c81107be154c4b29_r.jpg'],
+			url: '',
+			image: '',
+			srcList: [],
 			fileUrl: 'https://www.gjtool.cn/pdfh5/git.pdf',
+			filename: '',
 		};
 	},
 	methods: {
 		openFile(fileUrl) {
 			window.open(fileUrl, '_blank');
 		},
-		checkType(tempMessage) {
-			if (this.check == '1') {
-				this.isContent = true;
-			} else if (this.check == '2') {
-				this.isImage = true;
-			} else if (this.check == '3') {
-				this.isVideo = true;
-			} else if (this.check = '4') {
-				this.isFile = true;
+		chooseShow() {
+			if (this.type == '0') {
+				this.content = this.messageList.content;
+			} else if (this.type == '1') {
+				this.image = this.messageList.image;
+				this.srcList.push(this.image);
+			} else if (this.type == '2') {
+				this.options.src = this.messageList.src;
+			} else if (this.type == '3') {
+				this.fileUrl = this.messageList.fileUrl;
+				this.filename = this.messageList.filename;
+			} else if (this.type == '4') {
+				this.content = this.messageList.content;
+				this.son_list = this.messageList.son_list;
 			}
 		}
 	}
 }
 </script>
 <style scoped>
+.message-demo-forward {
+	border-radius: 5px;
+	background-color: transparent;
+	width: 240px;
+	height: 80px;
+	cursor: pointer;
+}
+
+/* .message-demo-forward-up {
+	width: 210px;
+	background-color: rgb(179, 179, 179);
+} */
+
 .file-tag-moBook {
-	position: relative;
+	position: absolute;
 	display: flex;
-	margin-top: -50px;
+	bottom: 10px;
 	margin-left: 250px
 }
 
@@ -118,6 +151,7 @@ export default {
 }
 
 .message-demo-content-file {
+	position: relative;
 	width: 320px;
 	height: 120px;
 	background-color: #ffffff;

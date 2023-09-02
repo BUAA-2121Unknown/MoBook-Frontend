@@ -1,7 +1,7 @@
 <template>
 	<div class="forward-info-block" @click="viewMessages()">
 		<div class="forward-info-block-up">
-			<span>秋子夜和i4的聊天记录</span>
+			<span>{{ this.content }}</span>
 		</div>
 		<div class="forward-info-block-down">
 			<span>查看详情</span>
@@ -12,13 +12,18 @@
 <script>
 import emitter from '@/utils/emitter'
 export default {
+	props: {
+		content: String,
+		son_list: Array,
+	},
 	data() {
 		return {
+
 		}
 	},
 	methods: {
 		viewMessages() {
-			emitter.emit('openDialog', true);
+			emitter.emit('openDialog', this.son_list);
 		}
 	}
 }

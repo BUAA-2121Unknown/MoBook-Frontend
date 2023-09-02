@@ -8,15 +8,11 @@
 		</template>
 		<el-divider style="margin-top:-20px" border-style="double" />
 		<div class="message-list-show">
-			<MessageTemplate :isContent="true" :isImage="false" :isVideo="false" :isFile="false"></MessageTemplate>
-			<el-divider />
-			<MessageTemplate :isContent="false" :isImage="true" :isVideo="false" :isFile="false"></MessageTemplate>
-			<el-divider />
-			<MessageTemplate :isContent="false" :isImage="false" :isVideo="true" :isFile="false"></MessageTemplate>
-			<el-divider />
-			<MessageTemplate :isContent="true" :isImage="false" :isVideo="false" :isFile="false"></MessageTemplate>
-			<el-divider />
-			<MessageTemplate :isContent="false" :isImage="false" :isVideo="false" :isFile="true"></MessageTemplate>
+			<div v-for="message in chatMessageList">
+				<MessageTemplate :messageList="message">
+				</MessageTemplate>
+				<el-divider />
+			</div>
 		</div>
 	</el-dialog>
 </template>
@@ -24,58 +20,44 @@
 <script>
 import MessageTemplate from './messageTemplate.vue';
 import emitter from '@/utils/emitter'
+import { requireMessageList } from '@/api/chat'
+import { useUserStore } from '@/stores/modules/user'
 export default {
 	components: {
 		MessageTemplate,
 	},
 	mounted() {
-		emitter.on('openDialog', (flag) => this.openDialog(flag));
+		emitter.on('openDialog', (messagesList) => this.openDialog(messagesList));
 		emitter.on('closeDialog', (flag) => this.closeDialog(flag));
 	},
 	data() {
 		return {
-			num1: '1',
-			num2: '2',
-			num3: '3',
-			num4: '4',
 			dialogVisible: false,
-			message: {
-				_id: '7890',
-				indexId: 12092,
-				content: 'Message 1',
-				senderId: '1234',
-				username: 'John Doe',
-				avatar: 'assets/imgs/doe.png',
-				date: '13 November',
-				timestamp: '10:20',
-				system: false,
-				saved: true,
-				distributed: true,
-				seen: true,
-				deleted: false,
-				failure: true,
-				disableActions: false,
-				disableReactions: false,
-				files: [
-					{
-						name: 'My File',
-						size: 67351,
-						type: 'png',
-						audio: true,
-						duration: 14.4,
-						url: 'https://firebasestorage.googleapis.com/...',
-						preview: 'data:image/png;base64,iVBORw0KGgoAA...',
-					}
-				],
-			},
+			chatMessageList: [],
 		};
 	},
 	methods: {
-		openDialog(flag) {
+		openDialog(messagesList) {
+			this.dialogVisible = false;
+			console.log("开始请求聊天记录列表 1 ：", messagesList)
+			this.loadMessageList(messagesList);
 			this.dialogVisible = true;
 		},
 		closeDialog(flag) {
 			this.dialogVisible = false;
+		},
+		//建立http链接 发送消息要求更新聊天记录列表
+		async loadMessageList(messagesList) {
+			try {
+				const res = await requireMessageList({
+					"org_id": useUserStore().orgId,
+					"son_list": messagesList,
+				});
+				this.chatMessageList = res.data.message_list;
+				console.log('聊天记录列表:', this.chatMessageList)
+			} catch (e) {
+				console.log(e)
+			}
 		},
 	},
 };
