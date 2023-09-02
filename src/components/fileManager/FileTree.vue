@@ -347,7 +347,11 @@ const handleEditComplete = async (node, name) => {
         'prop': props.itemProperty,
         'live': true,
         'sibling': false,
-      })
+      }).then((res) => {
+        return res;
+      }).catch((error) => {
+        console.log("🚀 > error:", error);
+      });
 
       if (res.meta.status == 0) {
         if (editingStatus.value === 'editing') {
