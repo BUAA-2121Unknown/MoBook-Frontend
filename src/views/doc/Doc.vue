@@ -434,7 +434,7 @@ export default {
 <style lang="css" scoped>
 /* 编辑器的容器 */
 .editor-container {
-  margin: 0 auto;
+  margin: 20px auto;
   display: flex;
   box-sizing: border-box;
   flex-flow: column;
@@ -449,6 +449,11 @@ export default {
     'WenQuanYi Zen Hei', 'ST Heiti', SimHei, 'WenQuanYi Zen Hei Sharp',
     sans-serif;
 }
+
+.edit {
+  width: 90%;
+}
+
 
 /* 顶部栏 */
 .top-bar {
@@ -614,6 +619,5 @@ img {
 }
 
 /* Editor */
-
 </style>
   
