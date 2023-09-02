@@ -131,7 +131,7 @@ import { Node } from '@tiptap/core'
 import emitter from '@/utils/emitter'
 import { onBeforeUnmount, ref, toRefs } from 'vue';
 import  {convertToMarkdown}  from '@/utils/editor/html2markdown/exportToMd.js'
-import { convertToWord } from '@/utils/editor/exportToDoc.js'
+import { convertHtmlToDocx } from '@/api/convertor'
 import FileSaver from 'file-saver';
 import {uploadDoc} from '@/api/artifact'
 
