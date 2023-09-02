@@ -1,5 +1,5 @@
 <template>
-	<div class="forward-info-block">
+	<div class="forward-info-block" @click="viewMessages()">
 		<div class="forward-info-block-up">
 			<span>秋子夜和i4的聊天记录</span>
 		</div>
@@ -10,11 +10,17 @@
 </template>
 
 <script>
+import emitter from '@/utils/emitter'
 export default {
 	data() {
 		return {
 		}
 	},
+	methods: {
+		viewMessages() {
+			emitter.emit('openDialog', true);
+		}
+	}
 }
 </script>
 
@@ -24,6 +30,7 @@ export default {
 	height: 80px;
 	background-color: #d2b7b7;
 	border-radius: 5px;
+	cursor: pointer;
 }
 
 .forward-info-block-up {

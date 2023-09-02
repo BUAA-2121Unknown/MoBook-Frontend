@@ -13,8 +13,7 @@
       <el-select v-model="invitedUsername" placeholder="选择成员" class="remove-select" size="large" no-match-text="暂无相关结果"
         filterable clearable>
         <el-option class="option-user-select" v-for="user in inviteUsers" :key="user._id" :value="user.username">
-          <el-avatar style="float: left; color: var(--el-text-color-secondary); "
-            src="https://picx.zhimg.com/v2-7f2dbdcc084f3e70c135adc6e5406d33_r.jpg?source=1940ef5c" />
+          <el-avatar style="float: left; color: var(--el-text-color-secondary); " :src="user.avatar" />
           <span class="option-user-select-name">{{ user.username }}</span>
         </el-option>
       </el-select>
@@ -44,8 +43,7 @@
       <el-select v-model="removeUserId" placeholder="选择成员" class="remove-select" size="large" no-match-text="暂无相关结果"
         filterable clearable>
         <el-option class="option-user-select" v-for="user in removeUsers" :key="user._id" :value="user.username">
-          <el-avatar style="float: left; color: var(--el-text-color-secondary); "
-            src="https://picx.zhimg.com/v2-7f2dbdcc084f3e70c135adc6e5406d33_r.jpg?source=1940ef5c" />
+          <el-avatar style="float: left; color: var(--el-text-color-secondary); " src="user.avatar" />
           <span class="option-user-select-name">{{ user.username }}</span>
         </el-option>
       </el-select>
@@ -78,14 +76,73 @@
         :messages-loaded="messagesLoaded" :show-new-messages-divider="false" @send-message="sendMessage($event.detail[0])"
         @open-file="openFile($event.detail[0])" @fetch-messages="fetchMessages($event.detail[0])"
         @menu-action-handler="menuActionHandler($event.detail[0])" :text-messages="JSON.stringify(textDemo)"
-        @add-room="createChatRoom($event.detail[0])" :textarea-action-enabled="true"
-        :message-selection-actions="JSON.stringify(messageSelectionActions)"
-        @message-selection-action-handler="messageSelectionActionHandler($event.detail[0])"
-        @textarea-action-handler="textareaActionHandler($event.detail[0])">
+        @add-room="createChatRoom($event.detail[0])" :message-selection-actions="JSON.stringify(messageSelectionActions)"
+        :message-actions="JSON.stringify(messageOps)" :room-info-enabled="true"
+        @room-info="showRoomInfo($event.detail[0])"
+        @message-selection-action-handler="messageSelectionActionHandler($event.detail[0])">
       </vue-advanced-chat>
     </div>
 
-    <!-- 转发聊天记录弹窗 -->
+    <!-- 逐条转发聊天记录弹窗 -->
+    <div v-if="showSingle" class="forward-block">
+      <div class="forward-block-left">
+        <div class="forward-block-left-search">
+          <form class="form">
+            <button>
+              <svg width="17" height="16" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"
+                aria-labelledby="search">
+                <path d="M7.667 12.667A5.333 5.333 0 107.667 2a5.333 5.333 0 000 10.667zM14.334 14l-2.9-2.9"
+                  stroke="currentColor" stroke-width="1.333" stroke-linecap="round" stroke-linejoin="round"></path>
+              </svg>
+            </button>
+            <input class="input" placeholder="搜索" required="" type="text">
+            <button class="reset" type="reset">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </form>
+        </div>
+        <div class="forward-block-left-list">
+          <div class="forward-block-left-list-text">聊天列表</div>
+          <div class="forward-block-left-list-true">
+            <div class="inner-content">
+              <listElement v-for="user in this.allUsers" :key="user._id" :id="user._id" :avatar="user.avatar"
+                :name="user.username" />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="forward-block-right">
+        <div class="forward-block-right-text">
+          <span>分别发送给</span>
+        </div>
+        <div class="forward-block-right-list">
+          <div class="select-content">
+            <selectList v-for="user in this.selectedUsers" :key="user._id" :id="user._id" :avatar="user.avatar"
+              :name="user.username" />
+          </div>
+        </div>
+        <div class="right-divider">
+          <el-divider border-style="inset" />
+        </div>
+        <div class="message-share-way">
+          <ForwardInfo></ForwardInfo>
+        </div>
+        <div class="message-share-button">
+          <el-button class="message-share-send" type="success">逐条转发 {{ listCount }}</el-button>
+          <el-button class="message-share-cancel"
+            @click="this.showSingle = false; this.selectedUsers = [];">取消</el-button>
+        </div>
+      </div>
+      <!-- <label class="container">
+        <input type="checkbox" checked="checked">
+        <div class="checkmark"></div>
+      </label> -->
+    </div>
+
+    <!-- 合并转发聊天记录弹窗 -->
     <div v-if="showForwardMessages" class="forward-block">
       <div class="forward-block-left">
         <div class="forward-block-left-search">
@@ -201,8 +258,9 @@
       </div>
     </div>
 
-    <div>
+    <div class="history-messages">
       <!-- <MessageTemplate></MessageTemplate> -->
+      <DraggableTest></DraggableTest>
     </div>
 
   </div>
@@ -219,6 +277,7 @@ import ForwardInfo from './ForwardInfo.vue';
 import listElement from './listElement.vue';
 
 import MessageTemplate from './messageTemplate.vue';
+import DraggableTest from './DraggableTest.vue'
 
 import emitter from '@/utils/emitter'
 
@@ -232,7 +291,8 @@ export default {
     listElement,
     selectList,
     ForwardInfo,
-    MessageTemplate
+    MessageTemplate,
+    DraggableTest
   },
   data() {
     return {
@@ -250,6 +310,7 @@ export default {
       },
       atId: "260",
       showForwardMessages: false,
+      showSingle: false,
       selectedUsers: [
       ],
       // messagesPerPage: 20,
@@ -263,19 +324,25 @@ export default {
         TYPE_MESSAGE: '发送消息...',
         SEARCH: '搜索',
         IS_ONLINE: '在线',
-        LAST_SEEN: 'dernière connexion ',
+        LAST_SEEN: '上次在线 ',
         IS_TYPING: '正在输入...',
         CANCEL_SELECT_MESSAGE: '取消'
       },
       messageSelectionActions: [
         {
-          name: 'deleteMessages',
-          title: '删除'
+          name: 'singleForwardMessages',
+          title: '逐条转发'
         },
         {
           name: 'allForwardMessages',
           title: '合并转发',
         },
+      ],
+      messageOps: [
+        {
+          name: 'selectMessages',
+          title: '多选',
+        }
       ],
       disableForm: false,
       createPage: false,
@@ -303,6 +370,10 @@ export default {
           title: '移除成员'
         },
         {
+          name: 'roomInfo',
+          title: '群聊信息'
+        },
+        {
           name: 'deleteRoom',
           title: '解散群聊'
         }],//房间邀请成员操作
@@ -311,6 +382,7 @@ export default {
       //实时连接
       newSocket: null,
       lockReconnect: false,
+      listLockReconnect: false,
 
       roomId: '',
       rooms: [
@@ -457,15 +529,20 @@ export default {
     },
     messageSelectionActionHandler({ action, messages, roomId }) {
       switch (action.name) {
-        case 'deleteMessages':
-          messages.forEach(message => {
-            this.deleteMessage({ message, roomId });
-          });
+        case 'singleForwardMessages':
+          this.singleForward({ messages, roomId });
+          // messages.forEach(message => {
+          //   this.deleteMessage({ message, roomId });
+          // });
           break;
         case 'allForwardMessages':
           this.allForward({ messages, roomId });
           break;
       }
+    },
+    singleForward({ messages, roomId }) {
+      this.showForwardMessages = false;
+      this.showSingle = true;
     },
     allForward({ messages, roomId }) {
       this.showSingle = false;
@@ -495,12 +572,19 @@ export default {
     menuActionHandler({ action, roomId }) {
       switch (action.name) {
         case 'inviteUser':
-          return this.inviteUser(roomId);
+          this.inviteUser(roomId);
+          break;
         case 'removeUser':
-          return this.removeUser(roomId);
-        // case 'deleteRoom':
-        // return this.deleteRoom(roomId)
+          this.removeUser(roomId);
+          break;
+        case 'roomInfo':
+          const room = this.rooms.find(temp => temp.roomId === roomId);
+          this.showRoomInfo(room)
+          break;
       }
+    },
+    showRoomInfo(room) {
+      console.log('显示房间信息：', room);
     },
     // openFile({ file }) {
     //   window.open(file.file.url, '_blank')
@@ -660,19 +744,19 @@ export default {
         // this.addNewMessage()
         const data = JSON.parse(msg.data).data;
         console.log('接收data:', data);
-        this.rooms.find(room => room.roomId == this.roomId).lastMessage = data;
-        this.rooms.find(room => room.roomId == this.roomId).lastMessage.content = data.content;
-        this.rooms.find(room => room.roomId == this.roomId).lastMessage.username = data.username
-        this.rooms.find(room => room.roomId == this.roomId).lastMessage.timestamp = data.timestamp;
+        // this.rooms.find(room => room.roomId == this.roomId).lastMessage = data;
+        // this.rooms.find(room => room.roomId == this.roomId).lastMessage.content = data.content;
+        // this.rooms.find(room => room.roomId == this.roomId).lastMessage.username = data.username
+        // this.rooms.find(room => room.roomId == this.roomId).lastMessage.timestamp = data.timestamp;
 
         // if (data.senderId === this.currentUserId) {
         //   this.rooms.find(room => room.roomId === this.roomId).lastMessage.username = '';
 
         // }
-        if (data.files) {
-          console.log(data.files[0].name)
-          this.rooms.find(room => room.roomId === this.roomId).lastMessage.content = data.files[0].name;
-        }
+        // if (data.files) {
+        //   console.log(data.files[0].name)
+        //   this.rooms.find(room => room.roomId === this.roomId).lastMessage.content = data.files[0].name;
+        // }
         if (!(data.senderId === this.currentUserId)) {
           this.addNewMessage(data)
         }
@@ -700,6 +784,18 @@ export default {
         console.log('接收msg:', msg.data);
         const data = JSON.parse(msg.data);
         console.log('接收data list:', data);
+        const room = data.room;
+        const exist = this.rooms.some(item => item.roomId == room.roomId);
+        if (exist) {
+          this.rooms.find(item => item.roomId == room.roomId).index = room.index;
+          this.rooms.find(item => item.roomId == room.roomId).lastMessage = room.lastMessage;
+          if ((room.lastMessage.senderId == this.currentUserId)) {
+            console.log('自己给自己发消息!')
+            this.rooms.find(item => item.roomId == room.roomId).unreadCount = 0;
+          } else this.rooms.find(item => item.roomId == room.roomId).unreadCount = room.unreadCount;
+        } else {
+          this.rooms.push(room);
+        }
       };
     },
     reconnect() {
@@ -714,6 +810,19 @@ export default {
         this.createWebSocket(this.wsCfg.url);
       }, 2000);
     },
+    listReconnect() {
+      if (this.listLockReconnect) {
+        return;
+      }
+      this.listLockReconnect = true;
+
+      // 没连接上会一直重连，设置延迟避免请求过多
+      setTimeout(() => {
+        this.listLockReconnect = false;
+        this.createWebSocket(this.WebSocketUrl.url);
+      }, 2000);
+    },
+
 
     nowDate() {
       //将标准日期处理一下
@@ -738,6 +847,7 @@ export default {
       if (options.reset) {
         this.resetMessages()
       }
+      this.messagesLoaded = false;
       this.roomId = room.roomId;
       this.createWebSocket();
       this.requestRoom()
@@ -905,6 +1015,10 @@ onDeactivated(() => {
 </script>
 
 <style lang="scss" scoped>
+.history-messages {
+  background-color: transparent;
+}
+
 .selectUserNum {
   position: absolute;
   margin-top: -16px;
