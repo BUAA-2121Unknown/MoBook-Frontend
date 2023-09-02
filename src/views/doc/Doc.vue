@@ -15,6 +15,7 @@
           </div>
           
           <div class="operations">
+            <el-button type="primary" @click="templateVisible = !templateVisible">模板库</el-button>
             <el-button type="primary" @click="dialogFormVisible = true">分享</el-button>
             <el-button type="primary" @click="showVersions">历史版本</el-button>
             <el-button type="primary" @click="callEditorMethodSave">保存</el-button>
@@ -78,8 +79,44 @@
             'redo',
           ]" />
         </div>
+      
       </div>
       
+      <div class="template-container">
+        <el-dialog v-model="templateVisible" :show-close="false" close-on-click-modal="false" width="50%">
+          <template #header="{ titleId, titleClass }">
+            <div class="my-header">
+              <h4 :id="titleId" :class="titleClass">选择你想要使用的模版</h4>
+            </div>
+            <div class="templates">
+              <div class="common-layout">
+                <el-container>
+                  <el-aside width="200px">
+                    <div class="title" @click="myTemplate=false">默认模板</div>
+                    <div class="title" @click="myTemplate=true">我的模版</div>
+                  </el-aside>
+                  <el-main>
+                    <div v-if="myTemplate">
+                      我的
+                    </div>
+                    <div v-else class="row" style="display: flex; flex-wrap: wrap;">
+                      <div class="box" v-for="item in docTemplate" :key="item.id" style="width: 20%;" @click="createFromTemplate(item.content)">
+                        <div class="text">{{ item.name }}</div>
+                        <img src="../../assets/template.png">
+                      </div>
+                    </div>
+                  </el-main>
+                </el-container>
+              </div>
+              <!-- <div v-for="(item, key) in docTemplate" :key="key">
+                <div>
+                  <el-button type="primary" @click="createFromTemplate(item.content)">{{ item.name }}</el-button>
+                </div>
+              </div> -->
+            </div>
+          </template>
+        </el-dialog>
+      </div>
     </div>
 
     <div v-else>
@@ -139,7 +176,9 @@ import { useUserStore } from '@/stores/modules/user'
 import { fromUint8Array, toUint8Array } from 'js-base64'
 import historyEditor  from '@/components/docEditor/historyEditor.vue'
 import * as Y from 'yjs'
-
+import { CircleCloseFilled } from '@element-plus/icons-vue'
+import docTemplate from '@/utils/docTemplate.js'
+import { createFile } from '@/api/fileTree.js'
 const router = useRouter()
 const num = ref(1)
 const handleChange = (value) => {
@@ -182,6 +221,12 @@ const doc_id = route.query.doc_id
 const token = route.query.token
 
 const versionNum = ref('')
+
+// template库的弹窗
+const templateVisible = ref(false)
+
+// 选择展示哪个版块
+const myTemplate = ref(false)
 
 const getFirstH1Value = async() => {
   const firstH1 = this.$el.querySelector('h1');
@@ -333,6 +378,36 @@ const restore = async() => {
   const res = await uploadDoc(restoreFormData)
   console.log(res)
 }
+
+
+// 创建模版
+// 从文档模版创建文件
+const createFromTemplate = async(content) => {
+  const res = await createFile({
+    'projId': userStore.projectId,
+    'itemId': parseInt(doc_id),
+    'filename': "新建文档",
+    'prop': 1,
+    'live': true,
+    'sibling': true,
+    'content': JSON.stringify(content)
+  })
+  console.log(res)
+  // if (res.meta.status == 0) {
+  //   console.log(res.data)
+  //   ElMessage({
+  //     type: 'success',
+  //     message: '创建成功',
+  //   })
+  //   console.log(res.data)
+  // } else {
+  //   ElMessage({
+  //     type: 'error',
+  //     message: '创建失败',
+  //   })
+  //   console.log(res.data)
+  // }
+}
 </script>
 
 <script>
@@ -364,6 +439,7 @@ export default {
   flex-flow: column;
   align-items: center;
   overflow: auto;
+  overflow-y: scroll;
   background-color: white;
   font-family: -apple-system, 'Noto Sans', 'Helvetica Neue', Helvetica,
     'Nimbus Sans L', Arial, 'Liberation Sans', 'PingFang SC',
@@ -372,7 +448,6 @@ export default {
     'WenQuanYi Zen Hei', 'ST Heiti', SimHei, 'WenQuanYi Zen Hei Sharp',
     sans-serif;
 }
-
 
 /* 顶部栏 */
 .top-bar {
@@ -469,6 +544,47 @@ export default {
   background: var(--el-color-primary-light-9);
   color: var(--el-color-primary);
   cursor: pointer;
+}
+
+/* 模版框的样式 */
+.template-container {
+
+}
+
+.templates{
+  margin-top: 20px;
+}
+
+.title {
+  font-size: 25px;
+  font-weight: bold;
+  cursor: pointer
+}
+.title:hover{
+  background-color: #f2f2f2
+}
+
+.row {
+  display: flex;
+}
+
+.box {
+  width: 150px;
+  height: 175px;
+  text-align: center;
+  margin: 5px 5px;
+  cursor: pointer;
+}
+
+.text {
+  font-weight: bold;
+  margin-top: 5px;
+  font-size: 13px;
+}
+
+img {
+  max-width: 100%;
+  max-height: 100%;
 }
 </style>
   

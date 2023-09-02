@@ -271,10 +271,23 @@ editor.value = new Editor({
   editable: editable.value,
 
   // 钩子函数
-  onUpdate({ transaction }) {
-    // console.log(transaction)
-    const title = transaction.doc.content.firstChild.content.firstChild?.textContent;
-  }
+  onUpdate(evt) {
+    const { selection } = evt.editor.state;
+
+    if (!selection.empty) {
+      // Do not scroll into view when we're doing a mass update (e.g. underlining text)
+      // We only want the scrolling to happen during actual user input
+      return;
+    }
+
+    const viewportCoords = evt.editor.view.coordsAtPos(selection.from);
+    const absoluteOffset = window.scrollY + viewportCoords.top;
+
+    window.scrollTo(
+      window.scrollX,
+      absoluteOffset - (window.innerHeight / 2),
+    );
+  },
 })
 localStorage.setItem('currentUser', JSON.stringify(currentUser))
 

@@ -96,38 +96,6 @@ import { ref, nextTick, defineProps, onMounted, provide } from 'vue'
 import { ElButton, ElInput, ElMessage, ElMessageBox, ElDialog } from 'element-plus'
 import { getAllItems, moveItem, createFolder, createFile, updateItemStatus, updateItemName } from '@/api/fileTree'
 import { useUserStore } from '@/stores/modules/user'
-import { CircleCloseFilled } from '@element-plus/icons-vue'
-import { fromUint8Array, toUint8Array } from 'js-base64'
-import docTemplate from '@/utils/docTemplate.js'
-
-const templateVisible = ref(false)
-
-// 从文档模版创建文件
-const createFromTemplate = async(content) => {
-  const res = await createFile({
-    'projId': userStore.projectId,
-    'itemId': rootId.value,
-    'filename': "新建文档",
-    'prop': props.itemProperty,
-    'live': true,
-    'sibling': false,
-    'content': JSON.stringify(content)
-  })
-  if (res.meta.status == 0) {
-    ElMessage({
-      type: 'success',
-      message: '创建成功',
-    })
-    console.log(res.data)
-  } else {
-    ElMessage({
-      type: 'error',
-      message: '创建失败',
-    })
-    console.log(res.data)
-  }
-}
-
 import { createNewItem } from './helper'
 
 /**

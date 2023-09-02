@@ -174,7 +174,6 @@ const move = async (itemId, to) => {
 
 const addItem = async (type, prop) => {
   const newItem = createNewItem(type, prop)
-
   dataSource.value.push(newItem)
   dataSource.value = [...dataSource.value]
   if (type === 1) {
@@ -254,6 +253,14 @@ const doubleClickHandler = async (itemId, item) => {
           itemId: itemId,
         },
       });
+    }
+    else if (item.data.prop == 1) {
+      router.push({
+        path: "/doc",
+        query: {
+          doc_id: itemId
+        }
+      })
     }
     return
   }
