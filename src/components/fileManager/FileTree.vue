@@ -1,10 +1,10 @@
 <template>
   <div class="file-tree-container">
     <div class="header-wrapper">
-      <p>项目文件</p>
-      <div>
-        <el-button type="primary" icon="DocumentAdd" @click="addAtRoot(2, props.itemProperty)"></el-button>
-        <el-button type="primary" icon="FolderAdd" @click="addAtRoot(1, 0)"></el-button>
+      <span class="root-title">项目文件</span>
+      <div class="button-wrapper">
+        <el-button class="button" icon="DocumentAdd" @click="addAtRoot(2, props.itemProperty)"></el-button>
+        <el-button class="button" icon="FolderAdd" @click="addAtRoot(1, 0)"></el-button>
       </div>
     </div>
 
@@ -21,9 +21,10 @@
       @node-collapse="handleNodeCollapse"
       @node-drag-start="handleDragStart"
       @node-drop="handleDrop"
+      class="file-tree"
     >
       <template #default="{ node, data }">
-        <span class="file-tree-node">
+        <span class="file-tree-node-wrapper">
           <!-- 编辑文件名 -->
           <span v-if="data.isInputVisible" class="file-tree-node">
             <el-input
@@ -36,13 +37,17 @@
 
           <!-- 正常显示文件名 -->
           <span v-else class="file-tree-node">
-            <span v-if="data.data.type === 1">
-              <el-icon><Folder /></el-icon>
+            <span class="file-wrapper">
+              <span v-if="data.data.type === 1" class="icon-wrapepr">
+                <el-icon class="icon"><Folder /></el-icon>
+              </span>
+              <span v-else class="icon-wrapepr">
+                <el-icon class="icon"><Document /></el-icon>
+              </span>
+
+              <span class="file-name">{{ data.data.name }}</span>
             </span>
-            <span v-else>
-              <el-icon><Document /></el-icon>
-            </span>
-            <span>{{ data.data.name }}</span>
+
             <span>
               <el-button
                 v-if="data.data.type === 1"
@@ -468,35 +473,108 @@ const fileTreeList = [
 ]
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+.file-tree-container {
+  width: 24%;
+  height: 100vh;
+  border-right: 1px solid #aaaaaa;
+  border-radius: 4px;
+  overflow: auto;
+  padding: 8px 0;
+  background-color: #eeeeee;
+}
+
 .header-wrapper {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
-}
-.file-tree-container {
-  width: 240px;
-  height: 100vh;
-  border: 1px solid #eee;
-  border-radius: 4px;
-  overflow: auto;
-  padding: 8px;
+  border-bottom: 1px solid #bbbbbb;
+  margin-bottom: 3px;
+  background-color: #eeeeee;
+
+  .root-title {
+    font-size: 18px;
+    padding-left: 16px;
+    font-weight: bold;
+  }
+
+  .button-wrapper {
+    padding: 4px 0;
+    padding-right: 12px;
+    border-radius: 10%;
+
+    .button {
+      margin-left: 6px;
+      height: 28px;
+      width: 28px;
+      padding: 0 0;
+      background-color: #eeeeee;
+      border: none;
+    }
+  }
 }
 
-.file-tree-node {
+.file-tree {
+  background-color: #eeeeee;
+}
+
+.file-wrapper {
+  display: flex;
+  padding-right: 4px;
+  align-items: center;
+}
+
+.file-tree-node-wrapper {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
   font-size: 14px;
   padding-right: 8px;
+  height: 32px;
+
+  .file-tree-node {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 14px;
+    padding-right: 8px;
+  }
+
+  .icon-wrapepr {
+    margin-right: 6px;
+    padding: 4px 0;
+    line-height: 20px;
+    font-size: 14px;
+
+    .icon {
+      width: 24px;
+      height: 24px;
+    }
+  }
+
+  .file-name {
+    font-size: 14px;
+    padding: 4px 1px;
+    color: #606266;
+    line-height: 20px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 
 .file-tree-node-button {
-  padding: 0 0;
+  display: none;
+  padding: 0 1px;
   margin: 0px;
   font-size: 16px;
   color: #666;
+  height: 100%;
+  border: none;
+}
+.file-tree-node:hover .file-tree-node-button {
+  display: inline-block;
 }
 </style>
