@@ -145,13 +145,13 @@ export const mention = (data) => {
 // 生成文档分享的token
 export const createDocToken = (data) => {
   const form = [
-    'artId',
+    'itemId',
     'expires',
     'auth',
-    'orgOnly'
+    'projId',
   ]
   return service({
-    url: 'live/token/create',
+    url: 'live/token/open',
     method: 'post',
     data: fmtForm(data, form)
   })

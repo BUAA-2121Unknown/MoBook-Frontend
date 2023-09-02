@@ -33,10 +33,10 @@
           </div>
           
         </div>
-        <el-dialog v-model="dialogFormVisible" title="生成共享链接" width="20%" >
+        <el-dialog v-model="dialogFormVisible" title="生成共享链接" width="30%" >
           <el-form :model="form">
             <el-form-item label="链接有效时间" :label-width="formLabelWidth">
-              <el-input v-model="shareForm.expires" autocomplete="off" size="small" class="input-width" />天
+              <el-input-number v-model="num" :min="1" :max="14" @change="handleChange" size="small" /> <span style="margin-left: 10px">天</span>
             </el-form-item>
             <el-form-item label="权限" :label-width="formLabelWidth">
               <el-radio-group v-model="radio1" class="ml-4">
@@ -54,6 +54,7 @@
             </span>
           </template>
         </el-dialog>
+
       </div>
       
       <div class="body-container">
@@ -138,7 +139,12 @@ import { useUserStore } from '@/stores/modules/user'
 import { fromUint8Array, toUint8Array } from 'js-base64'
 import historyEditor  from '@/components/docEditor/historyEditor.vue'
 import * as Y from 'yjs'
+import PreviewCreateButton from '@/components/docEditor/shareButton.vue'
 
+const num = ref(1)
+const handleChange = (value) => {
+  console.log(value)
+}
 const userStore = useUserStore()
 
 const versionVisible = ref(false)
@@ -150,10 +156,10 @@ const form = ref({
 const dialogFormVisible =  ref()
 const formLabelWidth =  ref('120px')
 const shareForm = ref({
-        artId: -1,
+        itemId: -1,
+        projId: -1,
         expires: 7,
         auth: 1,
-        orgOnly: false
       })
 
 const radio1 =  ref('1')
@@ -171,8 +177,10 @@ const componentKey = ref(0)
 // 传给historyEditor的值
 const content = ref('')
 
+// 通过路由的值传递
 const doc_id = route.query.doc_id
 const token = route.query.token
+
 const versionNum = ref('')
 
 const getFirstH1Value = async() => {
@@ -255,11 +263,14 @@ const getNowDocVersion = async() => {
   }
 }
 
+
+
 const paramsToEditor = {
   'itemId': doc_id,
   'projId': userStore.projectId,
   'version': versionNum.value,
-  'content': content  //Editor中不需要这个content，只是historyEditor需要
+  'content': content,  //Editor中不需要这个content，只是historyEditor需要
+  'token': token,
 }
 
 onMounted(async () => {
@@ -269,13 +280,16 @@ onMounted(async () => {
 });
 
 const createToken = async () => {
-  shareForm.value.artId = parseInt(doc_id)
+  shareForm.value.itemId = parseInt(doc_id)
   shareForm.value.auth = parseInt(radio1.value)
+  shareForm.value.expires = num.value
+  shareForm.value.projId = parseInt(userStore.projectId)
   console.log(shareForm.value)
   try {
     const res = await createDocToken(shareForm.value);
-    const shareUrl =  settings.appURL + 'share/doc?doc_id=' + doc_id + '&' + 'token=' + res.data.token
-    
+    console.log(res)
+    const shareUrl =  settings.appURL + '/doc?doc_id=' + doc_id + '&' + 'token=' + res.data.token
+    console.log(shareUrl)
     const input = document.createElement('input')
     input.setAttribute('readonly', 'readonly')
     input.setAttribute('value', shareUrl)

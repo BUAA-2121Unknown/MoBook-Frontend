@@ -1,6 +1,6 @@
 
 import { Server } from "@hocuspocus/server";
-import  debounce  from "debounce";
+import debounce from "debounce";
 import { TiptapTransformer } from "@hocuspocus/transformer";
 import { Database } from "@hocuspocus/extension-database";
 import { Redis } from "@hocuspocus/extension-redis";
@@ -20,16 +20,16 @@ import mysql from 'mysql2';
 import dotenv from 'dotenv';
 dotenv.config()
 const pool = mysql.createPool({
-    connectionLimit: 100, //important
-    // host: '81.70.161.76',
-    host: '127.0.0.1',
-    port: 3306,
-    // user: 'admin',
-    user: 'root',
-    // password: '2121_MySQL_Admin',
-    password: 'adk2002',
-    database: 'se2023',
-    debug: false
+  connectionLimit: 100, //important
+  // host: '81.70.161.76',
+  host: '127.0.0.1',
+  port: 3306,
+  // user: 'admin',
+  user: 'root',
+  // password: '2121_MySQL_Admin',
+  password: 'adk2002',
+  database: 'se2023',
+  debug: false
 });
 
 // async function insertDoc({user_id, prosemirrorJSON}) {
@@ -60,7 +60,7 @@ function fmtForm(object, keys) {
 }
 
 const service = axios.create({
-  baseURL: "http://81.70.161.76:5000/api/",
+  baseURL: "http://81.70.161.76/api/",
   timeout: 10000,
   headers: { 'Content-Type': 'application/json' },
   withCredentials: true,
@@ -137,6 +137,7 @@ const server = Server.configure({
   async onAuthenticate(data) {
     // console.log(data)
     const { token } = data;
+    console.log(token)
     // Example test if a user is authenticated using a
     // request parameter
     // if (auth === "0") {
@@ -155,7 +156,7 @@ const server = Server.configure({
     // if (someCondition === true) {
     //   data.connection.readOnly = true;
     // }
-    
+
     // You can set contextual data to use it in other hooks
     // console.log(data)
     // return {
@@ -167,14 +168,15 @@ const server = Server.configure({
 
   async onConnect(data) {
     // Output some information
+    console.log(data)
     console.log(`New websocket connection`);
   },
   async onChange(data) {
     const save = () => {
-      
+      console.log("1111")
     };
     debounced?.clear();
-    debounced = debounce(save, 4000);
+    debounced = debounce(save, 5000);
     debounced();
   },
 
@@ -184,53 +186,70 @@ const server = Server.configure({
     queryData.itemId = parseInt(requestParameters.get('doc_id'))
     queryData.projId = parseInt(requestParameters.get('projId'))
     queryData.version = parseInt(requestParameters.get('version'))
-    console.log(queryData.version)
     const jwtToken = requestParameters.get('jwtToken')
-    
+
     console.log("version: " + queryData.version)
-    const res = await getDocContent(queryData, jwtToken)
+    const content = await getDocContent(queryData, jwtToken).then((res) => {
+      return res.data.data.content;
+    }).catch((err) => {
+      // // console.log("🚀 > content > err:", err);
+      return null;
+    });
+
+    if (content == null) {
+      return null;
+    }
+
+    // console.log("🚀 > onLoadDocument > content:", content);
+
     // const int8data = toUint8Array(res.data.data.content)
     // console.log(res.data.data.content)
     // if (int8data.byteLength) {
     //   Y.applyUpdate(document, int8data);
     // }
-    
-    const json = res.data.data.content.length == 0 ? {} : JSON.parse(JSON.stringify(res.data.data.content))
-    console.log(json)
-    const ydoc = TiptapTransformer.toYdoc(
-      // the actual JSON
-      json,
-      "default",
-      // The Tiptap extensions you’re using. Those are important to create a valid schema.
-      [Document, Paragraph, Text, Title, Underline, Highlight, TaskItem, TaskList]
-    );
-    console.log(ydoc)
-    return ydoc
+
+    const json = content.length == 0 ? {} : JSON.parse(content)
+    // console.log("🚀 > onLoadDocument > json:", json);
+    try {
+      const ydoc = TiptapTransformer.toYdoc(
+        // the actual JSON
+        json,
+        "default",
+        // The Tiptap extensions you’re using. Those are important to create a valid schema.
+        [Document, Paragraph, Text, Title, Underline, Highlight, TaskItem, TaskList]
+      );
+      // console.log(ydoc)
+      return ydoc
+    } catch (err) {
+      // console.log("🚀 > onLoadDocument > err:", err);
+    }
   },
 
   async onStoreDocument(data) {
     const { requestParameters } = data
-      /* 保存文件*/
-      // uploadFormData.itemId = 36
-      // uploadFormData.projId = 1
-      // uploadFormData.version = 1
-      uploadFormData.itemId = parseInt(requestParameters.get('doc_id'))
-      uploadFormData.projId = parseInt(requestParameters.get('projId'))
-      // uploadFormData.version = parseInt(requestParameters.get('version'))
-      uploadFormData.version = 1000000
-      const jwtToken = requestParameters.get('jwtToken')
+    /* 保存文件*/
+    // uploadFormData.itemId = 36
+    // uploadFormData.projId = 1
+    // uploadFormData.version = 1
+    uploadFormData.itemId = parseInt(requestParameters.get('doc_id'))
+    uploadFormData.projId = parseInt(requestParameters.get('projId'))
+    // uploadFormData.version = parseInt(requestParameters.get('version'))
+    uploadFormData.version = 1000000
+    const jwtToken = requestParameters.get('jwtToken')
 
-      // const state = Buffer.from(
-      //   Y.encodeStateAsUpdate(data.document)
-      // )
-      // const filebase64 = fromUint8Array(state)
-      // uploadFormData.content = filebase64
+    // const state = Buffer.from(
+    //   Y.encodeStateAsUpdate(data.document)
+    // )
+    // const filebase64 = fromUint8Array(state)
+    // uploadFormData.content = filebase64
 
-
-      
-      const res = uploadDoc(uploadFormData, jwtToken)
-
-      console.log("store success")
+    // console.log("🚀 > onStoreDocument > data:", data);
+    const prosemirrorJSON = TiptapTransformer.fromYdoc(data.document)
+    console.log("🚀 > onStoreDocument > prosemirrorJSON:", prosemirrorJSON);
+    uploadFormData.content = JSON.stringify(prosemirrorJSON);
+    console.log("🚀 > onStoreDocument > uploadFormData.content:", uploadFormData.content);
+    const res = uploadDoc(uploadFormData, jwtToken)
+    console.log("store success")
   }
   // extensions: [
   //   // new Redis({
