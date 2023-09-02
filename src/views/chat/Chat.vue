@@ -10,7 +10,15 @@
     </form>
 
     <form v-if="inviteRoomId" @submit.prevent="addRoomUser">
-      <input v-model="invitedUsername" class="inputOp" type="text" placeholder="输入用户名" />
+      <el-select v-model="invitedUsername" placeholder="选择成员" class="remove-select" size="large" no-match-text="暂无相关结果"
+        filterable clearable>
+        <el-option class="option-user-select" v-for="user in inviteUsers" :key="user._id" :value="user.username">
+          <el-avatar style="float: left; color: var(--el-text-color-secondary); "
+            src="https://picx.zhimg.com/v2-7f2dbdcc084f3e70c135adc6e5406d33_r.jpg?source=1940ef5c" />
+          <span class="option-user-select-name">{{ user.username }}</span>
+        </el-option>
+      </el-select>
+      <!-- <input v-model="invitedUsername" class="inputOp" type="text" placeholder="输入用户名" /> -->
       <button class="inviteUser" type="submit" :disabled="disableForm || !invitedUsername">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
           class="w-6 h-6">
@@ -33,15 +41,14 @@
     </form>
 
     <form v-if="removeRoomId" @submit.prevent="deleteRoomUser">
-      <el-select v-model="removeUserId" filterable clearable placeholder="选择成员" class="rounded-select">
-        <el-option v-for="user in removeUsers" :key="user._id" :value="user.username" />
+      <el-select v-model="removeUserId" placeholder="选择成员" class="remove-select" size="large" no-match-text="暂无相关结果"
+        filterable clearable>
+        <el-option class="option-user-select" v-for="user in removeUsers" :key="user._id" :value="user.username">
+          <el-avatar style="float: left; color: var(--el-text-color-secondary); "
+            src="https://picx.zhimg.com/v2-7f2dbdcc084f3e70c135adc6e5406d33_r.jpg?source=1940ef5c" />
+          <span class="option-user-select-name">{{ user.username }}</span>
+        </el-option>
       </el-select>
-      <!-- <select id="single">
-        <option default value="">选择成员</option>
-        <option v-for="user in removeUsers" :key="user._id" :value="user._id">
-          {{ user.username }}
-        </option>
-      </select> -->
       <button class="inviteUser" type="submit" :disabled="disableForm || !removeUserId">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
           class="w-6 h-6">
@@ -71,14 +78,14 @@
         :messages-loaded="messagesLoaded" :show-new-messages-divider="false" @send-message="sendMessage($event.detail[0])"
         @open-file="openFile($event.detail[0])" @fetch-messages="fetchMessages($event.detail[0])"
         @menu-action-handler="menuActionHandler($event.detail[0])" :text-messages="JSON.stringify(textDemo)"
-        :textarea-action-enabled="true" :message-selection-actions="JSON.stringify(messageSelectionActions)"
+        @add-room="createChatRoom($event.detail[0])" :textarea-action-enabled="true"
+        :message-selection-actions="JSON.stringify(messageSelectionActions)"
         @message-selection-action-handler="messageSelectionActionHandler($event.detail[0])"
         @textarea-action-handler="textareaActionHandler($event.detail[0])">
       </vue-advanced-chat>
-
     </div>
 
-
+    <!-- 转发聊天记录弹窗 -->
     <div v-if="showForwardMessages" class="forward-block">
       <div class="forward-block-left">
         <div class="forward-block-left-search">
@@ -104,7 +111,7 @@
           <div class="forward-block-left-list-true">
             <div class="inner-content">
               <listElement v-for="user in this.allUsers" :key="user._id" :id="user._id" :avatar="user.avatar"
-                :name="user.username" :deleteFlag="this.deleteFlag" />
+                :name="user.username" />
             </div>
           </div>
         </div>
@@ -128,7 +135,7 @@
         <div class="message-share-button">
           <el-button class="message-share-send" type="success">合并转发 {{ listCount }}</el-button>
           <el-button class="message-share-cancel"
-            @click="this.showForwardMessages = !this.showForwardMessages;">取消</el-button>
+            @click="this.showForwardMessages = false; this.selectedUsers = [];">取消</el-button>
         </div>
       </div>
       <!-- <label class="container">
@@ -137,19 +144,84 @@
       </label> -->
     </div>
 
+    <!-- 创建聊天弹窗 -->
+    <div v-if="createPage" class="forward-block">
+      <div class="forward-block-left">
+        <div class="forward-block-left-search">
+          <form class="form">
+            <button>
+              <svg width="17" height="16" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"
+                aria-labelledby="search">
+                <path d="M7.667 12.667A5.333 5.333 0 107.667 2a5.333 5.333 0 000 10.667zM14.334 14l-2.9-2.9"
+                  stroke="currentColor" stroke-width="1.333" stroke-linecap="round" stroke-linejoin="round"></path>
+              </svg>
+            </button>
+            <input class="input" v-model="createRoomInput" placeholder="搜索" required="" type="text"
+              @input="handleCreateRoomInput(this.createRoomInput)">
+            <button class="reset" type="reset">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </form>
+        </div>
+        <div class="forward-block-left-list">
+          <div class="forward-block-left-list-text">列表</div>
+          <div class="forward-block-left-list-true">
+            <div class="inner-content">
+              <listElement v-for="user in this.createChatUsers" :key="user._id" :id="user._id" :avatar="user.avatar"
+                :name="user.username" />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="forward-block-right">
+        <div class="forward-block-right-text">
+          <span>选择联系人</span>
+        </div>
+        <div v-if="inviteCount">
+          <span class="selectUserNum">已选择{{ inviteCount }}位联系人</span>
+        </div>
+        <div class="forward-block-right-list-createRoom">
+          <div class="select-content-createRoom ">
+            <selectList v-for="user in this.selectedUsers" :key="user._id" :id="user._id" :avatar="user.avatar"
+              :name="user.username" />
+          </div>
+        </div>
+        <div class="right-divider-createRoom">
+          <el-divider border-style="inset" />
+        </div>
+        <div class="message-share-button">
+          <el-button class="message-share-send" type="primary" @click="this.beginChat()"
+            :disabled="inviteCount == ''">开始聊天</el-button>
+          <el-button class="message-share-cancel"
+            @click="this.createPage = false; this.selectedUsers = [];">取消</el-button>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <!-- <MessageTemplate></MessageTemplate> -->
+    </div>
+
   </div>
 </template>
 
 
 <script>
 import { register } from 'vue-advanced-chat'
-import { requestChatList, requestRoomMessage, requestSendMessage, requestSendFile } from '@/api/chat'
+import { requestChatList, requestRoomMessage, requestSendMessage, requestSendFile, requestChatRoom } from '@/api/chat'
 import { useUserStore } from '@/stores/modules/user'
-import listElement from './listElement.vue'
-import selectList from './selectList.vue'
+// 
+import selectList from './selectList.vue';
 import ForwardInfo from './ForwardInfo.vue';
+import listElement from './listElement.vue';
+
+import MessageTemplate from './messageTemplate.vue';
 
 import emitter from '@/utils/emitter'
+
 // import { register } from '../../vue-advanced-chat/dist/vue-advanced-chat.es.js'
 register()
 
@@ -160,9 +232,11 @@ export default {
     listElement,
     selectList,
     ForwardInfo,
+    MessageTemplate
   },
   data() {
     return {
+      createRoomInput: '',
       allMessages: [],
       autoScroll: {
         send: {
@@ -171,15 +245,12 @@ export default {
         },
         receive: {
           new: true, // will not scroll down when receiving a message
-          newAfterScrollUp: true // will scroll down when receiving a message when scrolled up
+          newAfterScrollUp: false // will scroll down when receiving a message when scrolled up
         }
       },
       atId: "260",
       showForwardMessages: false,
       selectedUsers: [
-        // { _id: '7', username: 'cr', avatar: 'https://img2.woyaogexing.com/2023/08/26/8d02aed9994bd1e4b4b3a40678eafd3a.jpg' },
-        // { _id: '4321', username: 'gahow', avatar: 'https://img2.woyaogexing.com/2023/08/26/e958b1689d603575d508a48239174022.png' },
-        // { _id: '4441', username: 'czx', avatar: 'https://img2.woyaogexing.com/2023/08/26/2bba8400047a6648336119995180d4ad.jpg' },
       ],
       // messagesPerPage: 20,
       textDemo: {
@@ -207,10 +278,14 @@ export default {
         },
       ],
       disableForm: false,
-      addNewRoom: null,
+      createPage: false,
       addRoomUsername: '',
+
+      invitedUserId: '',
+      inviteUsers: [],
       inviteRoomId: null,
       invitedUsername: '',
+
       removeRoomId: null,
       removeUserId: '',
       removeUsers: [],
@@ -236,10 +311,7 @@ export default {
       //实时连接
       newSocket: null,
       lockReconnect: false,
-      wsCfg: {
-        // websocket地址
-        url: "ws://82.156.25.78:5000/ws/chat/10/"
-      },
+
       roomId: '',
       rooms: [
         {
@@ -260,7 +332,7 @@ export default {
           },
           users: [
             { _id: '1234', username: 'cr', avatar: 'https://img2.woyaogexing.com/2023/08/26/8d02aed9994bd1e4b4b3a40678eafd3a.jpg' },
-            { _id: '4321', username: 'gahow', avatar: 'https://img2.woyaogexing.com/2023/08/26/e958b1689d603575d508a48239174022.png' },
+            { _id: '1', username: 'gahow', avatar: 'https://img2.woyaogexing.com/2023/08/26/e958b1689d603575d508a48239174022.png' },
             { _id: '4441', username: 'czx', avatar: 'https://img2.woyaogexing.com/2023/08/26/2bba8400047a6648336119995180d4ad.jpg' },
             { _id: '4121', username: 'adk', avatar: 'https://img2.woyaogexing.com/2023/08/26/fbd06bd6e8e2e9ed4726869f98b97c40.jpg' },
             { _id: '4131', username: 'zdw', avatar: 'https://img2.woyaogexing.com/2023/08/26/1e4f1922fe9d26fd45a9453f8b7e5a23.png' },
@@ -286,7 +358,7 @@ export default {
           },
           users: [
             { _id: '7', username: 'cr', avatar: 'https://img2.woyaogexing.com/2023/08/26/8d02aed9994bd1e4b4b3a40678eafd3a.jpg' },
-            { _id: '4321', username: 'gahow', avatar: 'https://img2.woyaogexing.com/2023/08/26/e958b1689d603575d508a48239174022.png' },
+            { _id: '1', username: 'gahow', avatar: 'https://img2.woyaogexing.com/2023/08/26/e958b1689d603575d508a48239174022.png' },
             { _id: '4441', username: 'czx', avatar: 'https://img2.woyaogexing.com/2023/08/26/2bba8400047a6648336119995180d4ad.jpg' },
             { _id: '4121', username: 'adk', avatar: 'https://img2.woyaogexing.com/2023/08/26/fbd06bd6e8e2e9ed4726869f98b97c40.jpg' },
             { _id: '4131', username: 'zdw', avatar: 'https://img2.woyaogexing.com/2023/08/26/1e4f1922fe9d26fd45a9453f8b7e5a23.png' },
@@ -295,40 +367,82 @@ export default {
           typingUsers: [7],
         }
       ],
+      room: '10',
       messages: [],
       messagesLoaded: false,
       allUsers: [{ _id: '7', username: 'cr', avatar: 'https://img2.woyaogexing.com/2023/08/26/8d02aed9994bd1e4b4b3a40678eafd3a.jpg' },
-      { _id: '2', username: 'gahow', avatar: 'https://img2.woyaogexing.com/2023/08/26/e958b1689d603575d508a48239174022.png' },
+      { _id: '1', username: 'gahow', avatar: 'https://img2.woyaogexing.com/2023/08/26/e958b1689d603575d508a48239174022.png' },
       { _id: '3', username: 'czx', avatar: 'https://img2.woyaogexing.com/2023/08/26/2bba8400047a6648336119995180d4ad.jpg' },
       { _id: '4121', username: 'adk', avatar: 'https://img2.woyaogexing.com/2023/08/26/fbd06bd6e8e2e9ed4726869f98b97c40.jpg' },
       { _id: '4131', username: 'zdw', avatar: 'https://img2.woyaogexing.com/2023/08/26/1e4f1922fe9d26fd45a9453f8b7e5a23.png' },
       { _id: '4111', username: 'lzy', avatar: 'https://img2.woyaogexing.com/2023/08/26/c9aad630d56c60bdd3a421d4d593efb0.jpg' },],
+      createChatUsers: [],
     }
 
   },
   computed: {
+    WebSocketUrl() {
+      // websocket地址
+      const userStore = useUserStore();
+      const str = this.currentUserId + "/" + userStore.orgId + '/';
+      // const str = "";
+      return {
+        url: "ws://82.156.25.78:5000/ws/chats/" + str,
+      };
+    },
+    wsCfg() {
+      // const userStore = useUserStore();
+      // websocket地址
+      const str = this.roomId + "/";
+      // const str = "";
+      return {
+        url: "ws://82.156.25.78:5000/ws/chat/" + str,
+      };
+    },
     listCount() {
       return this.selectedUsers.length === 0 ? '' : '(' + this.selectedUsers.length + ')';
     },
+    inviteCount() {
+      return this.selectedUsers.length === 0 ? '' : this.selectedUsers.length;
+    },
   },
   mounted() {
-    console.log("mounted");
-    this.requestMessages();
-    this.createWebSocket();
+    // console.log("mounted");
     this.currentUserId = this.getCurrentUserId();
-    console.log(this.currentUserId);
+    this.requestMessages();
+    this.createChatListWebSocket();
+    // console.log(this.currentUserId);
     emitter.on('addSelectedUser', (userId) => this.addSelectedUser(userId));
     emitter.on('deleteSelectedUser', (userId) => this.deleteSelectedUser(userId));
   },
   methods: {
-    scrollToMention(MessageId) {
-      // const targetMessageId = this.messages[240]._id;
-      var matches = document.querySelectorAll("vac-chat-container");
-      console.log(matches);
-      console.log('66')
+    handleCreateRoomInput(input) {
 
     },
-
+    // 开始请求创建聊天
+    async beginChat() {
+      console.log("开始请求创建聊天", this.createChatUsers);
+      try {
+        const userStore = useUserStore()
+        const res = await requestChatRoom({ "org_id": userStore.orgId, "invite_list": this.selectedUsers });
+        console.log(res)
+        this.createPage = false;
+        if (this.selectedUsers.length > 1) {
+          this.createRoomSuccess();
+        } else {
+          this.createSingleChatSuccess();
+        }
+        this.selectedUsers = [];
+      } catch (e) {
+        console.log(e)
+      }
+    },
+    createChatRoom() {
+      const filteredUsers = this.allUsers.filter(user => user._id != this.currentUserId);
+      this.createChatUsers = filteredUsers;
+      this.createPage = true;
+      // console.log('filteredUsers:', filteredUsers);
+    },
     addSelectedUser(userId) {
       const user = this.allUsers.find(user => user._id === userId);
       this.selectedUsers.push(user);
@@ -360,7 +474,8 @@ export default {
 
     inviteUser(roomId) {
       this.resetForms()
-      this.inviteRoomId = roomId
+      this.inviteRoomId = roomId;
+      this.inviteUsers = this.rooms.find(room => room.roomId === roomId).users
     },
     removeUser(roomId) {
       this.resetForms()
@@ -409,8 +524,10 @@ export default {
       try {
         const userStore = useUserStore()
         const res = await requestChatList({ "org_id": userStore.orgId });
-        console.log(res)
+        console.log('当前列表:', res);
         this.rooms = res.data.chat_list;//消息没有给发送人name，待修改bug
+        this.allUsers = res.data.all_users;
+        // console.log('当前列表:', this.rooms)
       } catch (e) {
         console.log(e)
       }
@@ -421,11 +538,24 @@ export default {
       // console.log(useUserStore().orgId)
       try {
         const userStore = useUserStore()
-        const res = await requestRoomMessage({ "chat_id": 10, "org_id": userStore.orgId });
+        // console.log('查看历史记录:', this.roomId, this.rooms.find(room => room.roomId == this.roomId).messages)
+        // console.log('房间信息：', this.rooms);
+        // if (this.rooms.find(room => room.roomId == this.roomId).messages[0]) {
+        //   this.messages = this.rooms.find(room => room.roomId == this.roomId).messages;
+        //   return;
+        // }
+        const res = await requestRoomMessage({ "chat_id": this.roomId, "org_id": userStore.orgId });
         const list = res.data.message_list;
         console.log(list)
         const messages = [];
-        this.rooms.find(room => room.roomId === this.roomId).users = res.data.users;
+        this.room = this.rooms.find(room => room.roomId === this.roomId);
+        const users = res.data.users;
+        const newArray = users.map(user => {
+          return { ...user, _id: user._id.toString() };
+        });
+        this.rooms.find(room => room.roomId === this.roomId).users = newArray;
+        // this.rooms.find(room => room.roomId === this.roomId).users = this.allUsers;
+        console.log('user:', res.data.users)
         this.rooms.find(room => room.roomId === this.roomId).unreadCount = 0;
         for (let i = 0; i < list.length - 50; i++) {
           messages.push(list[i])
@@ -436,7 +566,8 @@ export default {
         this.messages = messages;
         setTimeout(() => {
           this.messages = list;
-        }, time + 500);
+          this.rooms.find(room => room.roomId == this.roomId).messages = list;
+        }, time + 1000);
       } catch (e) {
         console.log(e)
       }
@@ -450,7 +581,7 @@ export default {
           "text": message.content,
           "file": '',
           "at_list": [1],
-          "chat_id": 10,
+          "chat_id": this.roomId,
           "extension": '',
         });
         console.log(res)
@@ -458,7 +589,7 @@ export default {
         console.log(e)
       }
     },
-    //建立http链接 发送消息要求更新数据库
+    //建立http链接 发送文件要求更新数据库
     async requestSendFiles(file) {
       console.log("开始发送文件", file);
       console.log(file.file.blob)
@@ -470,7 +601,7 @@ export default {
         const res = await requestSendFile({
           "org_id": useUserStore().orgId,
           "file": sendingFile,
-          "chat_id": 10,
+          "chat_id": this.roomId,
           "text": '',
           "at_list": [1],
           "extension": file.file.extension,
@@ -480,7 +611,18 @@ export default {
         console.log(e)
       }
     },
-
+    createChatListWebSocket() {
+      try {
+        // 创建Web Socket 连接
+        const socket = new WebSocket(this.WebSocketUrl.url);
+        // 初始化事件
+        this.initChatListEventHandle(socket);
+      } catch (e) {
+        // 出错时重新连接
+        this.reconnect(this.WebSocketUrl.url);
+        console.log("尝试连接 chatList");
+      }
+    },
     createWebSocket() {
       try {
         // 创建Web Socket 连接
@@ -490,7 +632,7 @@ export default {
       } catch (e) {
         // 出错时重新连接
         this.reconnect(this.wsCfg.url);
-        console.log("尝试连接");
+        console.log("尝试连接 room");
       }
     },
     initEventHandle(socket) {
@@ -514,10 +656,15 @@ export default {
       socket.onmessage = msg => {
         // 业务逻辑处理
         // this.addNewMessage()
-        console.log('接收data:')
-        console.log(JSON.parse(msg.data))
+        // 业务逻辑处理
+        // this.addNewMessage()
         const data = JSON.parse(msg.data).data;
-        this.rooms.find(room => room.roomId === this.roomId).lastMessage = data;
+        console.log('接收data:', data);
+        this.rooms.find(room => room.roomId == this.roomId).lastMessage = data;
+        this.rooms.find(room => room.roomId == this.roomId).lastMessage.content = data.content;
+        this.rooms.find(room => room.roomId == this.roomId).lastMessage.username = data.username
+        this.rooms.find(room => room.roomId == this.roomId).lastMessage.timestamp = data.timestamp;
+
         // if (data.senderId === this.currentUserId) {
         //   this.rooms.find(room => room.roomId === this.roomId).lastMessage.username = '';
 
@@ -531,6 +678,30 @@ export default {
         }
       };
     },
+    initChatListEventHandle(socket) {
+      console.log("尝试连接");
+      // 连接关闭时触发
+      socket.onclose = () => {
+        console.log("连接关闭");
+      };
+      // 通信发生错误时触发
+      socket.onerror = () => {
+        // 重新创建长连接
+        this.reconnect();
+        console.log("连接错误");
+      };
+      // 连接建立时触发
+      socket.onopen = () => {
+        console.log("连接成功");
+        this.newSocket = socket;
+      };
+      // 客户端接收服务端数据时触发
+      socket.onmessage = msg => {
+        console.log('接收msg:', msg.data);
+        const data = JSON.parse(msg.data);
+        console.log('接收data list:', data);
+      };
+    },
     reconnect() {
       if (this.lockReconnect) {
         return;
@@ -542,22 +713,6 @@ export default {
         this.lockReconnect = false;
         this.createWebSocket(this.wsCfg.url);
       }, 2000);
-    },
-    test() {
-      console.log("发送信息");
-      // 给服务器发送一个字符串:
-      // ws.send("Hello!");
-      // 创建要发送的 JSON 对象
-      const jsonData = {
-        message: "Hello from JSON",
-        data: "haha",
-        timestamp: Date.now()
-      };
-
-      // 将 JSON 对象转换为字符串并发送
-      this.newSocket.send(JSON.stringify(jsonData));
-
-      console.log("发送成功");
     },
 
     nowDate() {
@@ -573,17 +728,27 @@ export default {
 
     textareaActionHandler({ roomId, message }) {
       console.log('test begin:')
-      const element = document.getElementById('messages-list');
-      console.log(element);
-      console.log(document.documentElement);
+      // const element = document.getElementById('messages-list');
+      // console.log(element);
+      // console.log(document.documentElement);
       // this.goToAt();
     },
+
     fetchMessages({ room, options = {} }) {
-      // console.log(this.messages)
-      this.messagesLoaded = false;
+      if (options.reset) {
+        this.resetMessages()
+      }
       this.roomId = room.roomId;
+      this.createWebSocket();
       this.requestRoom()
+      setTimeout(() => {
+        this.messagesLoaded = true
+      })
       // room.unreadCount = 0;
+    },
+    resetMessages() {
+      this.messages = []
+      this.messagesLoaded = false
     },
 
     addMessages(reset) {
@@ -622,11 +787,9 @@ export default {
 
     sendMessage({ roomId, content, files, replyMessage, usersTag
     }) {
-      console.log('test begin:')
-      this.scrollToMention("260");
       const room = this.rooms.find(room => room.roomId === roomId);
-      const user = room.users.find(user => user._id === this.currentUserId);
-      // console.log('当前房间消息');
+      const user = room.users.find(user => user._id == this.currentUserId);
+      console.log('当前房间消息');
       // console.log(user.avatar);
       const message = {
         _id: roomId,
@@ -704,34 +867,34 @@ export default {
       message.system = false;
       //告诉后端要做什么
     },
-
-    async singleForward({ messages, roomId }) {
-
+    createRoomSuccess() {
+      ElMessage({
+        showClose: true,
+        message: '成功创建群聊！',
+        type: 'success',
+      });
+    },
+    createSingleChatSuccess() {
+      ElMessage({
+        showClose: true,
+        message: '进入私聊频道！',
+        type: 'success',
+      });
     }
 
   },
   beforeDestroy() {
     console.log('组件关闭')
-    // 关闭 WebSocket 连接
-    // if (this.newSocket && this.newSocket.readyState === WebSocket.OPEN) {
-    //   this.newSocket.close();
-    // }
-    //   // 组件销毁之前的清理工作
-    //   this.messagesLoaded = false
-    //   this.newSocket = null
-    //   this.lockReconnect = false
-  },
 
+  },
 }
 </script>
 
 <script setup>
 import { ref } from 'vue';
 import { onActivated, onDeactivated } from 'vue';
-
-
+import { ElMessage } from 'element-plus';
 const showComponent = ref(true);
-
 onActivated(() => {
   showComponent.value = true;
 })
@@ -742,6 +905,34 @@ onDeactivated(() => {
 </script>
 
 <style lang="scss" scoped>
+.selectUserNum {
+  position: absolute;
+  margin-top: -16px;
+  margin-left: 250px;
+  color: #666666;
+  font-size: 12px;
+}
+
+.option-user-select-name {
+  float: right;
+  color: #333333;
+  font-size: 20px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-left: 15px;
+  font-family: "Lato", sans-serif;
+}
+
+.option-user-select {
+  height: 50px;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  text-align: center;
+  align-items: center;
+}
+
 .message-share-send {
   width: 140px;
 }
@@ -777,6 +968,12 @@ onDeactivated(() => {
   width: 280px;
   margin-left: 40px;
   margin-top: 40px;
+}
+
+.right-divider-createRoom {
+  width: 280px;
+  margin-left: 40px;
+  margin-top: 25px;
 }
 
 .window-container {
@@ -970,6 +1167,14 @@ body {
   background-color: transparent;
 }
 
+
+.forward-block-right-list-createRoom {
+  width: 320px;
+  height: 300px;
+  margin-left: 20px;
+  background-color: transparent;
+}
+
 .forward-block-left-search {
   width: 280px;
   height: 60px;
@@ -1011,6 +1216,15 @@ body {
   flex-direction: column;
   margin-top: 10px;
   max-height: 210px;
+  overflow-y: auto;
+}
+
+
+.select-content-createRoom {
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
+  max-height: 300px;
   overflow-y: auto;
 }
 

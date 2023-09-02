@@ -1,6 +1,10 @@
-import { $on, $off, $once, $emit } from './gogocodeTransfer'
-import store from '@/store'
-import eventBus from '@/utils/design/eventBus'
+import { $on, $off, $once, $emit } from "./gogocodeTransfer";
+import store from "@/store";
+import eventBus from "@/utils/design/eventBus";
+import { useUserStore } from "../../stores/modules/user";
+
+const userStore = useUserStore();
+const userId = userStore.userInfo.id;
 
 const ctrlKey = 17,
   commandKey = 91, // mac command
@@ -17,9 +21,9 @@ const ctrlKey = 17,
   pKey = 80, // 预览
   dKey = 68, // 删除
   deleteKey = 46, // 删除
-  eKey = 69 // 清空画布
+  eKey = 69; // 清空画布
 
-export const keycodes = [66, 67, 68, 69, 71, 76, 80, 83, 85, 86, 88, 89, 90]
+export const keycodes = [66, 67, 68, 69, 71, 76, 80, 83, 85, 86, 88, 89, 90];
 
 // 与组件状态无关的操作
 const basemap = {
@@ -29,13 +33,13 @@ const basemap = {
   [sKey]: save,
   [pKey]: preview,
   [eKey]: clearCanvas,
-}
+};
 
 // 组件锁定状态下可以执行的操作
 const lockMap = {
   ...basemap,
   [uKey]: unlock,
-}
+};
 
 // 组件未锁定状态下可以执行的操作
 const unlockMap = {
@@ -47,106 +51,117 @@ const unlockMap = {
   [dKey]: deleteComponent,
   [deleteKey]: deleteComponent,
   [lKey]: lock,
-}
+};
 
-let isCtrlOrCommandDown = false
+let isCtrlOrCommandDown = false;
 // 全局监听按键操作并执行相应命令
 export function listenGlobalKeyDown() {
   window.onkeydown = (e) => {
-    if (!store.state.isInEdiotr) return
+    if (!store.state.isInEdiotr) return;
 
-    const { curComponent } = store.state
-    const { keyCode } = e
+    const { curComponent } = store.state;
+    const { keyCode } = e;
     if (keyCode === ctrlKey || keyCode === commandKey) {
-      isCtrlOrCommandDown = true
+      isCtrlOrCommandDown = true;
     } else if (keyCode == deleteKey && curComponent) {
-      store.commit('deleteComponent')
-      store.commit('recordSnapshot')
+      store.commit("deleteComponent");
+      store.commit("recordSnapshot");
     } else if (isCtrlOrCommandDown) {
-      if (unlockMap[keyCode] && (!curComponent || !curComponent.isLock)) {
-        e.preventDefault()
-        unlockMap[keyCode]()
-      } else if (lockMap[keyCode] && curComponent && curComponent.isLock) {
-        e.preventDefault()
-        lockMap[keyCode]()
+      if (
+        unlockMap[keyCode] &&
+        (!curComponent ||
+          (!curComponent.isLock &&
+            !(curComponent.userId && curComponent.userId != userId)))
+      ) {
+        e.preventDefault();
+        unlockMap[keyCode]();
+      } else if (
+        lockMap[keyCode] &&
+        curComponent &&
+        (curComponent.isLock ||
+        (curComponent.userId && curComponent.userId != userId))
+      ) {
+        e.preventDefault();
+        lockMap[keyCode]();
       }
     }
-  }
+  };
 
   window.onkeyup = (e) => {
     if (e.keyCode === ctrlKey || e.keyCode === commandKey) {
-      isCtrlOrCommandDown = false
+      isCtrlOrCommandDown = false;
     }
-  }
+  };
 
   window.onmousedown = () => {
-    store.commit('setInEditorStatus', false)
-  }
+    store.commit("setInEditorStatus", false);
+  };
 }
 
 function copy() {
-  store.commit('copy')
+  store.commit("copy");
 }
 
 function paste() {
-  store.commit('paste')
-  store.commit('recordSnapshot')
+  store.commit("paste");
+  store.commit("recordSnapshot");
 }
 
 function cut() {
-  store.commit('cut')
+  store.commit("cut");
 }
 
 function redo() {
-  store.commit('redo')
+  store.commit("redo");
 }
 
 function undo() {
-  store.commit('undo')
+  store.commit("undo");
 }
 
 function compose() {
   if (store.state.areaData.components.length) {
-    store.commit('compose')
-    store.commit('recordSnapshot')
+    store.commit("compose");
+    store.commit("recordSnapshot");
   }
 }
 
 function decompose() {
-  const curComponent = store.state.curComponent
+  const curComponent = store.state.curComponent;
   if (
     curComponent &&
     !curComponent.isLock &&
-    curComponent.component == 'Group'
+    !(curComponent.userId && curComponent.userId != userId) &&
+    curComponent.component == "Group"
   ) {
-    store.commit('decompose')
-    store.commit('recordSnapshot')
+    store.commit("decompose");
+    store.commit("recordSnapshot");
   }
 }
 
 function save() {
-  $emit(eventBus, 'save')
+  $emit(eventBus, "save");
 }
 
 function preview() {
-  $emit(eventBus, 'preview')
+  $emit(eventBus, "preview");
 }
 
 function deleteComponent() {
   if (store.state.curComponent) {
-    store.commit('deleteComponent')
-    store.commit('recordSnapshot')
+    store.commit("deleteComponent");
+    store.commit("recordSnapshot");
   }
 }
 
 function clearCanvas() {
-  $emit(eventBus, 'clearCanvas')
+  $emit(eventBus, "clearCanvas");
 }
 
 function lock() {
-  store.commit('lock')
+  store.commit("lock");
 }
 
 function unlock() {
-  store.commit('unlock')
+  store.commit("unlock");
 }

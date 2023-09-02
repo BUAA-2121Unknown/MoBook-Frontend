@@ -6,7 +6,7 @@
   >
     <ul @mouseup="handleMouseUp">
       <template v-if="curComponent">
-        <template v-if="!curComponent.isLock">
+        <template v-if="!curComponent.isLock && !(curComponent.userId && curComponent.userId != userId)">
           <li @click="copy">复制</li>
           <li @click="paste">粘贴</li>
           <li @click="cut">剪切</li>
@@ -26,12 +26,18 @@
 
 <script>
 import { mapState } from "vuex";
+import { useUserStore } from "../../stores/modules/user";
 
 export default {
   data() {
     return {
       copyData: null,
+      userId: 0,
     };
+  },
+  mounted(){
+    const userStore = useUserStore()
+    this.userId = userStore.userInfo.id
   },
   computed: mapState(["menuTop", "menuLeft", "menuShow", "curComponent"]),
   methods: {

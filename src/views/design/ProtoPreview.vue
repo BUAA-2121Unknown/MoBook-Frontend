@@ -1,6 +1,6 @@
 <template>
   <template v-if="loading">
-    <Loading />
+    <el-skeleton :rows="15" animated />
   </template>
   <div v-else class="home">
     <main>
@@ -11,19 +11,9 @@
         </div>
       </section>
       <div class="bottom">
-        <el-carousel
-          ref="car"
-          :interval="4000"
-          height="200px"
-          :autoplay="false"
-          @change="loadNext"
-          :setActiveItem="setActiveItem"
-        >
-          <el-carousel-item
-            v-for="item in designList"
-            :key="item.id.toString()"
-            :name="item.id.toString()"
-          >
+        <el-carousel ref="car" :interval="4000" height="200px" :autoplay="false" @change="loadNext"
+          :setActiveItem="setActiveItem">
+          <el-carousel-item v-for="item in designList" :key="item.id.toString()" :name="item.id.toString()">
             <DesignCardCarousel :design="item"></DesignCardCarousel>
             <!-- <h3 text="2xl" justify="center">{{ item }}</h3> -->
           </el-carousel-item>
@@ -44,7 +34,7 @@ import { Project } from "../../api/project";
 import { File } from "../../api/file";
 import DesignCardCarousel from "../../components/project/DesignCardCarousel.vue";
 
-import { getPrototype } from "../../api/artifact";
+import { getPrototype, getPrototypeToken, getPrototypeList } from "../../api/artifact";
 import { templateList } from "../../enums/prototypeTemplateEnum";
 
 export default {
@@ -56,8 +46,6 @@ export default {
   },
   data() {
     return {
-      designList: [],
-
       activeName: "attr",
       reSelectAnimateIndex: undefined,
       provider: null,
@@ -68,6 +56,10 @@ export default {
       isPreview: true,
       isPreviewing: false,
       loading: true,
+
+      token: '',
+      projId: '',
+      designList: [],
     };
   },
   computed: mapState([
@@ -77,39 +69,15 @@ export default {
     "canvasStyleData",
     "editor",
   ]),
-  mounted() {},
+  mounted() { },
   created() {
-    // this.code = this.$route.params.code;
-    // let data = new FormData();
-    // data.append("previewCode", this.code);
-    // File.previewByCode(data).then((res) => {
-    //   console.log(res);
-    //   if (res.data.status == 200) {
-    //     const data = new FormData();
-    //     data.append("protoId", res.data.prototypeId);
-    //     Project.getProto(data)
-    //       .then((res) => {
-    //         this.$store.commit(
-    //           "setComponentData",
-    //           JSON.parse(res.data.canvasData).array
-    //         );
-    //         this.$store.commit(
-    //           "setCanvasStyle",
-    //           JSON.parse(res.data.canvasStyle)
-    //         );
-    //       })
-    //       .catch((err) => {
-    //         console.log(err);
-    //       });
-    //     this.loading = false;
-    //   } else if (res.data.status == 431) {
-    //     ElMessage.error("链接已失效！");
-    //     this.$router.push("/");
-    //   } else {
-    //     ElMessage.error("预览失败！");
-    //   }
-    // });
-    this.restore();
+    // p先根据token验证身份
+    this.verifyToken()
+    // // 验证成功 加载全部原型设计列表
+    // this.loadPrototypeList()
+    // // 加载第一个原型设计
+    // this.loadPrototype(0);
+    // this.loading = false;
   },
   methods: {
     // 将n个元素移到末尾
@@ -122,55 +90,70 @@ export default {
     //   return arr;
     // },
     loadNext(tar, cur) {
-      console.log("原型设计预览：切换浏览对象", tar, cur);
-      this.loadPrototype(this.designList[tar].content)
+      this.loadPrototype(tar)
     },
-    loadPrototype(content) {
+    // 加载json至画布
+    restore(content) {
       const val = JSON.parse(content);
-      console.log("原型设计预览：尝试加载原型设计");
       this.$store.commit("setComponentData", val.canvasData.array);
       this.$store.commit("setCanvasStyle", val.canvasStyle);
+      console.log("原型设计预览：成功加载", val);
     },
-    // 读取数据 初始化画布
-    async restore() {
-      const code = Number(this.$route.query.code);
-      const params = {
-        code: code,
-      };
-      console.log("尝试加载预览，code:", code);
-      try {
-        this.designList = templateList;
-        // const res = await getPrototype(params);
-        // const val = JSON.parse(res.data.content);
-        // console.log("原型设计：尝试获取已保存的画板信息", res, val);
-        // this.$store.commit("setComponentData", val.canvasData.array);
-        // this.$store.commit("setCanvasStyle", val.canvasStyle);
-        // this.$store.commit("setEditMode", "preview");
-        // this.isPreviewing = false;
-
-        this.loadPrototype(this.designList[0].content)
-        this.loading = false;
-      } catch (e) {
-        console.log(e);
+    // 加载指定数组下标的原型设计
+    async loadPrototype(index) {
+      // 先验证权限
+      this.verifyToken()
+      // 然后再加载
+      if(!this.designList){
+        return
       }
+      console.log("原型设计预览：加载元素的数组下标，", index);
+      this.restore(this.designList[index].content)
+      this.loading = false;
     },
-    // 获取当前的原型列表
-    async getList() {
+    // 初始化：加载原型设计列表，并且加载第一个原型设计
+    async loadPrototypeList() {
       const params = {
         projId: this.projId,
       };
       try {
         const res = await getPrototypeList(params);
         if (res.data && res.data.artifacts) {
+          // prop为2：原型设计
           this.designList = res.data.artifacts.filter(function (item) {
-            return item.isLive === false && item.type == "p";
+            return item.prop == 2;
           });
         } else {
           this.designList = [];
         }
-        console.log("成功导入原型设计列表", res, this.designList);
+        console.log("原型设计预览：成功导入原型设计列表", res, this.designList);
       } catch (e) {
         console.log(e);
+      }
+    },
+    // 根据token来验证权限
+    async verifyToken() {
+      this.token = this.$route.query.token;
+      this.projId = this.$route.query.projId;
+      
+      const params = {
+        itemId: 0,
+        projId: this.projId,
+      }
+      try {
+        const res = await getPrototypeToken(params)
+        console.log('原型设计预览：开始权限验证，token', this.token, 'projId', this.projId, res)
+        if (res.data.token) {
+          console.log('原型设计预览：权限验证通过')
+          return true
+        }
+        else {
+          ElMessage.error("链接无效");
+          this.$router.push("/");
+          return false
+        }
+      } catch (e) {
+        console.log(e)
       }
     },
     handlePreviewChange() {
@@ -185,20 +168,24 @@ export default {
 .home {
   height: 100vh;
   background: #f5f5f5;
+
   main {
     height: calc(100% - 20px);
     position: relative;
+
     .center {
       background: #f5f5f5;
       height: 80%;
       overflow: auto;
       padding: 20px;
+
       .content {
         width: 100%;
         height: 100%;
         overflow: auto;
       }
     }
+
     .bottom {
       background: #f5f5f5;
       width: 60%;

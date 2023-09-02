@@ -9,7 +9,7 @@ export default {
 </script>
 
 <script setup>
-import FileTree from '@/components/project/FileTree.vue'
+import FileTree from '@/components/fileManager/FileTree.vue'
 </script>
 
 <style scoped>
