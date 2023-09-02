@@ -36,6 +36,7 @@
 </template>
 
 <script>
+
 import designImg from "@/assets/project/projectDesignImg.png";
 import TemplateCard from "@/components/project/TemplateCard.vue";
 import { ElMessage, ElMessageBox } from "element-plus";
@@ -93,8 +94,8 @@ export default {
     // y保存模板的实际实现函数 实际上为创建一个原型设计
     async createTemplate(name) {
       const data = {
-        projId: this.projId,
-        itemId: this.itemId,
+        projId: Number(this.projId),
+        itemId: Number(this.itemId),
         filename: name,
         prop: 3,
         live: false,

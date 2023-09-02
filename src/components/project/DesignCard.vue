@@ -86,7 +86,7 @@ export default {
       this.$router.push({
         path: "/prototype",
         query: {
-          artId: this.design.id,
+          itemId: this.design.id,
         },
       });
     },
@@ -111,6 +111,7 @@ export default {
     },
   },
   mounted() {
+    console.log('尝试加载原型设计卡片', this.design)
     this.data = lodash.cloneDeep(this.design.data);
     this.data.url = designImg;
     this.form = lodash.cloneDeep(this.design);

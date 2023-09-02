@@ -52,7 +52,7 @@ export default {
       this.dialogDelForeverVisible = true;
     },
     async delForeverDesign() {
-      const data = { projId: this.projId, status: 2, artifacts: [this.design.id] };
+      const data = { projId: this.projId, status: 2, items: [this.design.id] };
       try {
         const res = await updatePrototypeStatus(data);
 
