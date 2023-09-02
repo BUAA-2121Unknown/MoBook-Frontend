@@ -4,7 +4,7 @@
             <div class="container px-4 px-lg-5 d-flex h-100 align-items-center justify-content-center">
                 <div class="d-flex justify-content-center">
                     <div class="text-center">
-                        <h1 class="mx-auto my-0 text-uppercase" :style="{ 'font-size': '100px' }">墨书</h1>
+                        <h1 class="mx-auto my-0 text-uppercase" :style="{ 'font-size': '95px' }">墨书</h1>
                         <div class="header-title2">在线一体化产品设计协作平台</div>
                         <a class="btn btn-primary header-button" @click="handleClick">立即试用</a>
                     </div>
