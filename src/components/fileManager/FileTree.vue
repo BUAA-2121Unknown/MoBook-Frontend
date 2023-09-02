@@ -21,6 +21,7 @@
       @node-collapse="handleNodeCollapse"
       @node-drag-start="handleDragStart"
       @node-drop="handleDrop"
+      @node-dbclick="handleDoubleClick"
       class="file-tree"
     >
       <template #default="{ node, data }">
@@ -400,6 +401,19 @@ const deleteFile = async (node, data) => {
   }).catch(() => {
     console.log('Cancelled');
   })
+}
+
+const handleDoubleClick = async (node, data) => {
+  console.log(node, data)
+  /* if (data.data.type === 1) {
+    if (!expandedList.value.includes(data.id)) {
+      expandedList.value.push(data.id)
+    }
+    data.expanded = true
+    dataSource.value = [...dataSource.value]
+  } else {
+    console.log('open file')
+  } */
 }
 
 const fileTreeList = [

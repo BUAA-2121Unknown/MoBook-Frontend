@@ -19,7 +19,10 @@ export const useUserStore = defineStore({
       avatarUrl: '',
       sideMode: window.localStorage.getItem('sideMode') || 'dark',
       activeColor: 'var(--el-color-primary)',
-      baseColor: '#fff'
+      baseColor: '#fff',
+      authority: {
+        defaultRouter: [],
+      },
     },
     token: window.localStorage.getItem('token') || '',
     projectId: -1,
