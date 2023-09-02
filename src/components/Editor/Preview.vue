@@ -17,6 +17,8 @@
         <br />
         <el-button @click="DOM2Html" class="btn">导出为HTML</el-button>
         <br />
+        <el-button @click="DOM2Json" class="btn">导出为JSON</el-button>
+        <br />
       </template>
       <el-button @click="close" class="btn">关闭</el-button>
     </div>

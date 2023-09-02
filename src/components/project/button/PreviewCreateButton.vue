@@ -25,7 +25,7 @@
 import { ElMessage } from "element-plus";
 import PictureUploader from "../PictureUploader.vue";
 import { useRouter } from "vue-router";
-import { createPrototype, savePrototype } from "@/api/artifact";
+import { createPrototype } from "@/api/artifact";
 import { useUserStore } from "@/stores/modules/user";
 import { emptyTemplateContent } from "@/enums/prototypeTemplateEnum.js";
 import { getPrototypeToken, createPrototypeToken, revokePrototypeToken } from "../../../api/artifact";
@@ -78,11 +78,10 @@ export default {
       // 变为激活
       if (this.activited) {
         const data = {
-          itemId: 0,
           projId: userStore.projectId,
+          itemId: 0,
           expires: 7,
           auth: 1,
-          orgOnly: false,
         }
         try {
           const res = await createPrototypeToken(data)

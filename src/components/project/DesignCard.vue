@@ -11,12 +11,12 @@
       :style="{ height: textHeight }"
       @click="jumpForDesign"
     >
-      <div class="design-title">{{ data.name }}</div>
+      <div class="design-title">{{ data.data.name }}</div>
       <div v-if="expanded" class="design-intro">
-        创建于 | {{ data.created }}
+        创建于 | {{ data.data.created }}
       </div>
       <div v-if="expanded" class="design-intro">
-        更新于 | {{ data.updated }}
+        更新于 | {{ data.data.updated }}
       </div>
     </div>
     <transition name="slide-up">
@@ -25,12 +25,12 @@
         <ShareButton
           :fatherHandler="shareHandler"
           :design="design"
-          v-if="design.status == 0"
+          v-if="data.data.status == 0"
         ></ShareButton>
         <ModifyButton
           :fatherHandler="changeData"
           :design="design"
-          v-if="design.status == 0"
+          v-if="data.data.status == 0"
         ></ModifyButton>
       </el-row>
     </transition>
@@ -59,10 +59,12 @@ export default {
   data() {
     return {
       expanded: false,
+      id: '',
       data: {
-        id: "",
         name: "",
-        intro: "",
+        status: "",
+        created,
+        updated,
         url: "",
       },
       dialogFormVisible: false,
@@ -92,7 +94,7 @@ export default {
     // 前端假修改
     changeData(name, url) {
       // console.log(name, url)
-      this.data.name = name ? name : this.data.name;
+      this.data.data.name = name ? name : this.data.data.name;
       this.data.url = url ? url : this.data.url;
     },
     expandCard() {
@@ -109,7 +111,7 @@ export default {
     },
   },
   mounted() {
-    this.data = lodash.cloneDeep(this.design);
+    this.data = lodash.cloneDeep(this.design.data);
     this.data.url = designImg;
     this.form = lodash.cloneDeep(this.design);
     // console.log('成功加载原型设计卡片',this.data)

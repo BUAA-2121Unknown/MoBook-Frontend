@@ -49,7 +49,7 @@ export default {
   components: {
     TemplateCard,
   },
-  props:['itemId'],
+  props: ['itemId'],
   computed: mapState([
     "componentData",
     "curComponent",
@@ -99,24 +99,15 @@ export default {
         prop: 3,
         live: false,
         sibling: true,
+        content: JSON.stringify({
+          canvasData: { array: this.componentData },
+          canvasStyle: this.canvasStyleData,
+        }),
       };
       try {
         // 创建原型设计
         const res = await createPrototype(data);
         console.log("成功创建原型设计模板", res);
-        // 创建之后立即初始化一次原型设计的内容
-        const data2 = {
-          itemId: Number(res.id),
-          projId: Number(this.projId),
-          version: 1,
-          content: JSON.stringify({
-            canvasData: { array: this.componentData },
-            canvasStyle: this.canvasStyleData,
-          }),
-        };
-        const res2 = await savePrototype(data2);
-        console.log("成功上传原型设计模板内容", res2);
-        // 再获取一次列表
         this.getList();
       } catch (e) {
         console.log(e);

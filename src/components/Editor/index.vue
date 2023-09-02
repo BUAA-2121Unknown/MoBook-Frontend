@@ -176,7 +176,7 @@ export default {
         return
       }
       const roomId = this.$route.query.artId ? this.$route.query.artId : 1;
-      this.url = "ws://81.70.161.76:5000/ws/mouse/" + roomId + "/"
+      this.url = "ws://81.70.161.76/ws/mouse/" + roomId + "/"
       try {
         // 创建Web Socket 连接
         const socket = new WebSocket(this.url);

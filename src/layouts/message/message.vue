@@ -99,7 +99,7 @@ export default {
       const str = "" + this.userId + "/" + this.orgId + "/";
       // websocket地址
       return {
-        url: "ws://81.70.161.76:5000/ws/notif/" + str,
+        url: "ws://81.70.161.76/ws/notif/" + str,
       };
     },
   },

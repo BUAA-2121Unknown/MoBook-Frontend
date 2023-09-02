@@ -3,7 +3,7 @@
   <div class="design-card" @mouseenter="expandCard" @mouseleave="shrinkCard">
     <div
       class="design-image-container"
-      :style="{ backgroundImage: `url(${data.url})`, height: imageHeight }"
+      :style="{ backgroundImage: `url(${data.img})`, height: imageHeight }"
       @click="designHandler"
     ></div>
     <div
@@ -38,6 +38,7 @@ import ShareButton from "./button/ShareButton.vue";
 import ModifyButton from "./button/ModifyButton.vue";
 import lodash from "lodash";
 
+import { useUserStore } from "../../stores/modules/user";
 import { getPrototype } from "../../api/artifact";
 import { ElMessage, ElMessageBox } from "element-plus";
 
@@ -56,9 +57,10 @@ export default {
         id: "",
         name: "",
         intro: "",
-        url: "",
+        img: "",
       },
       dialogFormVisible: false,
+      projId: 0,
     };
   },
   computed: {
@@ -73,7 +75,9 @@ export default {
     // 加载指定的原型设计到画板 实现函数
     async loadDesign(id) {
       const params = {
-        artId: id,
+        projId: this.projId,
+        itemId: this.design.id,
+        version: 1,
       };
       try {
         let val = {
@@ -140,7 +144,10 @@ export default {
   },
   mounted() {
     this.data = lodash.cloneDeep(this.design);
-    this.data.url = designImg;
+    this.data.img = this.data.img ? this.data.img : designImg;
+
+    const userStore = useUserStore()
+    this.projId = userStore.projectId
     // console.log("成功加载原型设计模板", this.data);
   },
 };

@@ -45,7 +45,7 @@ export default {
   },
   mounted(){
     const userStore = useUserStore()
-    this.projId = userStore.projId 
+    this.projId = userStore.projectId
   },
   methods: {
     handleClick() {

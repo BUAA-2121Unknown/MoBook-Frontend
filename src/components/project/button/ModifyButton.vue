@@ -79,7 +79,7 @@ export default {
   mounted() {
     this.form.name = this.design.name;
     const userStore = useUserStore()
-    this.projId = userStore.projId
+    this.projId = userStore.projectId
   },
 };
 </script>

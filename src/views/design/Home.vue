@@ -143,7 +143,7 @@ export default {
       const name = `ws/prototype/${roomId}/`;
       this.provider = new WebsocketProvider(
         // 后端端口
-        "ws://81.70.161.76:5000/",
+        "ws://81.70.161.76/",
         // 后端房间号
         name,
         // 对应doc文档

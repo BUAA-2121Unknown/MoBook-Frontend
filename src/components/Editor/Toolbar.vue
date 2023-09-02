@@ -345,6 +345,10 @@ export default {
           type: "danger",
         });
         console.log("未给出artId，无法保存");
+        console.log("JSON输出为：", JSON.stringify({
+          canvasData: { array: this.componentData },
+          canvasStyle: this.canvasStyleData,
+        }))
         return;
       }
 

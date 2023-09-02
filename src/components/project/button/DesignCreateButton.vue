@@ -59,7 +59,7 @@ export default {
   },
   mounted(){
     const userStore = useUserStore()
-    this.projId = userStore.projId
+    this.projId = userStore.projectId
   },
   setup() {
     const router = useRouter();
@@ -69,26 +69,17 @@ export default {
     async handleCreate() {
       const data = {
         projId: this.projId,
-        itemId: 1,
+        itemId: 148,
         filename: this.form.name,
         prop: 2,
         live: false,
         sibling: false,
+        content: emptyTemplateContent,
       };
       try {
         // 创建原型设计
         const res = await createPrototype(data);
-        console.log("成功创建原型设计", res);
-        // 创建之后立即初始化一次原型设计的内容
-        const data2 = {
-          itemId: Number(res.id),
-          projId: Number(this.projId),
-          version: 1,
-          content: emptyTemplateContent,
-        };
-        const res2 = await savePrototype(data2);
-        console.log("成功初始化原型设计", res2);
-        // 
+        console.log("成功创建原型设计", data, res);
         this.dialogFormVisible = false;
         this.$message({
           message: "成功创建原型设计",
@@ -102,7 +93,7 @@ export default {
         // 跳转到新页面
         this.$router.push({
           path: "/prototype",
-          query: { itemId: res.id },
+          query: { itemId: res.data.id },
         });
       } catch (e) {
         this.dialogFormVisible = false;

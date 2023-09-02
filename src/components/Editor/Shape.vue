@@ -81,7 +81,7 @@ export default {
     otherSelectStyle() {
       //被锁定
       if (this.element.userId && this.element.userId != this.userId && !this.isPrevieww) {
-        return 'outline: 2px solid ' + this.generateColorFromId(this.userId)
+        return 'outline: 2px solid ' + this.generateColorFromId(this.element.userId)
       }
       // 未被锁定
       return ''
