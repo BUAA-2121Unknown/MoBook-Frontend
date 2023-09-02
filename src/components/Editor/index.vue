@@ -20,7 +20,7 @@
     <template v-if="!isPrevieww">
       <Shape v-for="(item, index) in componentData" :key="item.id" :default-style="item.style"
         :style="getShapeStyle(item.style)" :active="item.id === (curComponent || {}).id" :element="item" :index="index"
-        :class="{ lock: item.isLock }">
+        :class="{ lock: item.isLock || (item.userId && item.userId != userInfo.id) }">
         <component :is="item.component" v-if="item.component.startsWith('SVG')" :id="'component' + item.id"
           :style="getSVGStyle(item.style)" class="component" :prop-value="item.propValue" :element="item"
           :request="item.request" />
@@ -36,7 +36,8 @@
     </template>
     <template v-else>
       <Shape v-for="(item, index) in componentData" :key="item.id" :default-style="item.style"
-        :style="getShapeStyle(item.style)" :active="false" :element="item" :index="index" :class="{ lock: item.isLock }">
+        :style="getShapeStyle(item.style)" :active="false" :element="item" :index="index"
+        :class="{ lock: item.isLock || (item.userId && item.userId != userInfo.id) }">
         <component :is="item.component" v-if="item.component.startsWith('SVG')" :id="'component' + item.id"
           :style="getSVGStyle(item.style)" class="component" :prop-value="item.propValue" :element="item"
           :request="item.request" />
@@ -298,6 +299,7 @@ export default {
     },
 
     handleMouseDown(e) {
+      console.log('点击画布')
       // 如果没有选中组件 在画布上点击时需要调用 e.preventDefault() 防止触发 drop 事件
       if (!this.curComponent || isPreventDrop(this.curComponent.component)) {
         e.preventDefault();
@@ -423,7 +425,7 @@ export default {
       const { x, y } = this.start;
       // 计算所有的组件数据，判断是否在选中区域内
       this.componentData.forEach((component) => {
-        if (component.isLock) return;
+        if (component.isLock ||  (component.userId && component.userId != this.userInfo.id)) return;
 
         const { left, top, width, height } = getComponentRotatedStyle(
           component.style

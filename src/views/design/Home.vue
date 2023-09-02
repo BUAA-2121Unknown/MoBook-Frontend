@@ -22,7 +22,7 @@
       <section class="center">
         <div class="content" @drop="handleDrop" @dragover="handleDragOver" @mousedown="handleMouseDown"
           @mouseup="deselectCurComponent" ref="editor">
-          <Editor :doc="doc"/>
+          <Editor :doc="doc" />
         </div>
       </section>
       <!-- 右侧属性列表 -->
@@ -71,6 +71,7 @@ import { $on } from "../../utils/design/gogocodeTransfer";
 import eventBus from "@/utils/design/eventBus";
 
 import { getPrototype } from "../../api/artifact";
+import { useUserStore } from "../../stores/modules/user";
 
 export default {
   components: {
@@ -106,7 +107,9 @@ export default {
   ]),
   mounted() {
     // console.log("原型设计接收到路由传递的参数", this.$route.query.artId);
-
+    const userStore = useUserStore()
+    // 提交当前用户id，组件锁定要用
+    this.$store.commit("setUserId", userStore.userInfo.id)
   },
   activated() {
     this.restore();
@@ -254,6 +257,12 @@ export default {
         component.style.left = e.clientX - rectInfo.x;
         component.id = generateID();
         this.$store.commit("addComponent", { component });
+
+
+        // if (!this.isClickComponent) {
+        //   this.$store.commit("setCurComponent", { component: null, index: null });
+        // }
+        // 再存档
         this.$store.commit("recordSnapshot");
         // this.setDocArray();
       }

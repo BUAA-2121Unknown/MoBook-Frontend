@@ -51,13 +51,14 @@
       <el-button :disabled="!areaData.components.length" @click="compose">组合</el-button>
       <el-button :disabled="!curComponent ||
         curComponent.isLock ||
+        (curComponent.userId && curComponent.userId != userId) ||
         curComponent.component != 'Group'
         " @click="decompose">
         拆分
       </el-button>
-
-      <el-button :disabled="!curComponent || curComponent.isLock" @click="lock">锁定</el-button>
-      <el-button :disabled="!curComponent || !curComponent.isLock" @click="unlock">解锁</el-button>
+<!-- 对于解锁和不解锁按钮来说，当有人操作时一定不允许使用 -->
+      <el-button :disabled="!curComponent || curComponent.isLock || (curComponent.userId && curComponent.userId != userId)" @click="lock">锁定</el-button>
+      <el-button :disabled="!curComponent || !curComponent.isLock || (curComponent.userId && curComponent.userId != userId)" @click="unlock">解锁</el-button>
       <el-button @click="preview(true)">原型导出</el-button>
       <PreviewCreateButton :placedAtBar="true"></PreviewCreateButton>
       <!-- <el-button
@@ -108,6 +109,7 @@ import { copyToClipboard } from "@/utils/design/copy"
 
 import { savePrototype } from "../../api/artifact";
 import PreviewCreateButton from '../project/button/PreviewCreateButton.vue';
+import { useUserStore } from "../../stores/modules/user";
 // const dialogVisible = ref(false);
 
 export default {
@@ -134,6 +136,7 @@ export default {
       previewing: this.isPreviewing,
       codeDialogVisible: false,
       forbidSaveTips: true,
+      userId: 0,
     };
   },
   computed: mapState([
@@ -156,7 +159,8 @@ export default {
     // }, 1000);
   },
   mounted() {
-
+    const userStore = useUserStore()
+    this.userId = userStore.userInfo.id
   },
   methods: {
     cancelPreview() {

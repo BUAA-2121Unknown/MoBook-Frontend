@@ -1,7 +1,7 @@
 <template>
     <transition name="cursor-transition">
-        <!-- <div class="cursor-container" :style="posStyle" v-if="id != user.id"> -->
-        <div class="cursor-container" :style="posStyle">
+        <div class="cursor-container" :style="posStyle" v-if="id != user.id">
+        <!-- <div class="cursor-container" :style="posStyle"> -->
             <div class="cursor-pointer" :style="cursorStyle"></div>
             <div class="name">
                 {{ user.name }}
@@ -25,21 +25,23 @@ export default {
         },
         // 鼠标颜色
         cursorStyle() {
-            const str = 'background-color: '
-            if (this.user.id % 3 == 0) {
-                return str + 'rgba(255, 51, 51, 0.7)'
-            }
-            else if (this.user.id % 3 == 1) {
-                return str + 'rgba(51, 245, 255, 0.7)'
-            }
-            else if (this.user.id % 3 == 2) {
-                return str + 'rgba(51, 255, 82, 0.7)'
-            }
+            return 'background-color: ' + this.generateColorFromId(Number(this.user.id))
         },
     },
     mounted() {
-        console.log('多人协同光标加载：', this.user)
+        console.log('多人协同光标加载：', this.user, this.generateColorFromId(Number(this.user.id)))
     },
+    methods: {
+        generateColorFromId(id) {
+            const r = (id * 17) % 256;
+            const g = (id * 31) % 256;
+            const b = (id * 13) % 256;
+            const alpha = 0.7; // 不透明度，可以根据需要调整
+            // 返回RGBA颜色字符串
+            // return `rgba(200, 200, 0, 1)`;
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        }
+    }
 }
 </script>
 
