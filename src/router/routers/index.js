@@ -141,8 +141,8 @@ const routers = [
         path: 'docs',
         name: 'docs',
         // component: () => import('@/views/project/ProjectDoc.vue'),
-        component: () => import('@/views/project/ProjectDocWithTree.vue'),  // 侧边栏文件树
-        // component: () => import('@/views/project/ProjectDocList.vue'),      // 文档列表
+        // component: () => import('@/views/project/ProjectDocWithTree.vue'),  // 侧边栏文件树
+        component: () => import('@/views/project/ProjectDocList.vue'),      // 文档列表
         meta: {
           title: '项目文档',
         },

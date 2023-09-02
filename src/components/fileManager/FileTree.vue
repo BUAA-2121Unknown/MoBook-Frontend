@@ -296,6 +296,7 @@ const handleEditComplete = async (node, name) => {
         'prop': props.itemProperty,
         'live': true,
         'sibling': false,
+        'content': '',
       })
 
       if (res.meta.status == 0) {
