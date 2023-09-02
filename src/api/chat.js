@@ -34,3 +34,11 @@ export const requestSendFile = (data) => {
 	})
 }
 
+export const requestChatRoom = (data) => {
+	return service({
+		url: 'chat/create',
+		method: 'post',
+		data: data
+	})
+}
+
