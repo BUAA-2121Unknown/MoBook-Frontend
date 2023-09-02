@@ -411,6 +411,19 @@ const deleteFile = async (node, data) => {
   })
 }
 
+const handleDoubleClick = async (node, data) => {
+  console.log(node, data)
+  /* if (data.data.type === 1) {
+    if (!expandedList.value.includes(data.id)) {
+      expandedList.value.push(data.id)
+    }
+    data.expanded = true
+    dataSource.value = [...dataSource.value]
+  } else {
+    console.log('open file')
+  } */
+}
+
 const fileTreeList = [
   {
     "data": {

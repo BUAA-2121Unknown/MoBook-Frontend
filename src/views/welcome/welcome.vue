@@ -11,8 +11,8 @@
                 </div>
             </div>
         </header>
-        <div class="body1">
-            <div class="sub-title1">
+        <div class="body1 ">
+            <div class="sub-title1 animate__animated animate__backInUp">
                 三大产品模块, 释放组织生产力
             </div>
             <div class="description" style="margin: 40px 0 20px 0;">

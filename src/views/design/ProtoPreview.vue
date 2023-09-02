@@ -36,6 +36,7 @@ import DesignCardCarousel from "../../components/project/DesignCardCarousel.vue"
 
 import { verifyPrototypeToken, getPrototype, getPrototypeToken, getPrototypeList, getPrototypeListWithToken } from "../../api/artifact";
 import { templateList } from "../../enums/prototypeTemplateEnum";
+import { ElMessage } from "element-plus";
 
 export default {
   components: {
@@ -60,6 +61,8 @@ export default {
       token: '',
       projId: '',
       designList: [],
+
+      timer: null,
     };
   },
   computed: mapState([
@@ -75,9 +78,14 @@ export default {
     if (this.verifyToken()) {
       // // 验证成功 加载全部原型设计列表
       this.loadPrototypeList()
-      // // 加载第一个原型设计
-      this.loadPrototype(0);
       this.loading = false;
+    }
+    this.timer = setInterval(this.verifyToken, 10000);
+  },
+  beforeDestroy() {
+    if (this.timer !== null) {
+      clearInterval(this.timer);
+      this.timer = null;
     }
   },
   methods: {
@@ -91,7 +99,11 @@ export default {
     //   return arr;
     // },
     loadNext(tar, cur) {
-      this.loadPrototype(tar)
+      // 先验证权限
+      this.verifyToken()
+      if (this.designList) {
+        this.restore(this.designList[tar].content)
+      }
     },
     // y加载json至画布
     restore(content) {
@@ -100,10 +112,9 @@ export default {
       this.$store.commit("setCanvasStyle", val.canvasStyle);
       console.log("原型设计预览：成功加载", val);
     },
+
     // y加载指定数组下标的原型设计
     async loadPrototype(index) {
-      // 先验证权限
-      this.verifyToken()
       // 然后再加载
       if (!this.designList) {
         return
@@ -114,15 +125,19 @@ export default {
         version: 1,
       }
       try {
-        const res = getPrototype(params)
+        const res = await getPrototype(params)
         console.log("原型设计预览,加载元素", index, res);
-        this.restore(res.content)
+        this.designList[index].content = res.data.content
+        if (index == 0) {
+          this.restore(this.designList[0].content)
+        }
       } catch (e) {
         console.log(e)
       }
       this.loading = false;
     },
-    // y加载项目的所有原型设计
+
+    // y加载项目的所有原型设计 以及载入第一个元素
     async loadPrototypeList() {
       const params = {
         token: this.token
@@ -137,7 +152,13 @@ export default {
         } else {
           this.designList = [];
         }
-        console.log("原型设计预览：成功导入原型设计列表", res, this.designList);
+        // 一次性全部读入
+        if (this.designList) {
+          this.designList.forEach((item, index, arr) => {
+            this.loadPrototype(index)
+          })
+        }
+        console.log("原型设计预览：成功导入原型设计列表", res, this.designList, this.contentList);
       } catch (e) {
         console.log(e);
       }

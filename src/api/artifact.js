@@ -55,7 +55,7 @@ export const getPrototype = (params) => {
 };
 // yy保存指定id的原型设计数据
 export const savePrototype = (data) => {
-  const form = ["projId", "itemId", "filename", "version", "content"];
+  const form = ["projId", "itemId", "version", "content"];
   return service({
     url: "artifact/file/upload/content",
     method: "post",
@@ -148,7 +148,7 @@ export const saveDoc = (data) => {
 export const mention = (data) => {
   const form = [
     'projId',
-    'artId',
+    'fileId',
     'users'
   ]
   return service({
