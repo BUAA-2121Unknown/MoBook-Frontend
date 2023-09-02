@@ -131,9 +131,9 @@ import { Node } from '@tiptap/core'
 import emitter from '@/utils/emitter'
 import { onBeforeUnmount, ref, toRefs } from 'vue';
 import { convertToMarkdown } from '@/utils/editor/html2markdown/exportToMd.js'
-import { convertToWord } from '@/utils/editor/exportToDoc.js'
-import FileSaver from 'file-saver';
 import { uploadDoc } from '@/api/artifact'
+import { convertHtmlToDocx } from '@/api/convertor'
+import FileSaver from 'file-saver';
 
 const userStore = useUserStore()
 const userName = userStore.userInfo.username
@@ -303,19 +303,35 @@ const save = async () => {
 }
 emitter.on('save', () => save())
 
-const exportToWord = () => {
-  convertToWord()
-}
-emitter.on('exportToWord', () => exportToWord())
+const exportToWord = async (title) => {
+  console.log("Export as Microsoft Word");
 
-const exportToPdf = () => {
+  var content = editor.value.getHTML();
+  console.log("🚀 > exportToWord > content:", content);
+
+  await convertHtmlToDocx({
+    "filename": title,
+    "html": content
+  }).then((res) => {
+    const url = res.data.url;
+    console.log("🚀 > exportToWord > url:", url);
+    var link = document.createElement('a');
+    link.href = url;
+    link.click();
+  }).catch((error) => {
+    console.log("🚀 > exportToWord > error:", error);
+  });
+}
+emitter.on('exportToWord', (title) => exportToWord(title))
+
+const exportToPdf = (title) => {
   console.log("导出pdf版本")
   // 创建一个新节点
   var content = editor.value.getHTML();
   html2pdf().from(content, 'string').to('pdf').save()
   // html2pdf(element);
 }
-emitter.on('exportToPdf', () => exportToPdf())
+emitter.on('exportToPdf', (title) => exportToPdf(title))
 
 const exportToMarkdown = (title) => {
   console.log(title)
@@ -328,7 +344,6 @@ const exportToMarkdown = (title) => {
   const blob = new Blob([markdown], { type: 'text/plain;charset=utf-8' });
   FileSaver.saveAs(blob, `${title}.md`);
 }
-
 emitter.on('exportToMarkdown', (title) => exportToMarkdown(title))
 
 onBeforeUnmount(() => {
