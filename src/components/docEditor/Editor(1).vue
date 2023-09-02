@@ -131,10 +131,9 @@ import { Node } from '@tiptap/core'
 import emitter from '@/utils/emitter'
 import { onBeforeUnmount, ref, toRefs } from 'vue';
 import { convertToMarkdown } from '@/utils/editor/html2markdown/exportToMd.js'
-import { convertToWord } from '@/utils/editor/exportToDoc.js'
-import FileSaver from 'file-saver';
 import { uploadDoc } from '@/api/artifact'
 import { convertHtmlToDocx } from '@/api/convertor'
+import FileSaver from 'file-saver';
 
 const userStore = useUserStore()
 const userName = userStore.userInfo.username
@@ -204,8 +203,6 @@ const { paramsToEditor } = toRefs(props)
 const doc_id = paramsToEditor.value.itemId
 const projId = paramsToEditor.value.projId
 const version = paramsToEditor.value.version
-const tokenString = paramsToEditor.value.tokenString
-
 // console.log("paramsToEditorVersion" + paramsToEditor.value.version)
 if (editable.value)
   auth = "2"
@@ -217,6 +214,7 @@ provider.value = new HocuspocusProvider({
   document: ydoc,
   token: auth,
   parameters: {
+    auth: auth,
     doc_id: doc_id,
     projId: projId,
     version: version,
@@ -272,23 +270,10 @@ editor.value = new Editor({
   editable: editable.value,
 
   // 钩子函数
-  onUpdate(evt) {
-    const { selection } = evt.editor.state;
-
-    if (!selection.empty) {
-      // Do not scroll into view when we're doing a mass update (e.g. underlining text)
-      // We only want the scrolling to happen during actual user input
-      return;
-    }
-
-    const viewportCoords = evt.editor.view.coordsAtPos(selection.from);
-    const absoluteOffset = window.scrollY + viewportCoords.top;
-
-    window.scrollTo(
-      window.scrollX,
-      absoluteOffset - (window.innerHeight / 2),
-    );
-  },
+  onUpdate({ transaction }) {
+    // console.log(transaction)
+    const title = transaction.doc.content.firstChild.content.firstChild?.textContent;
+  }
 })
 localStorage.setItem('currentUser', JSON.stringify(currentUser))
 
@@ -359,7 +344,6 @@ const exportToMarkdown = (title) => {
   const blob = new Blob([markdown], { type: 'text/plain;charset=utf-8' });
   FileSaver.saveAs(blob, `${title}.md`);
 }
-
 emitter.on('exportToMarkdown', (title) => exportToMarkdown(title))
 
 onBeforeUnmount(() => {

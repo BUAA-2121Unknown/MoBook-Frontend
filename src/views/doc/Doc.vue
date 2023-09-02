@@ -58,7 +58,7 @@
 
       </div>
       
-      <div class="body-container">
+      <div class="body-container" v-if="fileTreeVisible">
         <FileTree></FileTree>
         <div class="editor-container">
           <editor :paramsToEditor="paramsToEditor" editable="editable" v-if="visible" ref="childRef" :showLive="true" :activeButtons="[
@@ -100,7 +100,7 @@
                       我的
                     </div>
                     <div v-else class="row" style="display: flex; flex-wrap: wrap;">
-                      <div class="box" v-for="item in docTemplate" :key="item.id" style="width: 20%;" @click="createFromTemplate(item.content)">
+                      <div class="box" v-for="item in docTemplate" :key="item.id" style="width: 20%;" @click="open(item.name, item.content)">
                         <div class="text">{{ item.name }}</div>
                         <img src="../../assets/template.png">
                       </div>
@@ -227,6 +227,14 @@ const templateVisible = ref(false)
 
 // 选择展示哪个版块
 const myTemplate = ref(false)
+
+const fileTreeVisible = ref(true)
+
+const changeFileTreeVisible = () => {
+  fileTreeVisible.value = !fileTreeVisible.value
+}
+emitter.on('changeFileTreeVisible', () => changeFileTreeVisible())
+
 
 const getFirstH1Value = async() => {
   const firstH1 = this.$el.querySelector('h1');
@@ -380,19 +388,39 @@ const restore = async() => {
 }
 
 
+const open = (title, content) => {
+  ElMessageBox.confirm(
+    '确定以'+ title + '为模版创建吗',
+    {
+      confirmButtonText: '确认',
+      cancelButtonText: '取消',
+    }
+  )
+    .then(() => {
+      createFromTemplate(content)
+      ElMessage({
+        type: 'success',
+        message: '创建成功',
+      })
+    })
+    .catch(() => {
+      ElMessage({
+        type: 'info',
+        message: '取消创建',
+      })
+    })
+}
 // 创建模版
-// 从文档模版创建文件
+// 从文档模版载入
 const createFromTemplate = async(content) => {
   const res = await createFile({
     'projId': userStore.projectId,
     'itemId': parseInt(doc_id),
-    'filename': "新建文档",
-    'prop': 1,
-    'live': true,
-    'sibling': true,
+    'version': 0,
     'content': JSON.stringify(content)
   })
   console.log(res)
+  templateVisible = !templateVisible
   // if (res.meta.status == 0) {
   //   console.log(res.data)
   //   ElMessage({

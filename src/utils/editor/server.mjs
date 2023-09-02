@@ -203,7 +203,7 @@ const server = Server.configure({
       console.log("store success")
     };
     debounced?.clear();
-    debounced = debounce(save, 60000);
+    debounced = debounce(save, 20000);
     debounced();
   },
 
@@ -247,6 +247,7 @@ const server = Server.configure({
       // console.log(ydoc)
       return ydoc
     } catch (err) {
+      console.log(err)
       // console.log("🚀 > onLoadDocument > err:", err);
     }
     console.log("end onloadDocument")

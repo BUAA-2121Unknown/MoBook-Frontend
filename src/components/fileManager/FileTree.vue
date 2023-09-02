@@ -97,7 +97,7 @@ import { ElButton, ElInput, ElMessage, ElMessageBox, ElDialog } from 'element-pl
 import { getAllItems, moveItem, createFolder, createFile, updateItemStatus, updateItemName } from '@/api/fileTree'
 import { useUserStore } from '@/stores/modules/user'
 import { createNewItem } from './helper'
-
+import emitter from '@/utils/emitter'
 /**
  * 调用该组件时所需的 props
  * @itemProperty: 1: Document, 2: Prototype
@@ -161,8 +161,11 @@ const handleNodeCollapse = (node, data) => {
   expandedList.value.splice(index, 1)
 }
 
-const nodeClick = (data, node, item) => {
+const nodeClick = async(data, node, item) => {
   router.push({ name: 'doc', query: {doc_id: data.id}})
+  emitter.emit('changeFileTreeVisible')
+  await nextTick()
+  emitter.emit('changeFileTreeVisible')
 }
 
 const allowDrop = (draggingNode, dropNode, type) => {
