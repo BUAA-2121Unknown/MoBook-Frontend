@@ -1,5 +1,5 @@
 <template>
-  <div class="component-list" @dragstart="handleDragStart">
+  <div class="component-list" @dragstart="handleDragStart" id="tour-prototype-step-2">
     <div
       v-for="(item, index) in componentList"
       :key="index"

@@ -1,5 +1,5 @@
 <template>
-  <div class="real-time-component-list">
+  <div class="real-time-component-list" id="tour-prototype-step-3">
     <div
       v-for="(item, index) in componentData"
       :key="index"
