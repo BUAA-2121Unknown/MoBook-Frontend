@@ -56,14 +56,14 @@
                     <el-icon>
                       <data-analysis />
                     </el-icon>
-                    北京反转极光科技有限公司-技术部-前端事业群
+                    {{ userStore.orgInfo.name }}
                   </li>
                 </el-tooltip>
                 <li class="info-list">
                   <el-icon>
                     <video-camera />
                   </el-icon>
-                  中国·北京市·朝阳区
+                  中国·北京市·海淀区
                 </li>
                 <el-tooltip
                   class="item"
@@ -75,7 +75,7 @@
                     <el-icon>
                       <medal />
                     </el-icon>
-                    GoLang/JavaScript/Vue/Gorm
+                    Vue / Django / C / Cpp
                   </li>
                 </el-tooltip>
               </ul>

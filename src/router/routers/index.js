@@ -26,6 +26,14 @@ const routers = [
     },
   },
   {
+    path: '/welcome',
+    name: 'welcome',
+    component: () => import('@/views/welcome/Welcome.vue'),
+    meta: {
+      title: '开始',
+    },
+  },
+  {
     path: '/login',
     name: 'login',
     component: () => import('@/views/login/Login.vue'),
@@ -132,7 +140,8 @@ const routers = [
       {
         path: 'design',
         name: 'design',
-        component: () => import('@/views/project/ProjectDesign.vue'),
+        // component: () => import('@/views/project/ProjectDesign.vue'),
+        component: () => import('@/views/project/ProjectDesignList.vue'),
         meta: {
           title: '项目设计',
         },
@@ -141,8 +150,8 @@ const routers = [
         path: 'docs',
         name: 'docs',
         // component: () => import('@/views/project/ProjectDoc.vue'),
-        component: () => import('@/views/project/ProjectDocWithTree.vue'),  // 侧边栏文件树
-        // component: () => import('@/views/project/ProjectDocList.vue'),      // 文档列表
+        // component: () => import('@/views/project/ProjectDocWithTree.vue'),  // 侧边栏文件树
+        component: () => import('@/views/project/ProjectDocList.vue'),      // 文档列表
         meta: {
           title: '项目文档',
         },

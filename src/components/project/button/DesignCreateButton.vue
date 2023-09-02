@@ -13,17 +13,17 @@
           placeholder="请输入标题"
         />
       </el-form-item>
-      <el-form-item label="简介" :label-width="formLabelWidth">
+      <!-- <el-form-item label="简介" :label-width="formLabelWidth">
         <el-input
           v-model="form.intro"
           :rows="2"
           type="textarea"
           placeholder="请输入简介"
         />
-      </el-form-item>
-      <el-form-item label="封面" :label-width="formLabelWidth">
+      </el-form-item> -->
+      <!-- <el-form-item label="封面" :label-width="formLabelWidth">
         <PictureUploader :form="form"></PictureUploader>
-      </el-form-item>
+      </el-form-item> -->
     </el-form>
     <template #footer>
       <span class="dialog-footer">
@@ -51,40 +51,35 @@ export default {
     return {
       form: {
         name: "",
-        intro: "",
-        url: "",
       },
       dialogFormVisible: false,
       formLabelWidth: "140px",
+      projId: 0,
     };
+  },
+  mounted(){
+    const userStore = useUserStore()
+    this.projId = userStore.projectId
   },
   setup() {
     const router = useRouter();
   },
   methods: {
-    // 创建原型设计
+    // y创建原型设计
     async handleCreate() {
-      const userStore = useUserStore();
       const data = {
-        projId: userStore.projectId,
-        name: this.form.name,
-        type: "p",
+        projId: this.projId,
+        itemId: 148,
+        filename: this.form.name,
+        prop: 2,
         live: false,
+        sibling: false,
+        content: emptyTemplateContent,
       };
       try {
         // 创建原型设计
         const res = await createPrototype(data);
-        console.log("成功创建原型设计", res);
-        // 创建之后立即初始化一次原型设计的内容
-        const data2 = {
-          artId: res.data.id,
-          filename: "prototype_" + res.data.id + ".json",
-          // filename: 'DesignForTestProject2.json',
-          content: emptyTemplateContent
-        };
-        const res2 = await savePrototype(data2);
-        console.log("成功初始化原型设计", res2);
-        // 
+        console.log("成功创建原型设计", data, res);
         this.dialogFormVisible = false;
         this.$message({
           message: "成功创建原型设计",
@@ -94,13 +89,11 @@ export default {
         this.handler();
         this.form = {
           name: "",
-          intro: "",
-          url: "",
         };
         // 跳转到新页面
         this.$router.push({
           path: "/prototype",
-          query: { artId: res.data.id },
+          query: { itemId: res.data.id },
         });
       } catch (e) {
         this.dialogFormVisible = false;

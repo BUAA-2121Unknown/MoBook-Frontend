@@ -31,6 +31,8 @@
           <!-- 编辑文件名 -->
           <span v-if="data.isInputVisible" class="file-tree-node">
             <el-input
+              class="input"
+              textareaStyle="backgound-color: #eeeeee;"
               v-model="editingName"
               ref="editingRef"
               @blur="handleEditComplete(data, editingName)"
@@ -335,6 +337,7 @@ const handleEditComplete = async (node, name) => {
         'prop': props.itemProperty,
         'live': true,
         'sibling': false,
+        'content': '',
       })
 
       if (res.meta.status == 0) {
@@ -581,6 +584,11 @@ const fileTreeList = [
     justify-content: space-between;
     font-size: 14px;
     padding-right: 8px;
+    height: 28px;
+
+    .input {
+      height: 22px;
+    }
   }
 
   .icon-wrapepr {

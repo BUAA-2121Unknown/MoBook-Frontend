@@ -1,99 +1,212 @@
 <!-- 项目文档的卡片组件 -->
 <template>
   <div class="doc-card" @mouseenter="expandCard" @mouseleave="shrinkCard" @click="chooseProject">
-      <div class="doc-image-container" :style="{ backgroundImage: `url(${project.img})`, height: imageHeight }"></div>
-      <div class="doc-text-container" :style="{ height: textHeight }">
-          <div class="doc-title">{{ project.name }}</div>
-          <div v-if="expanded" class="doc-intro">{{ project.description }}</div>
+    <div class="doc-image-container" :style="{ backgroundImage: `url(${project.img})`, height: imageHeight }"></div>
+    <div class="doc-text-container" :style="{ height: textHeight }">
+      <div class="doc-title">{{ project.name }}</div>
+      <div v-if="expanded" class="doc-intro">{{ project.description }}</div>
+      <div v-if="expanded" class="doc-create-time">{{ project.created.split(' ')[0] }}</div>
+    </div>
+
+    <div class="button-wrapper">
+      <el-icon class="edit-button" @click.stop="openEdit">
+        <Edit />
+      </el-icon>
+      <el-icon class="copy-button" @click.stop="openCopy">
+        <CopyDocument />
+      </el-icon>
+      <el-icon class="delete-button" @click.stop="openDelete">
+        <Delete />
+      </el-icon>
+    </div>
+
+    <transition name="slide-up">
+      <el-row class="mb-4 doc-buttom-group" v-if="expanded">
+    </el-row>
+  </transition>
+
+  <div @click.stop="">
+    <el-dialog
+      v-model="editDialogVisible"
+      title="修改项目信息"
+      width="50%"
+    >
+      <div class="proj-name-wrapper">
+        <span>项目名称</span>
+        <el-input v-model="changingProjName" placeholder="{{ changingProjName }}">
+        </el-input>
       </div>
-      <div class="delete-button" @click.stop="open"><el-icon><Delete /></el-icon></div>
-      <transition name="slide-up">
-          <el-row class="mb-4 doc-buttom-group" v-if="expanded">
-          </el-row>
-      </transition>
+      <div class="proj-desc-wrapper">
+        <span>项目简介</span>
+        <el-input
+          v-model="changingProjDesc"
+          type="textarea"
+          placeholder="{{ changingProjDesc }}"
+        >
+        </el-input>
+      </div>
+
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="editDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="handleEdit">
+            Confirm
+          </el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
-</template>
+</div></template>
 
 
 <script>
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { updateStatus } from '@/api/project'
+import { updateStatus, duplicateProject, updateProjectInfo } from '@/api/project'
 import { useUserStore } from '@/stores/modules/user'
 import { ref } from 'vue'
+import { CopyDocument } from '@element-plus/icons-vue'
+
 const userStore = useUserStore()
 export default {
   name: "ProjectCard",
   props: ["project"],
+
   data() {
-      return {
-          expanded: false,
-          projectFormData: {
-            status: '',
-            projects: [],
-          }
-      };
+    return {
+      expanded: false,
+      editDialogVisible: false,
+      changingProjName: this.project.name,
+      changingProjDesc: this.project.description,
+      projectFormData: {
+        status: '',
+        projects: [],
+      }
+    };
   },
+
   computed: {
-      imageHeight() {
-          return this.expanded ? "40%" : "80%";
-      },
-      textHeight() {
-          return this.expanded ? "60%" : "20%";
-      },
+    imageHeight() {
+      return this.expanded ? "40%" : "80%";
+    },
+    textHeight() {
+      return this.expanded ? "60%" : "20%";
+    },
   },
+
   methods: {
-      expandCard() {
-          this.expanded = true;
-      },
-      shrinkCard() {
-          this.expanded = false;
-      },
-      chooseProject() {
-        userStore.setProjectId(this.project.id)
-        this.$router.push({
-            name: "info"
-        });
-      },
-      shallowDelete(){
-        // console.log(this.project.id)
-        this.projectFormData.status = 1
-        this.projectFormData.projects.push(this.project.id);
-        updateStatus(this.projectFormData)
-      },
-      async open(){
-        ElMessageBox.confirm(
-          '删除的文件会进入回收站，确认删除吗?',
-          'Warning',
-          {
-            confirmButtonText: '确认',
-            cancelButtonText: '取消',
-            type: 'warning',
+    expandCard() {
+      this.expanded = true;
+    },
+    shrinkCard() {
+      this.expanded = false;
+    },
+    chooseProject() {
+      userStore.setProjectId(this.project.id);
+      this.$router.push({
+        name: "info"
+      });
+    },
+
+    async handleEdit() {
+      console.log(this.changingProjName, this.changingProjDesc)
+      this.editDialogVisible = false
+      try {
+        const res = await updateProjectInfo({
+          projId: this.project.id,
+          name: this.changingProjName,
+          description: this.changingProjDesc
+        })
+        if (res.meta.status == 0) {
+          ElMessage({
+            type: 'success',
+            message: '修改成功',
+          });
+        } else {
+          ElMessage({
+            type: 'error',
+            message: '修改失败',
+          });
+        }
+        this.$emit('update')
+      } catch (e) {
+        console.log(e)
+      }
+    },
+
+    openEdit() {
+      this.editDialogVisible = true;
+    },
+
+    async openCopy() {
+      ElMessageBox.confirm(`确认生成「${this.project.name}」的副本吗?`, 'Warning', {
+        confirmButtonText: '确认',
+        cancelButtonText: '取消',
+        type: 'warning',
+      })
+        .then(async () => {
+          const res = await duplicateProject({
+            projId: this.project.id
+          });
+          if (res.meta.status == 0) {
+            ElMessage({
+              type: 'success',
+              message: '已复制',
+            });
+          } else {
+            ElMessage({
+              type: 'error',
+              message: '复制失败',
+            });
           }
-        )
-          .then(() => {
-            this.shallowDelete()
-            //假删除
-            this.$emit('delete', this.project.id)
+          this.$emit('update');
+        })
+        .catch(() => {
+          ElMessage({
+            type: 'info',
+            message: '取消复制',
+          });
+        });
+    },
+
+    async openDelete() {
+      ElMessageBox.confirm(`确认删除 「${this.project.name}」吗?`, 'Warning', {
+        confirmButtonText: '确认',
+        cancelButtonText: '取消',
+        type: 'warning',
+      })
+        .then(async () => {
+          const res = await updateStatus({
+            status: 1,
+            projects: [this.project.id],
+          })
+          if (res.meta.status == 0) {
             ElMessage({
               type: 'success',
               message: '已删除',
-            })
-          })
-          .catch(() => {
+            });
+          } else {
             ElMessage({
-              type: 'info',
-              message: '取消删除',
-            })
-          })
-      }
+              type: 'error',
+              message: '删除失败',
+            });
+          }
+          this.$emit('update');
+        })
+        .catch(() => {
+          ElMessage({
+            type: 'info',
+            message: '取消删除',
+          });
+        });
+    }
   },
-  mounted(){
-    
-  }
+  mounted() {
+  },
+  components: { CopyDocument }
 };
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .doc-card {
   margin: 10px;
   width: 22%;
@@ -140,6 +253,15 @@ export default {
   text-overflow: ellipsis;
 }
 
+.doc-create-time {
+  margin: 10px;
+  margin-bottom: 2px;
+  font-size: 14px;
+  color: #777777;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .doc-buttom-group {
   position: absolute;
   bottom: 10px;
@@ -161,19 +283,63 @@ export default {
   transform: translateY(150%);
 }
 
-/* 删除按钮 */
-.delete-button {
-  position: absolute; /* 添加绝对定位 */
+.button-wrapper {
+  position: absolute;
   top: 10px;
   right: 10px;
-  font-size: 24px;
-  color: red;
-  cursor: pointer;
-  display:none; /* Initially, the delete button is hidden */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100px;
+  height: 30px;
+  z-index: 1;
+  display: none;
+
+  .edit-button {
+    font-size: 24px;
+    color: #0099cc;
+    cursor: pointer;
+  }
+
+  .copy-button {
+    font-size: 24px;
+    color: #339933;
+    cursor: pointer;
+  }
+
+  .delete-button {
+    font-size: 24px;
+    color: red;
+    cursor: pointer;
+  }
 }
 
+/* 删除按钮 */
+
 /* When mouse hovers over the box, the delete button is displayed */
-.doc-card:hover .delete-button {
-  display: block;
+.doc-card:hover .button-wrapper {
+  display: flex;
+}
+
+.proj-name-wrapper {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+
+  span {
+    width: 64px;
+    margin-right: 20px;
+  }
+}
+
+.proj-desc-wrapper {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+
+  span {
+    width: 64px;
+    margin-right: 20px;
+  }
 }
 </style>

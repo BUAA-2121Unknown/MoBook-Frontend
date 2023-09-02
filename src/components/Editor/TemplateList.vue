@@ -15,13 +15,8 @@
       <div class="design-list">
         <el-row :gutter="10">
           <el-col v-for="item in projectDesignList" :key="item.id" :span="8">
-            <TemplateCard
-              :design="item"
-              :projId="projId"
-              :loadHandler="handleClose"
-              :isDefault="false"
-              :fatherHandler="getList"
-            ></TemplateCard>
+            <TemplateCard :design="item" :projId="projId" :loadHandler="handleClose" :isDefault="false"
+              :fatherHandler="getList"></TemplateCard>
           </el-col>
         </el-row>
       </div>
@@ -32,12 +27,7 @@
       <div class="design-list">
         <el-row :gutter="10">
           <el-col v-for="item in defaultDesignList" :key="item.id" :span="8">
-            <TemplateCard
-              :design="item"
-              :projId="projId"
-              :loadHandler="handleClose"
-              :isDefault="true"
-            ></TemplateCard>
+            <TemplateCard :design="item" :projId="projId" :loadHandler="handleClose" :isDefault="true"></TemplateCard>
           </el-col>
         </el-row>
       </div>
@@ -59,6 +49,7 @@ export default {
   components: {
     TemplateCard,
   },
+  props: ['itemId'],
   computed: mapState([
     "componentData",
     "curComponent",
@@ -86,7 +77,7 @@ export default {
           value = value ? value : '未命名模板'
           // 执行保存函数
           this.createTemplate(value);
-    
+
           ElMessage({
             type: "success",
             message: "原型设计已保存至团队模板",
@@ -99,46 +90,40 @@ export default {
           });
         });
     },
-    // 保存模板的实际实现函数 实际上为创建一个原型设计
+    // y保存模板的实际实现函数 实际上为创建一个原型设计
     async createTemplate(name) {
-      const userStore = useUserStore();
       const data = {
-        projId: userStore.projectId,
-        name: name,
-        type: "t",
+        projId: this.projId,
+        itemId: this.itemId,
+        filename: name,
+        prop: 3,
         live: false,
+        sibling: true,
+        content: JSON.stringify({
+          canvasData: { array: this.componentData },
+          canvasStyle: this.canvasStyleData,
+        }),
       };
       try {
         // 创建原型设计
         const res = await createPrototype(data);
         console.log("成功创建原型设计模板", res);
-        // 创建之后立即初始化一次原型设计的内容
-        const data2 = {
-          artId: res.data.id,
-          filename: "prototype_template_" + res.data.id + ".json",
-          content: JSON.stringify({
-            canvasData: { array: this.componentData },
-            canvasStyle: this.canvasStyleData,
-          }),
-        };
-        const res2 = await savePrototype(data2);
-        console.log("成功初始化原型设计模板", res2);
-        // 再获取一次列表
         this.getList();
       } catch (e) {
         console.log(e);
       }
     },
 
-    // 获取全部项目模板列表
+    // y获取全部项目模板列表
     async getList() {
       const params = {
         projId: this.projId,
+        status: 0,
       };
       try {
         const res = await getPrototypeList(params);
-        this.projectDesignList = res.data.artifacts.filter(function (item) {
-          return item.isLive === false && item.type == "t";
+        this.projectDesignList = res.data.filter(function (item) {
+          return item.data.prop == 3;
         });
         console.log("成功导入原型设计模板列表", res, this.projectDesignList);
       } catch (e) {
@@ -151,9 +136,9 @@ export default {
       console.log('导入默认模板列表', this.defaultDesignList)
     },
     // 将指定模板在前端假移除
-    handleDel(id){
+    handleDel(id) {
       this.projectDesignList = this.projectDesignList.filter(function (item) {
-          return item.id != id;
+        return item.id != id;
       });
     }
   },
