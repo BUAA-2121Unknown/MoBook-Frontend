@@ -205,6 +205,7 @@ const addItem = async (type, prop) => {
       'prop': newItem.data.prop,
       'live': true,
       'sibling': false,
+      'content': '',
     })
     if (res.meta.status == 0) {
       ElMessage({

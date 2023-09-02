@@ -22,6 +22,7 @@ export const createFile = (data) => {
     'prop',         // 文件类型：1 为文档，2 为原型设计
     'live',         // 是否可共享
     'sibling',      // 是否为同级文件
+    'content',      // 文件内容
   ]
   return service({
     url: 'artifact/create/file',
