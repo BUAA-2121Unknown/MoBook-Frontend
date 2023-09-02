@@ -163,6 +163,7 @@ export default {
     },
     // 跳转到消息
     jumpForMessage() {
+      this.readMessage()
       console.log("从消息中心跳转：");
       // let str = settings.appURL;
       switch (this.type) {
@@ -171,7 +172,7 @@ export default {
           this.$router.push({
             path: "/chat",
             query: {
-              roomId: this.info.chat.id,
+              roomId: this.info.payload.chat.id,
               id: this.info.id
             }
           })
@@ -180,7 +181,7 @@ export default {
           this.$router.push({
             path: "/chat",
             query: {
-              roomId: this.info.chat.id,
+              roomId: this.info.payload.chat.id,
               id: this.info.id
             }
           })

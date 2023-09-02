@@ -48,6 +48,7 @@ export default {
 <style scoped>
 .cursor-container {
     display: flex;
+    z-index: 10;
 }
 
 .cursor-pointer {
