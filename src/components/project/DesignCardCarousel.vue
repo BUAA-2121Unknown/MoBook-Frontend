@@ -72,7 +72,7 @@ export default {
     },
   },
   mounted() {
-    this.data = lodash.cloneDeep(this.design);
+    this.data = lodash.cloneDeep(this.design.data);
     this.data.url = designImg;
     // console.log('成功加载原型设计卡片',this.data)
   },

@@ -1,16 +1,9 @@
 <!-- 项目原型设计的卡片组件 -->
 <template>
   <div class="design-card" @mouseenter="expandCard" @mouseleave="shrinkCard">
-    <div
-      class="design-image-container"
-      :style="{ backgroundImage: `url(${data.img})`, height: imageHeight }"
-      @click="designHandler"
-    ></div>
-    <div
-      class="design-text-container"
-      :style="{ height: textHeight }"
-      @click="designHandler"
-    >
+    <div class="design-image-container" :style="{ backgroundImage: `url(${data.img})`, height: imageHeight }"
+      @click="designHandler"></div>
+    <div class="design-text-container" :style="{ height: textHeight }" @click="designHandler">
       <div class="design-title">{{ data.name }}</div>
       <div v-if="expanded" class="design-intro">
         创建于 | {{ data.created }}
@@ -22,16 +15,13 @@
     <transition name="slide-up">
       <el-row class="mb-4 doc-buttom-group" v-if="expanded && !isDefault">
         <DelButton :fatherHandler="fatherHandler" :design="design"></DelButton>
-        <ModifyButton
-          :fatherHandler="changeData"
-          :design="design"
-        ></ModifyButton>
+        <ModifyButton :fatherHandler="changeData" :design="design"></ModifyButton>
       </el-row>
     </transition>
   </div>
 </template>
   
-  <script>
+<script>
 import designImg from "@/assets/project/projectDesignImg.png";
 import DelButton from "./button/DelButton.vue";
 import ShareButton from "./button/ShareButton.vue";
@@ -54,13 +44,13 @@ export default {
     return {
       expanded: false,
       data: {
-        id: "",
         name: "",
-        intro: "",
-        img: "",
+        status: "",
+        created: "",
+        updated: "",
+        url: "",
       },
       dialogFormVisible: false,
-      projId: 0,
     };
   },
   computed: {
@@ -89,7 +79,7 @@ export default {
           val = JSON.parse(res.data.content);
           console.log("原型设计：尝试读取自定义模板", res, val, this.design.id);
         }
-        else{
+        else {
           val = JSON.parse(this.design.content);
           console.log("原型设计：读取默认模板", val, this.design.id);
         }
@@ -143,17 +133,23 @@ export default {
     },
   },
   mounted() {
-    this.data = lodash.cloneDeep(this.design);
-    this.data.img = this.data.img ? this.data.img : designImg;
-
-    const userStore = useUserStore()
-    this.projId = userStore.projectId
-    // console.log("成功加载原型设计模板", this.data);
+    if (this.design) {
+      if (this.design.data) {
+        this.data = lodash.cloneDeep(this.design.data);
+        this.data.img = this.data.img ? this.data.img : designImg;
+      }
+      else {
+        this.data = lodash.cloneDeep(this.design);
+      }
+    }
+    // const userStore = useUserStore()
+    // this.projId = userStore.projectId
+    console.log("成功加载原型设计模板", this.data);
   },
 };
 </script>
     
-  <style scoped>
+<style scoped>
 .design-card {
   margin: 20px 0;
   width: 300px;
