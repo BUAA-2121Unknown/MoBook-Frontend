@@ -66,8 +66,8 @@ const tourCurrent = ref(0)
 const tourSteps = [
   {
     el: () => document.getElementById("tour-prototype-step-0"),
-    title: "成员信息",
-    message: "这里是团队成员的信息，你可以在这里修改成员的权限，或者移除成员。",
+    title: "菜单栏",
+    message: "这里是原型设计的菜单栏，你可以在这里执行撤销与重做、导出文件为图片、代码等。",
     mask: {
       color: "rgba(0, 0, 0, .8)",
     },
@@ -75,8 +75,8 @@ const tourSteps = [
   },
   {
     el: () => document.getElementById("tour-prototype-step-1"),
-    title: "菜单栏",
-    message: "这里是菜单栏，你可以在这里切换功能进行团队信息查看、与团队成员聊天、创建团队项目、查看或切换团队。",
+    title: "模板库",
+    message: "这里是模板库，你可以在此导入丰富的预制模板，并且可以创建、导入自定义模板",
     mask: {
       color: "rgba(0, 0, 0, .8)",
     },
@@ -84,8 +84,8 @@ const tourSteps = [
   },
   {
     el: () => document.getElementById("tour-prototype-step-2"),
-    title: "菜单栏",
-    message: "这里是菜单栏，你可以在这里切换功能进行团队信息查看、与团队成员聊天、创建团队项目、查看或切换团队。",
+    title: "绘画工具栏",
+    message: "这里是绘画工具栏，你可以在这里拖拽元素到画布上来进行原型设计。",
     mask: {
       color: "rgba(0, 0, 0, .8)",
     },
@@ -93,8 +93,8 @@ const tourSteps = [
   },
   {
     el: () => document.getElementById("tour-prototype-step-3"),
-    title: "菜单栏",
-    message: "这里是菜单栏，你可以在这里切换功能进行团队信息查看、与团队成员聊天、创建团队项目、查看或切换团队。",
+    title: "图层栏",
+    message: "这里是图层栏，你可以在此查看当前画布中的元素，调节图层顺序，以及删除元素。",
     mask: {
       color: "rgba(0, 0, 0, .8)",
     },
