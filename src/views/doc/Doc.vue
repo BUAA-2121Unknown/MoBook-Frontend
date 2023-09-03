@@ -391,6 +391,7 @@ const shareLink = () => {
 
 const callEditorMethodSave = () => {
   emitter.emit('save')
+  ElMessage.success("成功保存")
 }
 
 const callEditorMethodExportToWord = async () => {
