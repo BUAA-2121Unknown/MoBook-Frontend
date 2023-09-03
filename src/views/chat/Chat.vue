@@ -480,7 +480,7 @@ export default {
       const str = this.currentUserId + "/" + userStore.orgId + '/';
       // const str = "";
       return {
-        url: "ws://82.156.25.78:5000/ws/chats/" + str,
+        url: "ws://81.70.161.76/ws/chats/" + str,
       };
     },
     wsCfg() {
@@ -489,7 +489,7 @@ export default {
       const str = this.roomId + "/";
       // const str = "";
       return {
-        url: "ws://82.156.25.78:5000/ws/chat/" + str,
+        url: "ws://81.70.161.76/ws/chat/" + str,
       };
     },
     listCount() {
