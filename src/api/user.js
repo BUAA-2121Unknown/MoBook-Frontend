@@ -82,3 +82,14 @@ export const changeLastOrg = (data) => {
     data: fmtForm(data, form)
   })
 }
+
+/**
+ * @params: { type: 1 }
+ */
+export const updateGuide = (params) => {
+  return service({
+    url: 'user/guide',
+    method: 'get',
+    params: params
+  })
+}

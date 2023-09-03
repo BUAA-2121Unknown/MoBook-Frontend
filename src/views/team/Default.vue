@@ -199,6 +199,7 @@ import { Search } from '@element-plus/icons-vue'
 import { updateOrgMemberInfo, deleteOrgMember, updateOrgInfo } from '@/api/org'
 import AvatarUpload from '@/components/avatar/AvatarUpload.vue'
 import emitter from '@/utils/emitter'
+import { updateGuide } from '@/api/user'
 
 
 // 新手指引相关
@@ -209,7 +210,7 @@ const tourSteps = [
   {
     el: () => document.getElementById("tour-step-0"),
     title: "成员信息",
-    message: "这里是团队成员的信息，你可以在这里修改成员的权限，或者移除成员。",
+    message: "这里是团队成员的信息，你可以在这里查看团队的成员信息。若你拥有管理权限，你可以修改成员的权限，或者移除成员。",
     mask: {
       color: "rgba(0, 0, 0, .8)",
     },
@@ -218,7 +219,7 @@ const tourSteps = [
   {
     el: () => document.getElementById("tour-step-1"),
     title: "菜单栏",
-    message: "这里是菜单栏，你可以在这里切换功能进行团队信息查看、与团队成员聊天、创建团队项目、查看或切换团队。",
+    message: "这里是菜单栏，你可以在这里切换功能进行团队信息查看、与团队成员聊天、创建团队项目、查看或切换团队等。",
     mask: {
       color: "rgba(0, 0, 0, .8)",
     },
@@ -286,12 +287,16 @@ const copyInviteLink = () => {
   dialogVisible.value = false
 }
 
-onMounted(() => {
+onMounted(async () => {
   GetOrgInfo()
 
-  // 开启新手指引 TODO：判断权限位
-  showTour.value = true
-  tourCurrent.value = 0
+  const res = await updateGuide({ type: 0 })
+  console.log(res)
+  if (res.meta.status == 0) {
+    // 开启新手指引 TODO：判断权限位
+    showTour.value = !res.data.value
+    tourCurrent.value = 0
+  }
 })
 
 onActivated(() => {
