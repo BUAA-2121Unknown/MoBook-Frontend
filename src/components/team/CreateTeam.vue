@@ -102,9 +102,11 @@ const handlePictureCardPreview = (uploadFile) => {
 }
 
 const createTeam = async () => {
+  console.log('emit1')
   // TODO
   try {
     const res = await createOrg(form.value)
+    console.log('emit', res)
     if (res.meta.status == 0) {
       const orgId = res.data.id
       console.log(orgId)

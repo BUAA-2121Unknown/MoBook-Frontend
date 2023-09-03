@@ -20,7 +20,7 @@
       <el-row :gutter="10">
         <el-col :span="5" class="avatar-container">
           <!-- 头像 -->
-          <img :src="projectAvatarUrl" class="project-header-avatar" />
+          <img :src="projectInfo.avatarUrl" class="project-header-avatar" />
         </el-col>
         <el-col :span="19">
           <!-- 名称 -->
@@ -215,7 +215,7 @@ export default {
   /* 边框 */
   /* border: 2px solid rgba(255, 255, 255, 0.8);
   box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.2); */
-  object-fit: cover;
+  /* object-fit: cover; */
   z-index: 5;
 }
 
