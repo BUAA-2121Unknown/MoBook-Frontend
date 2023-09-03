@@ -1,55 +1,75 @@
-<script  setup>
-
-</script>
-
 <template>
-	<div class="message-demo-block">
+	<div v-if="this.show" class="message-demo-block">
 		<div class="message-demo-avatar">
-			<el-image style="width: 40px; height: 40px; border-radius: 5px;" :src="this.url" :zoom-rate="1.2" :initial-index="4"
+			<el-image style="width: 40px; height: 40px; border-radius: 5px;" :src="url" :zoom-rate="1.2" :initial-index="4"
 				fit="cover" />
 		</div>
 		<div class="message-demo-name">
-			<span class="name-text">{{ this.name }}</span>
+			<span class="name-text">{{ this.messageList.name }}</span>
 		</div>
 		<div class="message-demo-time">
-			<span class="time-text">{{ this.time }}</span>
+			<span class="time-text">{{ this.messageList.time }}</span>
 		</div>
 		<div class="message-demo-content">
-			<span class="content-text">
+			<span v-if="this.type == '0'" class="content-text">
 				{{ this.content }}
 			</span>
-			<!-- <el-image style="width:400px; height: 280px;" :src="image" :zoom-rate="1.2" :preview-src-list="srcList"
-				fit="scale-down" /> -->
-			<!-- <vue3VideoPlay v-bind="options" poster='https://cdn.jsdelivr.net/gh/xdlumia/files/video-play/ironMan.jpg' /> -->
+			<el-image v-if="this.type == '1'" :src="image" :zoom-rate="1.2" :preview-src-list="srcList" fit="scale-down" />
 
-			<!-- <div class="message-demo-content-file" @click="openFile(this.fileUrl)">
+			<vue3VideoPlay v-if="this.type == '2'" v-bind="options" />
+
+			<div v-if="this.type == '3'" class="message-demo-content-file" @click="openFile(this.fileUrl)">
 				<el-image style="width: 110px; height: 110px; margin-top: 5px;margin-left: 5px;"
 					src="https://img.sj33.cn/uploads/202010/7-20100410005BR.jpg" :fit="fit" />
 				<div class="file-name-text">
-					<span class="file-name-text-style">军事理论.doc</span>
+					<span class="file-name-text-style">{{ this.filename }}</span>
 				</div>
 				<div class="file-tag-moBook">
 					<span style="font-size: 12px;color: #949494;">墨书文件</span>
 				</div>
-			</div> -->
+			</div>
+
+			<div v-if="this.type == '4'" class="message-demo-forward" @click="this.show = false">
+				<ForwardInfo :content="content" :son_list="son_list"></ForwardInfo>
+			</div>
 		</div>
 	</div>
 </template>
 
 <script >
+import ForwardInfo from './ForwardInfo.vue';
 import { reactive } from 'vue';
 export default {
 	props: {
-		// value: Boolean,
+		messageList: Array,
+	},
+	components: {
+		ForwardInfo,
+	},
+	mounted() {
+		// this.checkType(this.message);
+		this.son_list = null;
+		this.content = '';
+		console.log('传递给子组件', this.messageList);
+		this.type = this.messageList.message_type;
+		this.messageId = this.messageList.messageId;
+		this.url = this.messageList.avatar;
+		this.chooseShow();
+	},
+	created() {
 	},
 	data() {
 		return {
+			show: true,
+			son_list: [],
+			messageId: '',
+			type: '',
 			options: reactive({
 				width: '360px', //播放器高度
 				height: '240px', //播放器高度
 				color: "#409eff", //主题色
 				title: '', //视频名称
-				src: "https://cdn.jsdelivr.net/gh/xdlumia/files/video-play/IronMan.mp4", //视频源
+				src: "", //视频源
 				muted: false, //静音
 				webFullScreen: false,
 				speedRate: ["0.75", "1.0", "1.25", "1.5", "2.0"], //播放倍速
@@ -61,28 +81,56 @@ export default {
 				control: true, //是否显示控制
 				controlBtns: ['audioTrack', 'quality', 'speedRate', 'volume', 'setting', 'fullScreen'] //显示所有按钮,
 			}),
-			content: '妈 我在外边打工好累啊，我只是一个戴着帽子的僵尸，每次冲锋都是我走在前面，我们公司大老板僵王告诉我要努力这样我才能升级加薪，血量才能变多，妈今天我们公司又来攻打植物了，豌豆的种子一颗一颗打在我身上，好疼啊，妈妈，但是我又觉得他们没有错。小时候总是在爸爸的肩膀上看着同村的叔叔阿姨往前冲，现在我长大了，进公司了，本想着能换个方式活着，不用像你们那么累了，但是妈妈，我发现我好像还是重复走着以前的路，爸爸妈妈，今天我又要去打工了，老板今天下了死命令，让我吃到戴夫家的脑子，又是我一个人冲锋，我的面前有一排排的坚果，妈妈你总说我高，但是他们比我还高，我戴着帽子努力的吃，但是感觉好无力，公司里没有人来帮我妈妈，我吃的好撑，小时候您总告诉我不要吃撑了。妈妈，钱好难挣啊，脑子好难吃啊，妈妈给您写这段话的时候我还在吃着第一颗坚果，小时候您带我补的牙都掉了妈妈，妈妈我的嘴吃的好疼啊，我看到植物栏上有好多灰烬植物妈妈，妈妈我好害怕，我不知道这些植物会不会用到我身上，妈妈先不说了，我要快点吃了，不然老板会扣我工资的。妈妈再见，安康，爱你的帽帽。',
-			time: '08-31 20:44',
-			name: '秋子夜',
-			url: 'https://picx.zhimg.com/80/v2-751e1e7b100ac74d741f6095096e7d43_720w.webp?source=1940ef5c',
-			image: 'https://pic2.zhimg.com/v2-dc5eda37f0dc2990c81107be154c4b29_r.jpg',
-			// image: 'https://th.bing.com/th?id=OIP.j1QJ73AX7jMZhltZ35RLLAHaG-&w=257&h=242&c=8&rs=1&qlt=90&o=6&dpr=1.3&pid=3.1&rm=2',
-			srcList: ['https://pic2.zhimg.com/v2-dc5eda37f0dc2990c81107be154c4b29_r.jpg'],
+			content: '或许有一天，你会把我们的故事与她诉说，好在山穷水尽之时遇见你，她虽教会你长大，却不是对的人，还总是上演机场与船的故事。  三五成群的日子并不是很多，即使缘分使之相遇，又突然分道扬镳，只剩下那些未完成的梦，和你走过的路，最后青春也只属于一场放肆。',
+			url: '',
+			image: '',
+			srcList: [],
 			fileUrl: 'https://www.gjtool.cn/pdfh5/git.pdf',
+			filename: '',
 		};
 	},
 	methods: {
 		openFile(fileUrl) {
 			window.open(fileUrl, '_blank');
+		},
+		chooseShow() {
+			if (this.type == '0') {
+				this.content = this.messageList.content;
+			} else if (this.type == '1') {
+				this.image = this.messageList.image;
+				this.srcList.push(this.image);
+			} else if (this.type == '2') {
+				this.options.src = this.messageList.src;
+			} else if (this.type == '3') {
+				this.fileUrl = this.messageList.fileUrl;
+				this.filename = this.messageList.filename;
+			} else if (this.type == '4') {
+				this.content = this.messageList.content;
+				this.son_list = this.messageList.son_list;
+			}
 		}
 	}
 }
 </script>
 <style scoped>
+.message-demo-forward {
+	border-radius: 5px;
+	background-color: transparent;
+	width: 240px;
+	height: 80px;
+	cursor: pointer;
+}
+
+/* .message-demo-forward-up {
+	width: 210px;
+	background-color: rgb(179, 179, 179);
+} */
+
 .file-tag-moBook {
 	position: absolute;
-	bottom: 5px;
-	right: 140px;
+	display: flex;
+	bottom: 10px;
+	margin-left: 250px
 }
 
 .file-name-text-style {
@@ -90,9 +138,9 @@ export default {
 }
 
 .file-name-text {
-	position: absolute;
-	top: 20px;
-	left: 120px;
+	position: relative;
+	top: -100px;
+	left: 110px;
 	max-width: 180px;
 	max-height: 60px;
 	background-color: #ffffff;
@@ -104,6 +152,7 @@ export default {
 }
 
 .message-demo-content-file {
+	position: relative;
 	width: 320px;
 	height: 120px;
 	background-color: #ffffff;
@@ -112,10 +161,10 @@ export default {
 }
 
 .message-demo-time {
-	position: absolute;
+	position: relative;
 	display: flex;
-	top: 7px;
-	right: 10px;
+	top: -70px;
+	right: -450px;
 	width: 90px;
 	height: 25px;
 	background-color: transparent;
@@ -138,13 +187,13 @@ export default {
 }
 
 .message-demo-name {
-	position: absolute;
+	position: relative;
 	display: flex;
-	top: 7px;
+	top: -42px;
 	left: 60px;
 	max-width: 300px;
 	height: 25px;
-	background-color: #c3e6db30;
+	background-color: transparent;
 	text-align: center;
 	align-items: center;
 	/* 添加额外的左边距 */
@@ -163,20 +212,18 @@ export default {
 }
 
 .message-demo-block {
-	position: absolute;
-	margin-top: -400px;
-	margin-left: 500px;
+	/* margin-top: -400px;
+	margin-left: 500px; */
 	width: 540px;
-	background-color: #ebebeb;
+	background-color: transparent;
 }
 
 .message-demo-content {
-	margin-top: -8px;
 	position: relative;
+	margin-top: -60px;
 	width: 450px;
 	left: 60px;
 	background-color: transparent;
-	margin-bottom: 10px;
 }
 
 .content-text {

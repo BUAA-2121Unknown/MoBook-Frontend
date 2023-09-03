@@ -59,6 +59,7 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { Tour } from "vue3-quick-tour"
+import { updateGuide } from '@/api/user'
 const showTour = ref(false)
 const tourCurrent = ref(0)
 
@@ -85,27 +86,33 @@ const tourSteps = [
   {
     el: () => document.getElementById("tour-prototype-step-2"),
     title: "绘画工具栏",
-    message: "这里是绘画工具栏，你可以在这里拖拽元素到画布上来进行原型设计。",
+    message: "这里是绘画工具栏，你可以在这里拖拽元素到画布上来进行原型设计，调节图层顺序，以及删除元素。",
     mask: {
       color: "rgba(0, 0, 0, .8)",
     },
     placement: "right",
   },
-  {
-    el: () => document.getElementById("tour-prototype-step-3"),
-    title: "图层栏",
-    message: "这里是图层栏，你可以在此查看当前画布中的元素，调节图层顺序，以及删除元素。",
-    mask: {
-      color: "rgba(0, 0, 0, .8)",
-    },
-    placement: "right",
-  },
+  // {
+  //   el: () => document.getElementById("tour-prototype-step-3"),
+  //   title: "图层栏",
+  //   message: "这里是图层栏，你可以在此查看当前画布中的元素，调节图层顺序，以及删除元素。",
+  //   mask: {
+  //     color: "rgba(0, 0, 0, .8)",
+  //   },
+  //   placement: "right",
+  // },
 ]
 
 // 开始指引
-onMounted(() => {
-  showTour.value = true
-  tourCurrent.value = 0
+onMounted(async () => {
+  // 开启新手指引 TODO：判断权限位
+  const res = await updateGuide({ type: 0 })
+  console.log(res)
+  if (res.meta.status == 0) {
+    // 开启新手指引 TODO：判断权限位
+    showTour.value = !res.data.value
+    tourCurrent.value = 0
+  }
 })
 </script>
 

@@ -1,7 +1,7 @@
 <template>
   <div class="main-wrapper">
     <div class="header-wrapper">
-      <div class="breadcrumb-wrapper">
+      <div class="breadcrumb-wrapper" id="tour-file-step-1">
         <el-breadcrumb :separator-icon="ArrowRight" class="breadcrumb-item-wrapper">
           <el-breadcrumb-item v-for="item in pathInfo" :key="item.id" @click="breadClickHandler(item.id)"
             class="breadcrumb-item-wrapper">
@@ -36,7 +36,7 @@
 
     <div v-for="item in dataSource" :key="item.id">
       <!-- <div @dblclick="doubleClickHandler(item.id, item)"> -->
-      <drag @drag="dragHandler(item.id, ...arguments)">
+      <drag @drag="dragHandler(item.id, ...arguments)" id="tour-file-step-0">
         <!-- 可 drop -->
         <!-- TODO: drag 时设置自己为不可 drop-->
         <drop v-if="item.data.type === 1" @drop="dropHandler(item.id, ...arguments)">
@@ -48,6 +48,17 @@
       <!-- </div> -->
     </div>
   </div>
+
+
+  <Tour
+    :steps="tourSteps"
+    mask
+    arrow
+    v-model:show="showTour"
+    v-model:current="tourCurrent"
+    :padding="{ x: 10, y: 6 }"
+  />
+
 </template>
 
 <script>
@@ -66,6 +77,33 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import emitter from '@/utils/emitter'
 import { createNewItem } from './helper'
 import { useRouter } from 'vue-router'
+
+
+import { updateGuide } from '@/api/user'
+import { Tour } from "vue3-quick-tour"
+const showTour = ref(false)
+const tourCurrent = ref(0)
+const tourSteps = [
+  {
+    el: () => document.getElementById("tour-file-step-0"),
+    title: "文件列表",
+    message: "在这里你可以拖动文件到文件夹，双击打开文件或文件夹，右键可以重命名或删除文件",
+    mask: {
+      color: "rgba(0, 0, 0, .8)",
+    },
+    placement: "top",
+  },
+  {
+    el: () => document.getElementById("tour-file-step-1"),
+    title: "文件路径",
+    message: "这是当前的文件路径，点击可以返回上级目录，或将文件拖拽至此处移动文件",
+    mask: {
+      color: "rgba(0, 0, 0, .8)",
+    },
+    placement: "right",
+  },
+]
+
 
 const props = defineProps({
   itemProperty: {
@@ -117,6 +155,15 @@ onMounted(async () => {
   path.value.push(root?.value?.id || 1)
   pathInfo.value.push(root?.value || testRoot)
   console.log(dataSource.value)
+
+  // 开启新手指引 TODO：判断权限位
+  const res = await updateGuide({ type: 0 })
+  console.log(res)
+  if (res.meta.status == 0) {
+    // 开启新手指引 TODO：判断权限位
+    showTour.value = !res.data.value
+    tourCurrent.value = 0
+  }
 })
 
 const updatePath = async (op, itemId = 0) => {

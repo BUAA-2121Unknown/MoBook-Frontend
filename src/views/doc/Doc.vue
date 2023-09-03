@@ -14,12 +14,12 @@
           <div class="avatars">
           </div>
 
-          <div class="operations">
-            <el-button type="primary" @click="templateVisible = !templateVisible">模板库</el-button>
-            <el-button type="primary" @click="dialogFormVisible = true">分享</el-button>
-            <el-button type="primary" @click="showVersions">历史版本</el-button>
-            <el-button type="primary" @click="callEditorMethodSave">保存</el-button>
-            <el-dropdown>
+          <div class="operations actions">
+            <el-button class="action" type="info" @click="templateVisible = !templateVisible">模板库</el-button>
+            <el-button class="action" type="danger" @click="dialogFormVisible = true">分享</el-button>
+            <el-button class="action" type="warning" @click="showVersions">历史版本</el-button>
+            <el-button class="action" type="success" @click="callEditorMethodSave">保存</el-button>
+            <el-dropdown class="action">
               <el-button type="primary">
                 导出<el-icon class="el-icon--right"><arrow-down /></el-icon>
               </el-button>
@@ -209,7 +209,7 @@ import emitter from '@/utils/emitter'
 import { ArrowDown } from '@element-plus/icons-vue'
 import FileTree from '@/components/fileManager/FileTree.vue'
 import { useUserStore } from '@/stores/modules/user'
-import historyEditor  from '@/components/docEditor/historyEditor.vue'
+import historyEditor from '@/components/docEditor/historyEditor.vue'
 import * as Y from 'yjs'
 import { CircleCloseFilled } from '@element-plus/icons-vue'
 import docTemplate from '@/utils/docTemplate.js'
@@ -393,11 +393,11 @@ const callEditorMethodSave = () => {
   emitter.emit('save')
 }
 
-const callEditorMethodExportToWord = async() => {
+const callEditorMethodExportToWord = async () => {
   emitter.emit('exportToWord', "filename")
 }
 
-const callEditorMethodExportToPdf = async() => {
+const callEditorMethodExportToPdf = async () => {
   emitter.emit('exportToPdf', "filename")
 }
 
@@ -522,7 +522,7 @@ export default {
 <style lang="css" scoped>
 /* 编辑器的容器 */
 .editor-container {
-  margin: 0 auto;
+  margin: 20px auto;
   display: flex;
   box-sizing: border-box;
   flex-flow: column;
@@ -537,6 +537,11 @@ export default {
     'WenQuanYi Zen Hei', 'ST Heiti', SimHei, 'WenQuanYi Zen Hei Sharp',
     sans-serif;
 }
+
+.edit {
+  width: 90%;
+}
+
 
 /* 顶部栏 */
 .top-bar {
@@ -682,86 +687,25 @@ img {
   max-height: 100%;
 }
 
-.card {
-  width: 350px;
-  height: 100px;
-  position: relative;
-  border-radius: 16px;
-  background: #f5f5f5;
-  transition: box-shadow .3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  overflow: hidden;
-  cursor: pointer;
-}
-
-.card-img {
-  position: absolute;
-  height: 100%;
-  width: 100%;
-  background-color: #d3e3ec;
-}
-
-.card-info {
-  position: absolute;
-  width: 100%;
-  bottom: 0;
-  padding: 1rem;
+.operations.actions {
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
+  grid-row: 5px;
 }
 
-.card-icon {
-  opacity: 0;
-  transform: translateX(-20%);
-  width: 2em;
-  height: 2em;
-  transition: all .3s ease-in-out;
+.operations.actions .action {
+  flex: 1;
+  padding: auto 20px;
+  margin: 0 5px;
 }
 
-.icon {
-  --size: 20px;
-  width: var(--size);
-  height: var(--size);
+.el-button+.el-button {
+  margin: auto;
 }
 
-/*Text*/
-.card-text p {
-  line-height: 140%;
-  /*Delete this line for multi-line text*/
-  white-space: nowrap;
+.el-dropdown.action {
+  overflow: visible;
 }
 
-.text-title {
-  font-weight: 900;
-  font-size: 1.2rem;
-  color: #222;
-}
-
-.text-subtitle {
-  color: rgba(35, 35, 35, 0.3);
-  /* color: #333; */
-  font-weight: 500;
-  font-size: 14px
-}
-
-/*Hover*/
-.card:hover {
-  box-shadow: 0 10px 20px 4px rgba(35, 35, 35, .1);
-}
-
-.card:hover .card-icon {
-  opacity: 1;
-  transform: translateX(20%);
-}
-
-.version-title{
-  color: rgba(33, 35, 36, 0.6);
-  font-size: 24px;
-  font-weight: 600;
-  margin: 10px 10px 10px 0;
-  padding: 5px;
-  border-radius: 5px;
-  background-color: rgb(236, 250, 250, 0.4);
-}
+/* Editor */
 </style>
   

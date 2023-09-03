@@ -16,7 +16,7 @@
         <el-row :gutter="10">
           <el-col v-for="item in projectDesignList" :key="item.id" :span="8">
             <TemplateCard :design="item" :projId="projId" :loadHandler="handleClose" :isDefault="false"
-              :fatherHandler="getList"></TemplateCard>
+              :fatherHandler="fatherHandler"></TemplateCard>
           </el-col>
         </el-row>
       </div>
@@ -131,6 +131,11 @@ export default {
         console.log(e);
       }
     },
+
+    fatherHandler() {
+      this.getList()
+    },
+
     // 获取默认项目模板列表
     getDefaultTemplateList() {
       this.defaultDesignList = templateList

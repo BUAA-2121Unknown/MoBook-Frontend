@@ -42,3 +42,45 @@ export const requestChatRoom = (data) => {
 	})
 }
 
+
+export const requireForwardMessages = (data) => {
+	return service({
+		url: 'chat/transmit',
+		method: 'post',
+		data: data
+	})
+}
+
+export const requireMessageList = (data) => {
+	return service({
+		url: 'chat/get_record_content',
+		method: 'post',
+		data: data
+	})
+}
+
+export const inviteMember = (data) => {
+	return service({
+		url: 'chat/invite',
+		method: 'post',
+		data: data
+	})
+}
+
+
+
+export const removeMember = (data) => {
+	return service({
+		url: 'chat/remove',
+		method: 'post',
+		data: data
+	})
+}
+
+export const dismissRoom = (data) => {
+	return service({
+		url: 'chat/dismiss',
+		method: 'post',
+		data: data
+	})
+}
