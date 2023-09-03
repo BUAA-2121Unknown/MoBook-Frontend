@@ -8,7 +8,7 @@
           <label>团队名</label>
         </div>
         <div class="user-box">
-          <input required="" name="" type="password" v-model="form.description">
+          <input required="" name="" type="text" v-model="form.description">
           <label>团队简介</label>
         </div>
         <div class="user-box">
