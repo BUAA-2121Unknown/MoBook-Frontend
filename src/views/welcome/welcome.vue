@@ -82,7 +82,7 @@
                 <button @click="handleClick" class="button1">即刻体验</button>
             </div>
             <div class="img-side">
-                <img src="./assets/img/org-1.png" class="text-img">
+                <img src="./assets/img/chat-1.png" class="text-img">
             </div>
         </div>
         <div class="body4" style="">
