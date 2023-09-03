@@ -130,10 +130,10 @@ import Heading from '@tiptap/extension-heading'
 import { Node } from '@tiptap/core'
 import emitter from '@/utils/emitter'
 import { onBeforeUnmount, ref, toRefs } from 'vue';
-import  {convertToMarkdown}  from '@/utils/editor/html2markdown/exportToMd.js'
+import { convertToMarkdown } from '@/utils/editor/html2markdown/exportToMd.js'
+import { uploadDoc } from '@/api/artifact'
 import { convertHtmlToDocx } from '@/api/convertor'
 import FileSaver from 'file-saver';
-import { uploadDoc } from '@/api/artifact'
 
 const userStore = useUserStore()
 const userName = userStore.userInfo.username
@@ -203,8 +203,6 @@ const { paramsToEditor } = toRefs(props)
 const doc_id = paramsToEditor.value.itemId
 const projId = paramsToEditor.value.projId
 const version = paramsToEditor.value.version
-const tokenString = paramsToEditor.value.tokenString
-
 // console.log("paramsToEditorVersion" + paramsToEditor.value.version)
 if (editable.value)
   auth = "2"
@@ -216,6 +214,7 @@ provider.value = new HocuspocusProvider({
   document: ydoc,
   token: auth,
   parameters: {
+    auth: auth,
     doc_id: doc_id,
     projId: projId,
     version: version,
@@ -271,7 +270,7 @@ editor.value = new Editor({
   editable: editable.value,
 
   // 钩子函数
-  onUpdate({transaction}){
+  onUpdate({ transaction }) {
     // console.log(transaction)
     const title = transaction.doc.content.firstChild.content.firstChild?.textContent;
   }

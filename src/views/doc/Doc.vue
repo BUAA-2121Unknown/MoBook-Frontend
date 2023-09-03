@@ -8,7 +8,7 @@
               <ArrowLeftBold />
             </el-icon>
           </router-link>
-          <!-- {{ title }} -->
+          {{ title }}
         </div>
         <div class="top-bar__right">
           <div class="avatars">
@@ -58,8 +58,8 @@
         </el-dialog>
 
       </div>
-
-      <div class="body-container">
+      
+      <div class="body-container" v-if="fileTreeVisible">
         <FileTree></FileTree>
         <div class="editor-container">
           <editor :paramsToEditor="paramsToEditor" editable="editable" v-if="visible" ref="childRef" :showLive="true"
@@ -102,8 +102,7 @@
                       我的
                     </div>
                     <div v-else class="row" style="display: flex; flex-wrap: wrap;">
-                      <div class="box" v-for="item in docTemplate" :key="item.id" style="width: 20%;"
-                        @click="createFromTemplate(item.content)">
+                      <div class="box" v-for="item in docTemplate" :key="item.id" style="width: 20%;" @click="open(item.name, item.content)">
                         <div class="text">{{ item.name }}</div>
                         <img src="../../assets/template.png">
                       </div>
@@ -134,7 +133,7 @@
         </div>
         <div class="top-bar__right">
           <div class="operations">
-            <el-button type="primary" @click="restore">恢复此记录</el-button>
+            <el-button type="primary" @click="openStore">恢复此记录</el-button>
           </div>
 
         </div>
@@ -264,7 +263,15 @@ const templateVisible = ref(false)
 // 选择展示哪个版块
 const myTemplate = ref(false)
 
-const getFirstH1Value = async () => {
+const fileTreeVisible = ref(true)
+
+const changeFileTreeVisible = () => {
+  fileTreeVisible.value = !fileTreeVisible.value
+}
+emitter.on('changeFileTreeVisible', () => changeFileTreeVisible())
+
+
+const getFirstH1Value = async() => {
   const firstH1 = this.$el.querySelector('h1');
   if (firstH1) {
     this.firstH1Value = firstH1.innerText;
@@ -305,6 +312,7 @@ const getNowDocVersion = async () => {
     console.log(parseInt(doc_id))
     console.log(parseInt(userStore.projectId))
     const res = await getAllVersions({ itemId: parseInt(doc_id), projId: parseInt(userStore.projectId) })
+    title.value = res.data.name
     versionNum.value = res.data.totalVersion
   } catch (e) {
     console.log(e)
@@ -381,8 +389,9 @@ const shareLink = () => {
   createToken()
 }
 
-const callEditorMethodSave = async () => {
+const callEditorMethodSave = () => {
   emitter.emit('save')
+  ElMessage.success("成功保存")
 }
 
 const callEditorMethodExportToWord = async () => {
@@ -412,20 +421,68 @@ const restore = async () => {
   console.log(res)
 }
 
+const openStore = () => {
+  ElMessageBox.confirm(
+    '确定要导回这个版本的文档吗',
+    'Warning',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+    }
+  )
+    .then(() => {
+      restore()
+      router.push({
+        name: "doc",
+        query: {doc_id: doc_id}
+      })
+      ElMessage({
+        type: 'success',
+        message: 'Delete completed',
+      })
+    })
+    .catch(() => {
+      ElMessage({
+        type: 'info',
+        message: 'Delete canceled',
+      })
+    })
+}
 
+
+const open = (title, content) => {
+  ElMessageBox.confirm(
+    '确定以'+ title + '为模版创建吗',
+    {
+      confirmButtonText: '确认',
+      cancelButtonText: '取消',
+    }
+  )
+    .then(() => {
+      createFromTemplate(content)
+      ElMessage({
+        type: 'success',
+        message: '创建成功',
+      })
+    })
+    .catch(() => {
+      ElMessage({
+        type: 'info',
+        message: '取消创建',
+      })
+    })
+}
 // 创建模版
-// 从文档模版创建文件
-const createFromTemplate = async (content) => {
+// 从文档模版载入
+const createFromTemplate = async(content) => {
   const res = await createFile({
     'projId': userStore.projectId,
     'itemId': parseInt(doc_id),
-    'filename': "新建文档",
-    'prop': 1,
-    'live': true,
-    'sibling': true,
+    'version': 0,
     'content': JSON.stringify(content)
   })
   console.log(res)
+  templateVisible.value = !templateVisible.value
   // if (res.meta.status == 0) {
   //   console.log(res.data)
   //   ElMessage({
