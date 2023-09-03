@@ -1,6 +1,6 @@
 <!-- 模板块 -->
 <template>
-  <button @click="handleClick" class="template-button">模板库</button>
+  <button @click="handleClick" class="template-button" id="tour-prototype-step-1">模板库</button>
 
   <!-- 弹出窗 -->
   <el-dialog v-model="dialogTableVisible" title="模板库" width="70%">

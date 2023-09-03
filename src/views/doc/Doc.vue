@@ -8,12 +8,12 @@
               <ArrowLeftBold />
             </el-icon>
           </router-link>
-          <!-- {{ title }} -->
+          {{ title }}
         </div>
         <div class="top-bar__right">
           <div class="avatars">
           </div>
-          
+
           <div class="operations">
             <el-button type="primary" @click="templateVisible = !templateVisible">模板库</el-button>
             <el-button type="primary" @click="dialogFormVisible = true">分享</el-button>
@@ -32,12 +32,13 @@
               </template>
             </el-dropdown>
           </div>
-          
+
         </div>
-        <el-dialog v-model="dialogFormVisible" title="生成共享链接" width="30%" >
+        <el-dialog v-model="dialogFormVisible" title="生成共享链接" width="30%">
           <el-form :model="form">
             <el-form-item label="链接有效时间" :label-width="formLabelWidth">
-              <el-input-number v-model="num" :min="1" :max="14" @change="handleChange" size="small" /> <span style="margin-left: 10px">天</span>
+              <el-input-number v-model="num" :min="1" :max="14" @change="handleChange" size="small" /> <span
+                style="margin-left: 10px">天</span>
             </el-form-item>
             <el-form-item label="权限" :label-width="formLabelWidth">
               <el-radio-group v-model="radio1" class="ml-4">
@@ -49,7 +50,7 @@
           <template #footer>
             <span class="dialog-footer">
               <el-button @click="dialogFormVisible = false">取消</el-button>
-              <el-button type="primary" @click="shareLink" >
+              <el-button type="primary" @click="shareLink">
                 生成链接
               </el-button>
             </span>
@@ -61,27 +62,28 @@
       <div class="body-container" v-if="fileTreeVisible">
         <FileTree></FileTree>
         <div class="editor-container">
-          <editor :paramsToEditor="paramsToEditor" editable="editable" v-if="visible" ref="childRef" :showLive="true" :activeButtons="[
-            'bold',
-            'italic',
-            'strike',
-            'underline',
-            'code',
-            'h1',
-            'h2',
-            'h3',
-            'bulletList',
-            'orderedList',
-            'blockquote',
-            'codeBlock',
-            'horizontalRule',
-            'undo',
-            'redo',
-          ]" />
+          <editor :paramsToEditor="paramsToEditor" editable="editable" v-if="visible" ref="childRef" :showLive="true"
+            :activeButtons="[
+              'bold',
+              'italic',
+              'strike',
+              'underline',
+              'code',
+              'h1',
+              'h2',
+              'h3',
+              'bulletList',
+              'orderedList',
+              'blockquote',
+              'codeBlock',
+              'horizontalRule',
+              'undo',
+              'redo',
+            ]" />
         </div>
-      
+
       </div>
-      
+
       <div class="template-container">
         <el-dialog v-model="templateVisible" :show-close="false" close-on-click-modal="false" width="50%">
           <template #header="{ titleId, titleClass }">
@@ -92,8 +94,8 @@
               <div class="common-layout">
                 <el-container>
                   <el-aside width="200px">
-                    <div class="title" @click="myTemplate=false">默认模板</div>
-                    <div class="title" @click="myTemplate=true">我的模版</div>
+                    <div class="title" @click="myTemplate = false">默认模板</div>
+                    <div class="title" @click="myTemplate = true">我的模版</div>
                   </el-aside>
                   <el-main>
                     <div v-if="myTemplate">
@@ -131,9 +133,9 @@
         </div>
         <div class="top-bar__right">
           <div class="operations">
-            <el-button type="primary" @click="restore">恢复此记录</el-button>
+            <el-button type="primary" @click="openStore">恢复此记录</el-button>
           </div>
-          
+
         </div>
       </div>
 
@@ -141,17 +143,51 @@
         <el-row :gutter="20">
           <el-col :span="18">
             <div class="editor-version-container">
-              <historyEditor :paramsToEditor="paramsToEditor" :editable="versionEditable" ref="childRef" :showLive="false" :key="componentKey"/>
+              <historyEditor :paramsToEditor="paramsToEditor" :editable="versionEditable" ref="childRef" :showLive="false"
+                :key="componentKey" />
             </div>
           </el-col>
           <el-col :span="6">
+            <div class="version-title">
+              历史版本记录
+            </div>
             <div class="version-container">
               <el-scrollbar height="800px">
-                <div v-for="(version, key) in versions" class="scrollbar-demo-item" :key = "key" @click="chooseVersion(version.version)">
-                  <div>创建时间：{{ version.updated }}</div>
-                  <div>创建者: {{ version.user.username }}</div>
-                  <div>版本号: {{ version.version }}</div>
+                <div class="card" v-for="(version, key) in versions" :key="key" @click="chooseVersion(version.version)">
+                  <div class="card-img"></div>
+                  <div class="card-info">
+                    <div class="card-text">
+                      <p class="text-title"> Version | {{ version.version }}</p>
+                      <p class="text-subtitle">{{ version.user.username }} | {{ version.updated }}</p>
+                    </div>
+                    <div class="card-icon">
+                      <svg viewBox="0 0 28 25" class="icon">
+                        <path d="M13.145 2.13l1.94-1.867 12.178 12-12.178 12-1.94-1.867 8.931-8.8H.737V10.93h21.339z">
+                        </path>
+                      </svg>
+                    </div>
+                  </div>
                 </div>
+                <!-- <div v-for="(version, key) in versions" class="scrollbar-demo-item card" :key="key"
+                  @click="chooseVersion(version.version)">
+                  <div>版本号 | {{ version.version }}</div>
+                  <div>
+                    <div>创建时间：{{ version.updated }}</div>
+                    <div>创建者: {{ version.user.username }}</div>
+                  </div>
+                </div> -->
+                <!-- <div class="book" v-for="(version, key) in versions" :key="key" @click="chooseVersion(version.version)">
+                  <p>Hello</p>
+                  <div class="cover">
+                    <p>Hover Me</p>
+                  </div>
+                </div> -->
+                <!-- <div class="cards" >
+                  <div class="card blue">
+                    <p class="tip">Hover Me</p>
+                    <p class="second-text">Lorem Ipsum</p>
+                  </div>
+                </div> -->
               </el-scrollbar>
             </div>
           </el-col>
@@ -173,7 +209,6 @@ import emitter from '@/utils/emitter'
 import { ArrowDown } from '@element-plus/icons-vue'
 import FileTree from '@/components/fileManager/FileTree.vue'
 import { useUserStore } from '@/stores/modules/user'
-import { fromUint8Array, toUint8Array } from 'js-base64'
 import historyEditor  from '@/components/docEditor/historyEditor.vue'
 import * as Y from 'yjs'
 import { CircleCloseFilled } from '@element-plus/icons-vue'
@@ -190,18 +225,18 @@ const versionVisible = ref(false)
 
 const title = ref('')
 const form = ref({
-        artId: -1
-      })
-const dialogFormVisible =  ref()
-const formLabelWidth =  ref('120px')
+  artId: -1
+})
+const dialogFormVisible = ref()
+const formLabelWidth = ref('120px')
 const shareForm = ref({
-        itemId: -1,
-        projId: -1,
-        expires: 7,
-        auth: 1,
-      })
+  itemId: -1,
+  projId: -1,
+  expires: 7,
+  auth: 1,
+})
 
-const radio1 =  ref('1')
+const radio1 = ref('1')
 const editable = ref(true)
 const versionEditable = ref(false)
 
@@ -246,11 +281,11 @@ const getFirstH1Value = async() => {
 }
 
 // 展示该文档的所有版本
-const showVersions = async() => {
+const showVersions = async () => {
   versionVisible.value = true
   const itemId = doc_id
   const projId = userStore.projectId
-  const res = await getAllVersions({itemId: itemId, projId: projId})
+  const res = await getAllVersions({ itemId: itemId, projId: projId })
   // console.log(res.data)
   versions.value = res.data.versions
 }
@@ -258,11 +293,11 @@ const showVersions = async() => {
 
 
 // 展示该文档指定版本的内容
-const chooseVersion = async(version) => {
+const chooseVersion = async (version) => {
   console.log("####")
   const projId = userStore.projectId
   const itemId = doc_id
-  const res = await getDocVersion({projId: projId, itemId, itemId, version: version})
+  const res = await getDocVersion({ projId: projId, itemId, itemId, version: version })
   console.log("展示该文档指定版本内容", res.data.content)
   //点击一下让editor组件强制渲染
   content.value = res.data.content
@@ -272,39 +307,37 @@ const chooseVersion = async(version) => {
 }
 
 // 获取现在的总的版本号
-const getNowDocVersion = async() => {
-  try{
+const getNowDocVersion = async () => {
+  try {
     console.log(parseInt(doc_id))
     console.log(parseInt(userStore.projectId))
-    const res = await getAllVersions({itemId: parseInt(doc_id), projId: parseInt(userStore.projectId)})
+    const res = await getAllVersions({ itemId: parseInt(doc_id), projId: parseInt(userStore.projectId) })
+    title.value = res.data.name
     versionNum.value = res.data.totalVersion
-  }catch(e) {
+  } catch (e) {
     console.log(e)
   }
 }
 
 // 获取现在的权限
-const getAuth = async() => {
+const getAuth = async () => {
   console.log("version" + versionNum.value)
-    // 通过分享链接进入
-    if (doc_id && token)
-    {
-      const res = await getDocAuth({'token': token})
-      if (res.meta.status == 0)
-      {
-        const auth = res.data.auth
-        console.log("auth",auth)
-        if (auth == '1')
-          editable.value = false
-        else if (auth == '2')
-          editable.value = true
-        else if (auth == '0')
-        {
-          router.push("/")
-          ElMessage.error("您没有权限访问该文档");
-        }
+  // 通过分享链接进入
+  if (doc_id && token) {
+    const res = await getDocAuth({ 'token': token })
+    if (res.meta.status == 0) {
+      const auth = res.data.auth
+      console.log("auth", auth)
+      if (auth == '1')
+        editable.value = false
+      else if (auth == '2')
+        editable.value = true
+      else if (auth == '0') {
+        router.push("/")
+        ElMessage.error("您没有权限访问该文档");
       }
     }
+  }
 }
 
 
@@ -331,7 +364,7 @@ const createToken = async () => {
   try {
     const res = await createDocToken(shareForm.value);
     console.log(res)
-    const shareUrl =  settings.appURL + 'doc?doc_id=' + doc_id + '&' + 'token=' + res.data.token
+    const shareUrl = settings.appURL + 'doc?doc_id=' + doc_id + '&' + 'token=' + res.data.token
     console.log(shareUrl)
     const input = document.createElement('input')
     input.setAttribute('readonly', 'readonly')
@@ -356,19 +389,19 @@ const shareLink = () => {
   createToken()
 }
 
-const callEditorMethodSave = async() => {
+const callEditorMethodSave = () => {
   emitter.emit('save')
 }
 
 const callEditorMethodExportToWord = async() => {
-  emitter.emit('exportToWord')
+  emitter.emit('exportToWord', "filename")
 }
 
 const callEditorMethodExportToPdf = async() => {
-  emitter.emit('exportToPdf')
+  emitter.emit('exportToPdf', "filename")
 }
 
-const callEditorMethodExportToMarkdown = async() => {
+const callEditorMethodExportToMarkdown = async () => {
   emitter.emit('exportToMarkdown', "filename")
 }
 
@@ -376,7 +409,7 @@ const callEditorMethodExportToMarkdown = async() => {
 const versionId = ref(0)  //记录version的id
 const json = ref("") //记录文本内容
 
-const restore = async() => {
+const restore = async () => {
   const restoreFormData = {
     'projId': parseInt(userStore.projectId),
     'itemId': parseInt(doc_id),
@@ -385,6 +418,34 @@ const restore = async() => {
   }
   const res = await uploadDoc(restoreFormData)
   console.log(res)
+}
+
+const openStore = () => {
+  ElMessageBox.confirm(
+    '确定要导回这个版本的文档吗',
+    'Warning',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+    }
+  )
+    .then(() => {
+      restore()
+      router.push({
+        name: "doc",
+        query: {doc_id: doc_id}
+      })
+      ElMessage({
+        type: 'success',
+        message: 'Delete completed',
+      })
+    })
+    .catch(() => {
+      ElMessage({
+        type: 'info',
+        message: 'Delete canceled',
+      })
+    })
 }
 
 
@@ -420,7 +481,7 @@ const createFromTemplate = async(content) => {
     'content': JSON.stringify(content)
   })
   console.log(res)
-  templateVisible = !templateVisible
+  templateVisible.value = !templateVisible.value
   // if (res.meta.status == 0) {
   //   console.log(res.data)
   //   ElMessage({
@@ -479,7 +540,7 @@ export default {
 
 /* 顶部栏 */
 .top-bar {
-  position: fixed; 
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
@@ -498,33 +559,38 @@ export default {
 .el-button--text {
   margin-right: 15px;
 }
+
 .el-select {
   width: 300px;
 }
+
 .el-input {
   width: 300px;
 }
+
 .dialog-footer button:first-child {
   margin-right: 10px;
 }
 
 /* 输入框宽度 */
-.input-width{
+.input-width {
   width: 100px;
 }
 
 /* 历史版本的左上角 */
-.back-to-edit:hover{
-  background-color: #f2f2f2; 
+.back-to-edit:hover {
+  background-color: #f2f2f2;
   cursor: pointer;
 }
 
 .el-row {
   margin-bottom: 20px;
 }
+
 .el-row:last-child {
   margin-bottom: 0;
 }
+
 .el-col {
   border-radius: 4px;
 }
@@ -533,6 +599,7 @@ export default {
   padding-top: 5%;
   display: flex;
 }
+
 .body-version-container {
   padding-top: 5%;
 }
@@ -558,6 +625,7 @@ export default {
     'WenQuanYi Zen Hei', 'ST Heiti', SimHei, 'WenQuanYi Zen Hei Sharp',
     sans-serif;
 }
+
 /* 版本的容器 */
 .body-container {
   background-color: white;
@@ -575,11 +643,9 @@ export default {
 }
 
 /* 模版框的样式 */
-.template-container {
+.template-container {}
 
-}
-
-.templates{
+.templates {
   margin-top: 20px;
 }
 
@@ -588,7 +654,8 @@ export default {
   font-weight: bold;
   cursor: pointer
 }
-.title:hover{
+
+.title:hover {
   background-color: #f2f2f2
 }
 
@@ -613,6 +680,88 @@ export default {
 img {
   max-width: 100%;
   max-height: 100%;
+}
+
+.card {
+  width: 350px;
+  height: 100px;
+  position: relative;
+  border-radius: 16px;
+  background: #f5f5f5;
+  transition: box-shadow .3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.card-img {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  background-color: #d3e3ec;
+}
+
+.card-info {
+  position: absolute;
+  width: 100%;
+  bottom: 0;
+  padding: 1rem;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.card-icon {
+  opacity: 0;
+  transform: translateX(-20%);
+  width: 2em;
+  height: 2em;
+  transition: all .3s ease-in-out;
+}
+
+.icon {
+  --size: 20px;
+  width: var(--size);
+  height: var(--size);
+}
+
+/*Text*/
+.card-text p {
+  line-height: 140%;
+  /*Delete this line for multi-line text*/
+  white-space: nowrap;
+}
+
+.text-title {
+  font-weight: 900;
+  font-size: 1.2rem;
+  color: #222;
+}
+
+.text-subtitle {
+  color: rgba(35, 35, 35, 0.3);
+  /* color: #333; */
+  font-weight: 500;
+  font-size: 14px
+}
+
+/*Hover*/
+.card:hover {
+  box-shadow: 0 10px 20px 4px rgba(35, 35, 35, .1);
+}
+
+.card:hover .card-icon {
+  opacity: 1;
+  transform: translateX(20%);
+}
+
+.version-title{
+  color: rgba(33, 35, 36, 0.6);
+  font-size: 24px;
+  font-weight: 600;
+  margin: 10px 10px 10px 0;
+  padding: 5px;
+  border-radius: 5px;
+  background-color: rgb(236, 250, 250, 0.4);
 }
 </style>
   

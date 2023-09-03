@@ -45,7 +45,69 @@
       </section>
     </main>
   </div>
+
+  <Tour
+    :steps="tourSteps"
+    mask
+    arrow
+    v-model:show="showTour"
+    v-model:current="tourCurrent"
+    :padding="{ x: 10, y: 6 }"
+  />
 </template>
+
+<script setup>
+import { onMounted, ref } from 'vue'
+import { Tour } from "vue3-quick-tour"
+const showTour = ref(false)
+const tourCurrent = ref(0)
+
+// 新手指引变量设置
+const tourSteps = [
+  {
+    el: () => document.getElementById("tour-prototype-step-0"),
+    title: "菜单栏",
+    message: "这里是原型设计的菜单栏，你可以在这里执行撤销与重做、导出文件为图片、代码等。",
+    mask: {
+      color: "rgba(0, 0, 0, .8)",
+    },
+    placement: "top",
+  },
+  {
+    el: () => document.getElementById("tour-prototype-step-1"),
+    title: "模板库",
+    message: "这里是模板库，你可以在此导入丰富的预制模板，并且可以创建、导入自定义模板",
+    mask: {
+      color: "rgba(0, 0, 0, .8)",
+    },
+    placement: "right",
+  },
+  {
+    el: () => document.getElementById("tour-prototype-step-2"),
+    title: "绘画工具栏",
+    message: "这里是绘画工具栏，你可以在这里拖拽元素到画布上来进行原型设计。",
+    mask: {
+      color: "rgba(0, 0, 0, .8)",
+    },
+    placement: "right",
+  },
+  {
+    el: () => document.getElementById("tour-prototype-step-3"),
+    title: "图层栏",
+    message: "这里是图层栏，你可以在此查看当前画布中的元素，调节图层顺序，以及删除元素。",
+    mask: {
+      color: "rgba(0, 0, 0, .8)",
+    },
+    placement: "right",
+  },
+]
+
+// 开始指引
+onMounted(() => {
+  showTour.value = true
+  tourCurrent.value = 0
+})
+</script>
 
 <script>
 import Editor from "../../components/Editor/index.vue";
@@ -98,6 +160,7 @@ export default {
       activeNames: ['1', '2'],
       projId: 0,
       itemId: 0,
+
     };
   },
   computed: mapState([
@@ -112,6 +175,12 @@ export default {
     const userStore = useUserStore()
     // 提交当前用户id，组件锁定要用
     this.$store.commit("setUserId", userStore.userInfo.id)
+
+    // 开始指引
+    // console.log('start')
+    // this.showTour = true
+    // this.tourCurrent = 0
+    // console.log('here')
   },
   activated() {
     const userStore = useUserStore()

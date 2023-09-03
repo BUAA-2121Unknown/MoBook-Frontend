@@ -177,30 +177,6 @@ const server = Server.configure({
   },
   async onChange(data) {
     const save = () => {
-      const { requestParameters } = data
-      /* 保存文件*/
-      // uploadFormData.itemId = 36
-      // uploadFormData.projId = 1
-      // uploadFormData.version = 1
-      uploadFormData.itemId = parseInt(requestParameters.get('doc_id'))
-      uploadFormData.projId = parseInt(requestParameters.get('projId'))
-      // uploadFormData.version = parseInt(requestParameters.get('version'))
-      uploadFormData.version = 1000000
-      const jwtToken = requestParameters.get('jwtToken')
-
-      // const state = Buffer.from(
-      //   Y.encodeStateAsUpdate(data.document)
-      // )
-      // const filebase64 = fromUint8Array(state)
-      // uploadFormData.content = filebase64
-
-      // console.log("🚀 > onStoreDocument > data:", data);
-      const prosemirrorJSON = TiptapTransformer.fromYdoc(data.document)
-      console.log("🚀 > onStoreDocument > prosemirrorJSON:", prosemirrorJSON);
-      uploadFormData.content = JSON.stringify(prosemirrorJSON);
-      console.log("🚀 > onStoreDocument > uploadFormData.content:", uploadFormData.content);
-      const res = uploadDoc(uploadFormData, jwtToken)
-      console.log("store success")
     };
     debounced?.clear();
     debounced = debounce(save, 20000);
@@ -252,7 +228,32 @@ const server = Server.configure({
     }
     console.log("end onloadDocument")
   },
+  async onStoreDocument(data){
+    const { requestParameters } = data
+      /* 保存文件*/
+      // uploadFormData.itemId = 36
+      // uploadFormData.projId = 1
+      // uploadFormData.version = 1
+      uploadFormData.itemId = parseInt(requestParameters.get('doc_id'))
+      uploadFormData.projId = parseInt(requestParameters.get('projId'))
+      // uploadFormData.version = parseInt(requestParameters.get('version'))
+      uploadFormData.version = 1000000
+      const jwtToken = requestParameters.get('jwtToken')
 
+    // const state = Buffer.from(
+    //   Y.encodeStateAsUpdate(data.document)
+    // )
+    // const filebase64 = fromUint8Array(state)
+    // uploadFormData.content = filebase64
+
+      // console.log("🚀 > onStoreDocument > data:", data);
+      const prosemirrorJSON = TiptapTransformer.fromYdoc(data.document)
+      console.log("🚀 > onStoreDocument > prosemirrorJSON:", prosemirrorJSON);
+      uploadFormData.content = JSON.stringify(prosemirrorJSON);
+      console.log("🚀 > onStoreDocument > uploadFormData.content:", uploadFormData.content);
+      const res = uploadDoc(uploadFormData, jwtToken)
+      console.log("store success")
+  }
   // extensions: [
   //   // new Redis({
   //   //   // [required] Hostname of your Redis instance

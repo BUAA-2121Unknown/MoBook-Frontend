@@ -130,11 +130,10 @@ import Heading from '@tiptap/extension-heading'
 import { Node } from '@tiptap/core'
 import emitter from '@/utils/emitter'
 import { onBeforeUnmount, ref, toRefs } from 'vue';
-import { convertToMarkdown } from '@/utils/editor/html2markdown/exportToMd.js'
-import { convertToWord } from '@/utils/editor/exportToDoc.js'
+import  {convertToMarkdown}  from '@/utils/editor/html2markdown/exportToMd.js'
+import { convertHtmlToDocx } from '@/api/convertor'
 import FileSaver from 'file-saver';
 import { uploadDoc } from '@/api/artifact'
-import { convertHtmlToDocx } from '@/api/convertor'
 
 const userStore = useUserStore()
 const userName = userStore.userInfo.username
@@ -272,23 +271,10 @@ editor.value = new Editor({
   editable: editable.value,
 
   // 钩子函数
-  onUpdate(evt) {
-    const { selection } = evt.editor.state;
-
-    if (!selection.empty) {
-      // Do not scroll into view when we're doing a mass update (e.g. underlining text)
-      // We only want the scrolling to happen during actual user input
-      return;
-    }
-
-    const viewportCoords = evt.editor.view.coordsAtPos(selection.from);
-    const absoluteOffset = window.scrollY + viewportCoords.top;
-
-    window.scrollTo(
-      window.scrollX,
-      absoluteOffset - (window.innerHeight / 2),
-    );
-  },
+  onUpdate({transaction}){
+    // console.log(transaction)
+    const title = transaction.doc.content.firstChild.content.firstChild?.textContent;
+  }
 })
 localStorage.setItem('currentUser', JSON.stringify(currentUser))
 
@@ -359,7 +345,6 @@ const exportToMarkdown = (title) => {
   const blob = new Blob([markdown], { type: 'text/plain;charset=utf-8' });
   FileSaver.saveAs(blob, `${title}.md`);
 }
-
 emitter.on('exportToMarkdown', (title) => exportToMarkdown(title))
 
 onBeforeUnmount(() => {
