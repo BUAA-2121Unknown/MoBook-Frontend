@@ -425,7 +425,7 @@ export default {
       const { x, y } = this.start;
       // 计算所有的组件数据，判断是否在选中区域内
       this.componentData.forEach((component) => {
-        if (component.isLock ||  (component.userId && component.userId != this.userInfo.id)) return;
+        if (component.isLock || (component.userId && component.userId != this.userInfo.id)) return;
 
         const { left, top, width, height } = getComponentRotatedStyle(
           component.style

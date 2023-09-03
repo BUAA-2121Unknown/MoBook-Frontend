@@ -480,7 +480,7 @@ export default {
       const str = this.currentUserId + "/" + userStore.orgId + '/';
       // const str = "";
       return {
-        url: "ws://81.70.161.76/ws/chats/" + str,
+        url: "ws://81.70.161.76:5000/ws/chats/" + str,
       };
     },
     wsCfg() {
@@ -489,7 +489,7 @@ export default {
       const str = this.roomId + "/";
       // const str = "";
       return {
-        url: "ws://81.70.161.76/ws/chat/" + str,
+        url: "ws://81.70.161.76:5000/ws/chat/" + str,
       };
     },
     listCount() {
@@ -785,7 +785,7 @@ export default {
     //   window.open(file.file.url, '_blank')
     // },
     openFile({ file }) {
-      if (file.file.son_list[0] != null) {
+      if (file.file.son_list != null && file.file.son_list[0] != null) {
         const messagesList = file.file.son_list;
         console.log('try open Message');
         emitter.emit('openDialog', messagesList);
