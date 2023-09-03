@@ -260,9 +260,10 @@ export default {
 <!-- <style src="../../styles/reset.css"></style> -->
 <style src="../../styles/design/global.scss" lang="scss"></style>
 <style src="../../styles/design/animate.scss"></style>
+<style src="../../assets/iconfont/iconfont.css"></style>
 <style scoped>
 li {
   list-style: none;
 }
 </style>
-<style src="../../assets/iconfont/iconfont.css"></style>
+

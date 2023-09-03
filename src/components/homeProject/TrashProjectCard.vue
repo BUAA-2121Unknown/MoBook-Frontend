@@ -1,7 +1,7 @@
 <!-- 项目文档的卡片组件 -->
 <template>
   <div class="doc-card" @mouseenter="expandCard" @mouseleave="shrinkCard" @click="chooseProject">
-      <div class="doc-image-container" :style="{ backgroundImage: `url(${project.img})`, height: imageHeight }"></div>
+      <div class="doc-image-container" :style="{ backgroundImage: `url(${project.avatarUrl})`, height: imageHeight }"></div>
       <div class="doc-text-container" :style="{ height: textHeight }">
           <div class="doc-title">{{ project.name }}</div>
           <div v-if="expanded" class="doc-intro">{{ project.description }}</div>
