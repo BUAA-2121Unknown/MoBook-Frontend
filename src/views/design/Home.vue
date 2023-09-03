@@ -59,6 +59,7 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { Tour } from "vue3-quick-tour"
+import { updateGuide } from '@/api/user'
 const showTour = ref(false)
 const tourCurrent = ref(0)
 
@@ -103,9 +104,15 @@ const tourSteps = [
 ]
 
 // 开始指引
-onMounted(() => {
-  showTour.value = true
-  tourCurrent.value = 0
+onMounted(async () => {
+  // 开启新手指引 TODO：判断权限位
+  const res = await updateGuide({ type: 0 })
+  console.log(res)
+  if (res.meta.status == 0) {
+    // 开启新手指引 TODO：判断权限位
+    showTour.value = !res.data.value
+    tourCurrent.value = 0
+  }
 })
 </script>
 

@@ -170,8 +170,9 @@ export default {
                     )
                   : condition.dragShift,
             })
-
-            condition.lineNode.style[key] = `${condition.lineShift}px`
+            if(condition.lineNode){
+              condition.lineNode.style[key] = `${condition.lineShift}px`
+            }
             needToShow.push(condition.line)
           })
         })
