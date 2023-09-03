@@ -328,8 +328,8 @@ export default {
           newAfterScrollUp: false // will not scroll down after sending a message when scrolled up
         },
         receive: {
-          new: true, // will not scroll down when receiving a message
-          newAfterScrollUp: false // will scroll down when receiving a message when scrolled up
+          new: false, // will not scroll down when receiving a message
+          newAfterScrollUp: true, // will scroll down when receiving a message when scrolled up
         }
       },
       atId: "260",
