@@ -1,5 +1,5 @@
 <template>
-	<div class="message-demo-block">
+	<div v-if="this.show" class="message-demo-block">
 		<div class="message-demo-avatar">
 			<el-image style="width: 40px; height: 40px; border-radius: 5px;" :src="url" :zoom-rate="1.2" :initial-index="4"
 				fit="cover" />
@@ -12,7 +12,7 @@
 		</div>
 		<div class="message-demo-content">
 			<span v-if="this.type == '0'" class="content-text">
-				{{ this.content }}😚
+				{{ this.content }}
 			</span>
 			<el-image v-if="this.type == '1'" :src="image" :zoom-rate="1.2" :preview-src-list="srcList" fit="scale-down" />
 
@@ -29,7 +29,7 @@
 				</div>
 			</div>
 
-			<div v-if="this.type == '4'" class="message-demo-forward">
+			<div v-if="this.type == '4'" class="message-demo-forward" @click="this.show = false">
 				<ForwardInfo :content="content" :son_list="son_list"></ForwardInfo>
 			</div>
 		</div>
@@ -60,6 +60,7 @@ export default {
 	},
 	data() {
 		return {
+			show: true,
 			son_list: [],
 			messageId: '',
 			type: '',

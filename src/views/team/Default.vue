@@ -44,6 +44,7 @@
         <el-button type="primary" icon="plus" @click="inviteUser" v-if="userStore.auth <= 1">邀请成员</el-button>
       </div>
       <el-table
+        id="tour-step-0"
         :data="orgMemberList"
         row-key="user.id"
         :row-class-name="membersRow"
@@ -139,7 +140,7 @@
   <el-dialog
     v-model="editOrgVisible"
     title="编辑团队信息"
-    width="30%"
+    width="50%"
   >
     <div class="org-name-wrapper">
       <span>团队名称</span>
@@ -168,6 +169,16 @@
       </span>
     </template>
   </el-dialog>
+
+
+  <Tour
+    :steps="tourSteps"
+    mask
+    arrow
+    v-model:show="showTour"
+    v-model:current="tourCurrent"
+    :padding="{ x: 10, y: 6 }"
+  />
 </template>
 
 <script>
@@ -185,8 +196,36 @@ import { useUserStore } from '@/stores/modules/user'
 import { getInviteLink } from '@/api/org'
 import settings from '@/settings/basic'
 import { Search } from '@element-plus/icons-vue'
-import { updateOrgMemberInfo, deleteOrgMember } from '@/api/org'
+import { updateOrgMemberInfo, deleteOrgMember, updateOrgInfo } from '@/api/org'
 import AvatarUpload from '@/components/avatar/AvatarUpload.vue'
+import emitter from '@/utils/emitter'
+
+
+// 新手指引相关
+import { Tour } from "vue3-quick-tour"
+const showTour = ref(false)
+const tourCurrent = ref(0)
+const tourSteps = [
+  {
+    el: () => document.getElementById("tour-step-0"),
+    title: "成员信息",
+    message: "这里是团队成员的信息，你可以在这里修改成员的权限，或者移除成员。",
+    mask: {
+      color: "rgba(0, 0, 0, .8)",
+    },
+    placement: "top",
+  },
+  {
+    el: () => document.getElementById("tour-step-1"),
+    title: "菜单栏",
+    message: "这里是菜单栏，你可以在这里切换功能进行团队信息查看、与团队成员聊天、创建团队项目、查看或切换团队。",
+    mask: {
+      color: "rgba(0, 0, 0, .8)",
+    },
+    placement: "right",
+  },
+]
+
 
 const searchedInput = ref('')
 const orgMemberList = ref([])
@@ -249,6 +288,10 @@ const copyInviteLink = () => {
 
 onMounted(() => {
   GetOrgInfo()
+
+  // 开启新手指引 TODO：判断权限位
+  showTour.value = true
+  tourCurrent.value = 0
 })
 
 onActivated(() => {
@@ -395,10 +438,34 @@ const changingOrgName = ref(userStore.orgInfo.name)
 const changingOrgDesc = ref(userStore.orgInfo.description)
 const confirmChangeOrgInfo = async () => {
   editOrgVisible.value = false
+  try {
+    const res = await updateOrgInfo({
+      'orgId': userStore.orgId,
+      'name': changingOrgName.value,
+      'description': changingOrgDesc.value,
+    })
+    console.log(res)
+    if (res.meta.status == 0) {
+      emitter.emit('uploadAvatar', userStore.orgId)
+      await GetOrgInfo()
+      ElMessage({
+        type: 'success',
+        message: '修改成功',
+      })
+    } else {
+      ElMessage({
+        type: 'error',
+        message: '修改失败',
+      })
+      console.log(res)
+    }
+  } catch (e) {
+    console.log(e)
+  }
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .main-wrapper {
   padding-top: 1%;
 }
@@ -480,18 +547,36 @@ const confirmChangeOrgInfo = async () => {
 }
 
 .org-name-wrapper {
-  margin-top: 10px;
   display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+
+  span {
+    width: 72px;
+    margin-right: 20px;
+  }
 }
 
 .org-desc-wrapper {
-  margin-top: 10px;
   display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+
+  span {
+    width: 72px;
+    margin-right: 20px;
+  }
 }
 
 .org-avatar-wrapper {
-  margin-top: 10px;
   display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+
+  span {
+    width: 72px;
+    margin-right: 20px;
+  }
 }
 </style>
 

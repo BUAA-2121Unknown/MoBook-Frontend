@@ -1,5 +1,5 @@
 <template>
-  <div class="component-list" @dragstart="handleDragStart">
+  <div class="component-list" @dragstart="handleDragStart" id="tour-prototype-step-2">
     <div
       v-for="(item, index) in componentList"
       :key="index"
@@ -13,9 +13,11 @@
         :class="'icon-' + item.icon"
         v-if="!isNewComponent(item.component)"
       ></span>
-      <span class="newcp-font" v-if="isNewComponent(item.component)">{{
-        item.label
-      }}</span>
+      <span class="newcp-font" v-if="showNewComponent(item.component, 'SVGHexagon')"><img :src="hexagonIcon" class="svg-icon"></span>
+      <span class="newcp-font" v-if="showNewComponent(item.component, 'Rate')"><el-icon><StarFilled /></el-icon></span>
+      <span class="newcp-font" v-if="showNewComponent(item.component, 'Slider')"><el-icon><Operation /></el-icon></span>
+      <span class="newcp-font" v-if="showNewComponent(item.component, 'Switch')"><el-icon><Open /></el-icon></span>
+      <span class="newcp-font" v-if="showNewComponent(item.component, 'Select')"><el-icon><ArrowDownBold /></el-icon></span>
     </div>
   </div>
 </template>
@@ -23,6 +25,8 @@
 <script setup>
 import { useList } from "@/custom-component/component-list";
 import { ref } from "vue";
+import hexagonIcon from "@/assets/project/hexagon.png"
+
 const componentList = ref(useList());
 function handleDragStart(e) {
   console.log("TUO", e);
@@ -32,8 +36,11 @@ function showMsg(item) {
   console.log(item);
 }
 function isNewComponent(name) {
-  const list = ["Rate", "Slider", "Switch", "Select"];
+  const list = ["SVGHexagon", "Rate", "Slider", "Switch", "Select"];
   return list.includes(name);
+}
+function showNewComponent(name1, name2) {
+  return name1 == name2
 }
 </script>
 
@@ -67,7 +74,12 @@ function isNewComponent(name) {
     }
     .newcp-font {
       margin-right: 4px;
-      font-size: 14px;
+      font-size: 20px;
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: rgba(0, 0, 0, 0);
     }
     .icon-wenben,
     .icon-biaoge {
@@ -82,5 +94,10 @@ function isNewComponent(name) {
       font-size: 30px;
     }
   }
+}
+.svg-icon{
+  height: 24px;
+  width: 27px;
+  z-index: 0;
 }
 </style>

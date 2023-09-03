@@ -2,16 +2,12 @@
   <div class="message-container" v-if="!onlyUnread || !info.status">
     <!-- 删除与已读 -->
     <div class="button-group">
-      <el-icon
-        size="14"
-        class="message-button"
-        @click="readMessage"
-        v-if="!info.status"
-        ><Finished
-      /></el-icon>
-      <el-icon size="14" class="message-button" @click="delMessage"
-        ><Close
-      /></el-icon>
+      <el-icon size="14" class="message-button" @click="readMessage" v-if="!info.status">
+        <Finished />
+      </el-icon>
+      <el-icon size="14" class="message-button" @click="delMessage">
+        <Close />
+      </el-icon>
     </div>
     <div class="type-container">
       {{ messageType }}
@@ -45,6 +41,7 @@
 
 <script>
 import defaultImgUrl from "@/assets/logo.png";
+import settings from "@/settings/basic"
 
 export default {
   name: "messageItem",
@@ -164,8 +161,43 @@ export default {
     transAvaterUrl(url) {
       return url ? url : defaultImgUrl;
     },
+
+    // y跳转到消息
     jumpForMessage() {
-      console.log("跳转");
+      this.readMessage()
+      console.log("从消息中心跳转：");
+      // let str = settings.appURL;
+      switch (this.type) {
+        // 群聊
+        case 2:
+          this.$router.push({
+            path: "/chat",
+            query: {
+              roomId: this.info.payload.chat.id,
+              id: this.info.id
+            }
+          })
+          break;
+        case 7:
+          this.$router.push({
+            path: "/doc",
+            query: {
+              doc_id: this.info.payload.artifact.id
+            }
+          })
+          break;
+        default:
+          break;
+      }
+      // if (str != settings.appURL) {
+      //   this.$router.push({
+      //     path: "/chat",
+      //     query: {
+      //       roomId: this.info.chat.id,
+      //       id: this.info.id
+      //     }
+      //   })
+      // }
     },
     readMessage() {
       console.log("read", this.info.id);
@@ -192,6 +224,7 @@ export default {
   display: flex;
   align-items: center;
 }
+
 .message-sender {
   font-size: 16px;
   font-weight: 600;
@@ -201,6 +234,7 @@ export default {
   display: flex;
   align-items: center;
 }
+
 .message-text {
   font-size: 14px;
   font-weight: 500;
@@ -208,6 +242,7 @@ export default {
   margin: 5px 2px;
   line-height: 16px;
 }
+
 .message-discription {
   margin: 13px;
   font-size: 13px;
@@ -216,30 +251,36 @@ export default {
   margin: 3px 2px;
   line-height: 14px;
 }
+
 .message-time {
   font-size: 12px;
   font-weight: 300;
   color: rgb(164, 164, 164);
   margin-top: 10px;
 }
+
 .message-container {
   padding: 0 5px 5px 5px;
   margin: 0 5px;
   position: relative;
 }
+
 .button-group {
   position: absolute;
   top: 5px;
   right: 5px;
   display: flex;
 }
+
 .message-button {
   margin: 5px;
   cursor: pointer;
 }
+
 .message-button :hover {
   color: rgb(0, 179, 255);
 }
+
 .content-container {
   cursor: pointer;
 }
@@ -248,6 +289,7 @@ export default {
   font-weight: 300;
   color: rgb(164, 164, 164);
 }
+
 .notread-icon {
   margin: -28px 20px 5px 5px;
   background-color: rgba(77, 163, 255, 0.5);
@@ -264,6 +306,7 @@ export default {
 .avatar-container {
   position: relative;
 }
+
 .message-img {
   height: 50px;
   width: 50px;
@@ -271,10 +314,12 @@ export default {
   border: 2px solid rgba(50, 50, 50, 0.2);
   box-shadow: 0px 2px 4px 0px rgba(52, 51, 51, 0.2);
 }
+
 .user-img {
   position: absolute;
   left: 0;
 }
+
 .pos-img {
   position: absolute;
   left: 15px;

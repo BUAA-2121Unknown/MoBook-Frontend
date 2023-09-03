@@ -34,8 +34,9 @@ import { Project } from "../../api/project";
 import { File } from "../../api/file";
 import DesignCardCarousel from "../../components/project/DesignCardCarousel.vue";
 
-import { getPrototype, getPrototypeToken, getPrototypeList } from "../../api/artifact";
+import { verifyPrototypeToken, getPrototype, getPrototypeToken, getPrototypeList, getPrototypeListWithToken } from "../../api/artifact";
 import { templateList } from "../../enums/prototypeTemplateEnum";
+import { ElMessage } from "element-plus";
 
 export default {
   components: {
@@ -60,6 +61,8 @@ export default {
       token: '',
       projId: '',
       designList: [],
+
+      timer: null,
     };
   },
   computed: mapState([
@@ -72,12 +75,18 @@ export default {
   mounted() { },
   created() {
     // p先根据token验证身份
-    this.verifyToken()
-    // // 验证成功 加载全部原型设计列表
-    // this.loadPrototypeList()
-    // // 加载第一个原型设计
-    // this.loadPrototype(0);
-    // this.loading = false;
+    if (this.verifyToken()) {
+      // // 验证成功 加载全部原型设计列表
+      this.loadPrototypeList()
+      this.loading = false;
+    }
+    this.timer = setInterval(this.verifyToken, 10000);
+  },
+  beforeDestroy() {
+    if (this.timer !== null) {
+      clearInterval(this.timer);
+      this.timer = null;
+    }
   },
   methods: {
     // 将n个元素移到末尾
@@ -90,60 +99,86 @@ export default {
     //   return arr;
     // },
     loadNext(tar, cur) {
-      this.loadPrototype(tar)
+      // 先验证权限
+      this.verifyToken()
+      if (this.designList) {
+        this.restore(this.designList[tar].content)
+      }
     },
-    // 加载json至画布
+    // y加载json至画布
     restore(content) {
       const val = JSON.parse(content);
       this.$store.commit("setComponentData", val.canvasData.array);
       this.$store.commit("setCanvasStyle", val.canvasStyle);
       console.log("原型设计预览：成功加载", val);
     },
-    // 加载指定数组下标的原型设计
+
+    // y加载指定数组下标的原型设计
     async loadPrototype(index) {
-      // 先验证权限
-      this.verifyToken()
       // 然后再加载
-      if(!this.designList){
+      if (!this.designList) {
         return
       }
-      console.log("原型设计预览：加载元素的数组下标，", index);
-      this.restore(this.designList[index].content)
-      this.loading = false;
-    },
-    // 初始化：加载原型设计列表，并且加载第一个原型设计
-    async loadPrototypeList() {
       const params = {
         projId: this.projId,
+        itemId: this.designList[index].id,
+        version: 1,
+      }
+      try {
+        const res = await getPrototype(params)
+        console.log("原型设计预览,加载元素", index, res);
+        this.designList[index].content = res.data.content
+        if (index == 0) {
+          this.restore(this.designList[0].content)
+        }
+      } catch (e) {
+        console.log(e)
+      }
+      this.loading = false;
+    },
+
+    // y加载项目的所有原型设计 以及载入第一个元素
+    async loadPrototypeList() {
+      const params = {
+        token: this.token
       };
       try {
-        const res = await getPrototypeList(params);
-        if (res.data && res.data.artifacts) {
+        const res = await getPrototypeListWithToken(params);
+        if (res.data.auth) {
           // prop为2：原型设计
-          this.designList = res.data.artifacts.filter(function (item) {
-            return item.prop == 2;
+          this.designList = res.data.protos.filter(function (item) {
+            return item.data.prop == 2;
           });
         } else {
           this.designList = [];
         }
-        console.log("原型设计预览：成功导入原型设计列表", res, this.designList);
+        // 一次性全部读入
+        if (this.designList) {
+          this.designList.forEach((item, index, arr) => {
+            this.loadPrototype(index)
+          })
+        }
+        console.log("原型设计预览：成功导入原型设计列表", res, this.designList, this.contentList);
       } catch (e) {
         console.log(e);
       }
     },
-    // 根据token来验证权限
+    // y根据token来验证权限
     async verifyToken() {
       this.token = this.$route.query.token;
       this.projId = this.$route.query.projId;
-      
+      if (!this.token) {
+        ElMessage.error("链接无效");
+        this.$router.push("/");
+        return false
+      }
       const params = {
-        itemId: 0,
-        projId: this.projId,
+        token: this.token
       }
       try {
-        const res = await getPrototypeToken(params)
+        const res = await verifyPrototypeToken(params)
         console.log('原型设计预览：开始权限验证，token', this.token, 'projId', this.projId, res)
-        if (res.data.token) {
+        if (res.data.auth) {
           console.log('原型设计预览：权限验证通过')
           return true
         }

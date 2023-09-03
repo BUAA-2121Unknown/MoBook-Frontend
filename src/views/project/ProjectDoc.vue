@@ -80,6 +80,7 @@ const createDocument = async () => {
     form.value.projId = userStore.projectId
     form.value.type = 'Doc'
     form.value.live = true
+    console.log(form.value)
     const res = await createDoc(form.value)
     if (res.meta.status == 0) {
       ElMessage({
@@ -105,10 +106,11 @@ onMounted(async () => {
   projectIdFormData.value.projId = userStore.projectId
   try {
     console.log(projectIdFormData.value)
+    console.log(userStore.projectId)
     const res = await getDocList(projectIdFormData.value)
     console.log(res)
     if (res.meta.status == 0) {
-      docList.value = res.data.artifacts
+      docList.value = res.data.artifacts.filter(artifact => artifact.type == 'Doc');
     }
   } catch (e) {
     console.log(e)

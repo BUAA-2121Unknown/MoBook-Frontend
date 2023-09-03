@@ -1,13 +1,15 @@
 <template>
   <div class="file-tree-container">
     <div class="header-wrapper">
-      <p>项目文件</p>
-      <div>
-        <el-button type="primary" icon="DocumentAdd" @click="addAtRoot(2, props.itemProperty)"></el-button>
-        <el-button type="primary" icon="FolderAdd" @click="addAtRoot(1, 0)"></el-button>
+      <span class="root-title">项目文件</span>
+      <div class="button-wrapper">
+        <el-button class="button" icon="DocumentAdd" @click="addAtRoot(2, props.itemProperty)"></el-button>
+        <el-button class="button" icon="FolderAdd" @click="addAtRoot(1, 0)"></el-button>
       </div>
     </div>
 
+    
+    
     <el-tree
       v-if="treeVisible"
       :data="dataSource"
@@ -21,50 +23,41 @@
       @node-collapse="handleNodeCollapse"
       @node-drag-start="handleDragStart"
       @node-drop="handleDrop"
+      @node-click="(data,node,item)=> nodeClick(data,node,item)"
+      class="file-tree"
     >
       <template #default="{ node, data }">
-        <span class="file-tree-node">
+        <span class="file-tree-node-wrapper">
           <!-- 编辑文件名 -->
           <span v-if="data.isInputVisible" class="file-tree-node">
-            <el-input
-              v-model="editingName"
-              ref="editingRef"
-              @keyup.enter="handleEditComplete(data, editingName)"
-            />
+            <el-input class="input" textareaStyle="backgound-color: #eeeeee;" v-model="editingName" ref="editingRef"
+              @blur="handleEditComplete(data, editingName)" @keydown.enter.stop="$event.target.blur()" />
           </span>
 
           <!-- 正常显示文件名 -->
           <span v-else class="file-tree-node">
-            <span v-if="data.data.type === 1">
-              <el-icon><Folder /></el-icon>
+            <span class="file-wrapper">
+              <span v-if="data.data.type === 1" class="icon-wrapepr">
+                <el-icon class="icon">
+                  <Folder />
+                </el-icon>
+              </span>
+              <span v-else class="icon-wrapepr">
+                <el-icon class="icon">
+                  <Document />
+                </el-icon>
+              </span>
+
+              <span class="file-name">{{ data.data.name }}</span>
             </span>
-            <span v-else>
-              <el-icon><Document /></el-icon>
-            </span>
-            <span>{{ data.data.name }}</span>
+
             <span>
-              <el-button
-                v-if="data.data.type === 1"
-                class="file-tree-node-button"
-                icon="DocumentAdd"
-                @click="appendItem(2, data)"
-              />
-              <el-button
-                v-if="data.data.type === 1"
-                class="file-tree-node-button"
-                icon="FolderAdd"
-                @click="appendItem(1, data)"
-              />
-              <el-button
-                class="file-tree-node-button"
-                icon="Edit"
-                @click="editFile(data)"
-              />
-              <el-button
-                class="file-tree-node-button"
-                icon="Delete"
-                @click="deleteFile(node, data)"
-              />
+              <el-button v-if="data.data.type === 1" class="file-tree-node-button" icon="DocumentAdd"
+                @click="appendItem(2, data)" />
+              <el-button v-if="data.data.type === 1" class="file-tree-node-button" icon="FolderAdd"
+                @click="appendItem(1, data)" />
+              <el-button class="file-tree-node-button" icon="Edit" @click="editFile(data)" />
+              <el-button class="file-tree-node-button" icon="Delete" @click="deleteFile(node, data)" />
             </span>
           </span>
         </span>
@@ -80,10 +73,44 @@ export default {
 </script>
 
 <script setup>
-import { ref, nextTick, defineProps, onMounted } from 'vue'
-import { ElButton, ElInput, ElMessage, ElMessageBox } from 'element-plus'
+import { useRouter, useRoute } from 'vue-router'
+import { ref, nextTick, defineProps, onMounted, provide } from 'vue'
+import { ElButton, ElInput, ElMessage, ElMessageBox, ElDialog } from 'element-plus'
 import { getAllItems, moveItem, createFolder, createFile, updateItemStatus, updateItemName } from '@/api/fileTree'
 import { useUserStore } from '@/stores/modules/user'
+import { CircleCloseFilled } from '@element-plus/icons-vue'
+import { fromUint8Array, toUint8Array } from 'js-base64'
+import docTemplate from '@/utils/docTemplate.js'
+
+const templateVisible = ref(false)
+
+// 从文档模版创建文件
+const createFromTemplate = async(content) => {
+  const res = await createFile({
+    'projId': userStore.projectId,
+    'itemId': rootId.value,
+    'filename': "新建文档",
+    'prop': props.itemProperty,
+    'live': true,
+    'sibling': false,
+    'content': content
+  })
+  if (res.meta.status == 0) {
+    ElMessage({
+      type: 'success',
+      message: '创建成功',
+    })
+    console.log(res.data)
+  } else {
+    ElMessage({
+      type: 'error',
+      message: '创建失败',
+    })
+    console.log(res.data)
+  }
+}
+
+import { createNewItem } from './helper'
 
 /**
  * 调用该组件时所需的 props
@@ -97,8 +124,7 @@ const props = defineProps({
 })
 
 const userStore = useUserStore()
-
-let increasingId = 114514191
+const router = useRouter()
 
 const treeVisible = ref(true)
 const rootId = ref(1)
@@ -126,7 +152,7 @@ const GetAllItems = async () => {
       dataSource.value = fileTreeList
       console.log(res)
     }
-  } catch(e) {
+  } catch (e) {
     dataSource.value = fileTreeList
     console.log(e)
   }
@@ -147,6 +173,10 @@ const handleNodeCollapse = (node, data) => {
   console.log(node)
   const index = expandedList.value.findIndex((id) => id === node.id)
   expandedList.value.splice(index, 1)
+}
+
+const nodeClick = (data, node, item) => {
+  router.push({ name: 'doc', query: { doc_id: data.id } })
 }
 
 const allowDrop = (draggingNode, dropNode, type) => {
@@ -195,7 +225,7 @@ const handleDrop = async (draggingNode, dropNode, dropType, ev) => {
         dataSource.value = dataSourceCopy.value
         console.log(res)
       }
-    } catch(e) {
+    } catch (e) {
       console.log(e)
     }
   }).catch(() => {
@@ -211,27 +241,6 @@ const restoreExpandedState = async () => {
   treeVisible.value = false
   await nextTick()
   treeVisible.value = true
-}
-
-const createNewItem = (type, prop) => {
-  return {
-    "data": {
-      "name": "",
-      "extension": "",
-      "type": type,
-      "prop": prop,
-      "created": "",
-      "updated": "",
-      "status": 0,
-      "live": false,
-      "version": 1,
-      "proj_id": userStore.projectId,
-      "org_id": 1,
-      "file_id": 0
-    },
-    "id": increasingId++,
-    "children": []
-  }
 }
 
 /**
@@ -309,6 +318,7 @@ const handleEditComplete = async (node, name) => {
         'filename': node.data.name,
         'prop': props.itemProperty,
         'live': true,
+        'sibling': false,
       })
 
       if (res.meta.status == 0) {
@@ -406,12 +416,25 @@ const deleteFile = async (node, data) => {
         dataSource.value = dataSourceCopy.value
         console.log(res)
       }
-    } catch(e) {
+    } catch (e) {
       console.log(e)
     }
   }).catch(() => {
     console.log('Cancelled');
   })
+}
+
+const handleDoubleClick = async (node, data) => {
+  console.log(node, data)
+  /* if (data.data.type === 1) {
+    if (!expandedList.value.includes(data.id)) {
+      expandedList.value.push(data.id)
+    }
+    data.expanded = true
+    dataSource.value = [...dataSource.value]
+  } else {
+    console.log('open file')
+  } */
 }
 
 const fileTreeList = [
@@ -488,35 +511,138 @@ const fileTreeList = [
 ]
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+.file-tree-container {
+  width: 24%;
+  height: 100vh;
+  border-right: 1px solid #aaaaaa;
+  border-radius: 4px;
+  overflow: auto;
+  padding: 8px 0;
+  background-color: #eeeeee;
+}
+
 .header-wrapper {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
-}
-.file-tree-container {
-  width: 240px;
-  height: 100vh;
-  border: 1px solid #eee;
-  border-radius: 4px;
-  overflow: auto;
-  padding: 8px;
+  border-bottom: 1px solid #bbbbbb;
+  margin-bottom: 3px;
+  background-color: #eeeeee;
+
+  .root-title {
+    font-size: 18px;
+    padding-left: 16px;
+    font-weight: bold;
+  }
+
+  .button-wrapper {
+    padding: 4px 0;
+    padding-right: 12px;
+    border-radius: 10%;
+
+    .button {
+      margin-left: 6px;
+      height: 28px;
+      width: 28px;
+      padding: 0 0;
+      background-color: #eeeeee;
+      border: none;
+    }
+  }
 }
 
-.file-tree-node {
+.file-tree {
+  background-color: #eeeeee;
+}
+
+.file-wrapper {
+  display: flex;
+  padding-right: 4px;
+  align-items: center;
+}
+
+.file-tree-node-wrapper {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
   font-size: 14px;
   padding-right: 8px;
+  height: 32px;
+
+  .file-tree-node {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 14px;
+    padding-right: 8px;
+    height: 28px;
+
+    .input {
+      height: 22px;
+    }
+  }
+
+  .icon-wrapepr {
+    margin-right: 6px;
+    padding: 4px 0;
+    line-height: 20px;
+    font-size: 14px;
+
+    .icon {
+      width: 24px;
+      height: 24px;
+    }
+  }
+
+  .file-name {
+    font-size: 14px;
+    padding: 4px 1px;
+    color: #606266;
+    line-height: 20px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 
 .file-tree-node-button {
-  padding: 0 0;
+  display: none;
+  padding: 0 1px;
   margin: 0px;
   font-size: 16px;
   color: #666;
+  height: 100%;
+  border: none;
+}
+
+.file-tree-node:hover .file-tree-node-button {
+  display: inline-block;
+}
+
+/* 模版页面的header */
+.my-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.template-container {
+  height: 400px;
+  width: 1200px;
+  margin: auto 0;
+}
+
+
+.template {
+  line-height: 20px;
+  margin: 30px 0;
+  font-size: 20px;
+}
+
+.template:hover {
+    background-color: #eaeae1; /* 米白色的颜色代码 */
 }
 </style>

@@ -504,7 +504,6 @@ export default {
     this.currentUserId = this.getCurrentUserId();
     this.requestMessages();
     this.createChatListWebSocket();
-
     // this.handleAt(this.$route.params.id, this.$route.params.roomId);
     // console.log(this.currentUserId);
     emitter.on('addSelectedUser', (userId) => this.addSelectedUser(userId));
@@ -512,8 +511,11 @@ export default {
     emitter.on('addSelectedRoom', (roomId) => this.addSelectedRoom(roomId));
     emitter.on('deleteSelectedRoom', (roomId) => this.deleteSelectedRoom(roomId));
     setTimeout(() => {
-      this.handleAt(this.$route.params.id, this.$route.params.roomId);
+      this.handleAt(this.$route.query.id, this.$route.query.roomId);
     }, 400);
+    // if (this.$route.params.id != null && this.$route.params.roomId != null) {
+
+    // }
 
   },
   methods: {
@@ -540,18 +542,17 @@ export default {
     },
 
     handleAt(id, roomId) {
+      console.log(this.$route.query)
       console.log('test', id, roomId)
-      if (true) {
-        // roomId = roomId.toString();
-        // id = id.toString();
-        console.log('test', id, roomId)
+      if (id != null && roomId != null) {
         setTimeout(() => {
-          document.querySelector('vue-advanced-chat').shadowRoot.getElementById(roomId).click();
+          document.querySelector('vue-advanced-chat').shadowRoot.getElementById(roomId.toString()).click();
         }, 200);
+        console.log('test', id, roomId);
         setTimeout(() => {
-          document.querySelector('vue-advanced-chat').shadowRoot.getElementById(id).scrollIntoView({ behavior: "smooth" });
+          document.querySelector('vue-advanced-chat').shadowRoot.getElementById(id.toString()).scrollIntoView({ behavior: "smooth" });
           console.log(element)
-        }, 3000);
+        }, 2000);
       }
     },
     handleCreateRoomInput(input) {

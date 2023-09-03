@@ -20,7 +20,7 @@
     <template v-if="!isPrevieww">
       <Shape v-for="(item, index) in componentData" :key="item.id" :default-style="item.style"
         :style="getShapeStyle(item.style)" :active="item.id === (curComponent || {}).id" :element="item" :index="index"
-        :class="{ lock: item.isLock || (item.userId && item.userId != userInfo.id) }">
+        :class="{ lock: item.isLock || (item.userId && item.userId != userInfo.id) }" :isPrevieww="isPrevieww">
         <component :is="item.component" v-if="item.component.startsWith('SVG')" :id="'component' + item.id"
           :style="getSVGStyle(item.style)" class="component" :prop-value="item.propValue" :element="item"
           :request="item.request" />
@@ -175,8 +175,8 @@ export default {
       if (this.newSocket) {
         return
       }
-      const roomId = this.$route.query.artId ? this.$route.query.artId : 1;
-      this.url = "ws://82.156.25.78:5000/ws/mouse/" + roomId + "/"
+      const roomId = this.$route.query.itemId ? this.$route.query.itemId : -1;
+      this.url = "ws://81.70.161.76/ws/mouse/" + roomId + "/"
       try {
         // 创建Web Socket 连接
         const socket = new WebSocket(this.url);

@@ -7,6 +7,7 @@ import { ElLoading, ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import router from '@/router/index'
 
+
 export const useUserStore = defineStore({
   id: 'user',
   persist: true,
@@ -19,13 +20,18 @@ export const useUserStore = defineStore({
       avatarUrl: '',
       sideMode: window.localStorage.getItem('sideMode') || 'dark',
       activeColor: 'var(--el-color-primary)',
-      baseColor: '#fff'
+      baseColor: '#fff',
+      authority: {
+        defaultRouter: [],
+      },
     },
     token: window.localStorage.getItem('token') || '',
     projectId: -1,
     orgId: -1,
     orgInfo: {},
+    nameInOrg: '',
     auth: '',
+    nowDocVersion: '',
   }),
 
   getters: {
@@ -83,6 +89,10 @@ export const useUserStore = defineStore({
       this.projectId = val
     },
 
+    setNameInOrg(val) {
+      this.nameInOrg = val
+    },
+
     setAuth(val) {
       this.auth = val
     },
@@ -110,6 +120,7 @@ export const useUserStore = defineStore({
             this.setOrgId(lastOrg.lastOrg.org.id)
             this.setOrgInfo(lastOrg.lastOrg.org)
             this.setAuth(lastOrg.lastOrg.auth.auth)
+            this.setNameInOrg(lastOrg.lastOrg.auth.nickname)
           } else {
             this.setOrgId(-1)
             this.setOrgInfo({})

@@ -216,8 +216,7 @@ export const useList = () => {
     {
       component: "SVGHexagon",
       label: "六边形",
-
-      icon: "hexagon",
+      icon: "kongwujiaoxing",
       propValue: "",
       style: {
         width: 80,
@@ -232,27 +231,27 @@ export const useList = () => {
         backgroundColor: "rgba(255, 255, 255, 1)",
       },
     },
-    {
-      component: "SVGComment",
-      label: "评论",
-      icon: "pinglun",
-      propValue: "",
-      style: {
-        width: 80,
-        height: 80,
-        fontSize: "",
-        fontWeight: 400,
-        lineHeight: "",
-        letterSpacing: 0,
-        textAlign: "center",
-        color: "",
-        borderColor: "#000",
-        backgroundColor: "rgba(255, 255, 255, 1)",
-      },
-    },
+    // {
+    //   component: "SVGComment",
+    //   label: "评论",
+    //   icon: "pinglun",
+    //   propValue: "",
+    //   style: {
+    //     width: 80,
+    //     height: 80,
+    //     fontSize: "",
+    //     fontWeight: 400,
+    //     lineHeight: "",
+    //     letterSpacing: 0,
+    //     textAlign: "center",
+    //     color: "",
+    //     borderColor: "#000",
+    //     backgroundColor: "rgba(255, 255, 255, 1)",
+    //   },
+    // },
     {
       component: "Rate",
-      label: "打分",
+      label: "打分组件",
       icon: "kongwujiaoxing",
       propValue: {
         rate: 5,

@@ -17,6 +17,8 @@
         <br />
         <el-button @click="DOM2Html" class="btn">导出为HTML</el-button>
         <br />
+        <el-button @click="DOM2Json" class="btn">导出为JSON</el-button>
+        <br />
       </template>
       <el-button @click="close" class="btn">关闭</el-button>
     </div>
@@ -239,7 +241,7 @@ export default {
     background: linear-gradient(to top,
         rgba(27, 27, 27, 0.2),
         rgba(71, 71, 71, 0.1));
-    z-index: -2;
+    z-index: 2;
     display: flex;
     align-items: center;
     justify-content: center;

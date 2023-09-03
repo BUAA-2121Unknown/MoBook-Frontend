@@ -6,8 +6,16 @@
           <div class="doc-title">{{ project.name }}</div>
           <div v-if="expanded" class="doc-intro">{{ project.description }}</div>
       </div>
-      <div class="delete-button" @click.stop="open"><el-icon><Delete /></el-icon></div>
-      <div class="shift-button" @click.stop="shift"><el-icon><Switch /></el-icon></div>
+
+      <div class="button-wrapper">
+        <el-icon class="shift-button" @click.stop="shift">
+          <RefreshLeft />
+        </el-icon>
+        <el-icon class="delete-button" @click.stop="open">
+          <Delete />
+        </el-icon>
+      </div>
+
       <transition name="slide-up">
           <el-row class="mb-4 doc-buttom-group" v-if="expanded">
           </el-row>
@@ -21,10 +29,19 @@ import { useUserStore } from '@/stores/modules/user'
 import { ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { updateStatus } from '@/api/project'
+import { Delete, RefreshLeft } from '@element-plus/icons-vue'
+
 const userStore = useUserStore()
 export default {
   name: "TrashProjectCard",
   props: ["project"],
+  setup() {
+    return {
+      Delete,
+      RefreshLeft,
+    }
+  },
+
   data() {
       return {
           expanded: false,
@@ -55,11 +72,13 @@ export default {
             name: "info"
         });
       },
-      deepDelete(){
+      async deepDelete(){
         // console.log(this.project.id)
         this.projectFormData.status = 2
         this.projectFormData.projects.push(this.project.id);
-        updateStatus(this.projectFormData)
+        console.log(this.projectFormData)
+        const res = await updateStatus(this.projectFormData)
+        console.log(res)
       },
       shiftProject(){
         this.projectFormData.status = 0
@@ -76,8 +95,8 @@ export default {
             type: 'warning',
           }
         )
-          .then(() => {
-            this.deepDelete()
+          .then(async () => {
+            await this.deepDelete()
             //假删除
             this.$emit('delete', this.project.id)
             ElMessage({
@@ -121,7 +140,7 @@ export default {
 };
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .doc-card {
   margin: 10px;
   width: 22%;
@@ -189,31 +208,34 @@ export default {
   transform: translateY(150%);
 }
 
-/* 删除按钮 */
-.delete-button {
-  position: absolute; /* 添加绝对定位 */
+.button-wrapper {
+  position: absolute;
   top: 10px;
   right: 10px;
-  font-size: 24px;
-  color: red;
-  cursor: pointer;
-  display:none; /* Initially, the delete button is hidden */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 60px;
+  height: 30px;
+  z-index: 1;
+  display: none;
+
+  .shift-button {
+    font-size: 24px;
+    color: #0099cc;
+    cursor: pointer;
+  }
+
+  .delete-button {
+    font-size: 24px;
+    color: red;
+    cursor: pointer;
+  }
 }
 
-.shift-button {
-  position: absolute; /* 添加绝对定位 */
-  top: 10px;
-  right: 50px;
-  font-size: 24px;
-  color: blue;
-  cursor: pointer;
-  display:none; /* Initially, the delete button is hidden */
-}
+/* 删除按钮 */
 /* When mouse hovers over the box, the delete button is displayed */
-.doc-card:hover .delete-button {
-  display: block;
-}
-.doc-card:hover .shift-button {
-  display: block;
+.doc-card:hover .button-wrapper {
+  display: flex;
 }
 </style>

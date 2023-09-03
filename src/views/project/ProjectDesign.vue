@@ -74,12 +74,13 @@ export default {
     async getList() {
       const params = {
         projId: this.projId,
+        status: 0,
       };
       try {
         const res = await getPrototypeList(params);
-        if (res.data && res.data.artifacts) {
-          this.designList = res.data.artifacts.filter(function (item) {
-            return item.isLive === false && item.type == "p";
+        if (res.data) {
+          this.designList = res.data.filter(function (item) {
+            return item.data.prop == 2;
           });
         }
         else{

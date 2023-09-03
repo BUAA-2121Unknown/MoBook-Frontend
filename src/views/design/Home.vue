@@ -8,7 +8,7 @@
     <main>
       <!-- 左侧组件列表 -->
       <section class="left">
-        <TemplateList></TemplateList>
+        <TemplateList :itemId="itemId"></TemplateList>
         <el-collapse v-model="activeNames">
           <el-collapse-item title="组件库" name="1">
             <ComponentList />
@@ -45,7 +45,69 @@
       </section>
     </main>
   </div>
+
+  <Tour
+    :steps="tourSteps"
+    mask
+    arrow
+    v-model:show="showTour"
+    v-model:current="tourCurrent"
+    :padding="{ x: 10, y: 6 }"
+  />
 </template>
+
+<script setup>
+import { onMounted, ref } from 'vue'
+import { Tour } from "vue3-quick-tour"
+const showTour = ref(false)
+const tourCurrent = ref(0)
+
+// 新手指引变量设置
+const tourSteps = [
+  {
+    el: () => document.getElementById("tour-prototype-step-0"),
+    title: "菜单栏",
+    message: "这里是原型设计的菜单栏，你可以在这里执行撤销与重做、导出文件为图片、代码等。",
+    mask: {
+      color: "rgba(0, 0, 0, .8)",
+    },
+    placement: "top",
+  },
+  {
+    el: () => document.getElementById("tour-prototype-step-1"),
+    title: "模板库",
+    message: "这里是模板库，你可以在此导入丰富的预制模板，并且可以创建、导入自定义模板",
+    mask: {
+      color: "rgba(0, 0, 0, .8)",
+    },
+    placement: "right",
+  },
+  {
+    el: () => document.getElementById("tour-prototype-step-2"),
+    title: "绘画工具栏",
+    message: "这里是绘画工具栏，你可以在这里拖拽元素到画布上来进行原型设计。",
+    mask: {
+      color: "rgba(0, 0, 0, .8)",
+    },
+    placement: "right",
+  },
+  {
+    el: () => document.getElementById("tour-prototype-step-3"),
+    title: "图层栏",
+    message: "这里是图层栏，你可以在此查看当前画布中的元素，调节图层顺序，以及删除元素。",
+    mask: {
+      color: "rgba(0, 0, 0, .8)",
+    },
+    placement: "right",
+  },
+]
+
+// 开始指引
+onMounted(() => {
+  showTour.value = true
+  tourCurrent.value = 0
+})
+</script>
 
 <script>
 import Editor from "../../components/Editor/index.vue";
@@ -96,6 +158,9 @@ export default {
       loading: false,
 
       activeNames: ['1', '2'],
+      projId: 0,
+      itemId: 0,
+
     };
   },
   computed: mapState([
@@ -110,8 +175,17 @@ export default {
     const userStore = useUserStore()
     // 提交当前用户id，组件锁定要用
     this.$store.commit("setUserId", userStore.userInfo.id)
+
+    // 开始指引
+    // console.log('start')
+    // this.showTour = true
+    // this.tourCurrent = 0
+    // console.log('here')
   },
   activated() {
+    const userStore = useUserStore()
+    this.projId = userStore.projectId
+    this.itemId = this.$route.query.itemId
     this.restore();
     this.initCollaboration();
   },
@@ -134,17 +208,16 @@ export default {
       //   return
       // }
       this.doc = new Y.Doc();
-      const roomId = this.$route.query.artId ? this.$route.query.artId : 1;
+      const roomId = this.itemId ? this.itemId : 0;
       const name = `ws/prototype/${roomId}/`;
       this.provider = new WebsocketProvider(
         // 后端端口
-        "ws://82.156.25.78:5000/",
+        "ws://81.70.161.76/",
         // 后端房间号
         name,
         // 对应doc文档
         this.doc
       );
-
       // 设置共享数组
       this.dataArray = this.doc.getArray("dataArray");
       // 共享数组保存至vuex
@@ -152,7 +225,6 @@ export default {
         "initDataArray",
         this.dataArray,
       )
-
       // 监听数据变化 发送给画布
       this.dataArray.observe((event) => {
         if (this.dataArray.toArray().length > 0) {
@@ -165,11 +237,6 @@ export default {
             JSON.parse(this.dataArray.get(1))
           );
           console.log('原型设计协作：远程更新', this.dataArray.toArray())
-          // 更新至快照，但此次更新不再广播
-          // this.$store.commit(
-          //   "recordSnapshot",
-          //   true,
-          // );
         }
       });
       console.log('原型设计协作：创建成功', this.dataArray)
@@ -177,23 +244,10 @@ export default {
         console.log("原型设计协作：websocket状态  ", event.status); // 'connected' or 'disconnected'
       });
     },
-    // dataArray获取画布数据(已废弃)
-    // setDocArray() {
-    //   // e.g. this.dataArray = XXX;
-    //   if (!this.dataArray) {
-    //     return;
-    //   }
-    //   this.dataArray.delete(0, this.dataArray.length);
-    //   this.dataArray.insert(0, [
-    //     JSON.stringify(this.componentData),
-    //     JSON.stringify(this.canvasStyleData),
-    //   ]);
-    //   console.log('原型设计协作：尝试更新dataArray', this.dataArray)
-    // },
 
-    // 读取数据 初始化画布
+    // y读取指定id的原型设计 初始化画布
     async restore() {
-      if (!this.$route.query || !this.$route.query.artId) {
+      if (!this.itemId) {
         this.$alert(
           "您正在使用临时设计工具，因此不支持保存至任何项目。若要保存，请先在对应项目下创建一个原型设计。",
           "请注意！",
@@ -206,7 +260,9 @@ export default {
       }
       // 是已保存的项目
       const params = {
-        artId: Number(this.$route.query.artId),
+        "projId": Number(this.projId),
+        "itemId": Number(this.itemId),
+        "version": 1,
       };
       try {
         const res = await getPrototype(params);
@@ -220,29 +276,6 @@ export default {
         console.log(e);
       }
     },
-    // restore() {
-    //   const route = useRoute();
-    //   const data = new FormData();
-    //   data.append("protoId", route.params.id);
-    //   console.log(route.params, route.query);
-    //   Project.getProto(data)
-    //     .then((res) => {
-    //       console.log("res", res);
-    //       this.$store.commit(
-    //         "setComponentData",
-    //         JSON.parse(res.data.canvasData).array
-    //       );
-    //       this.$store.commit(
-    //         "setCanvasStyle",
-    //         JSON.parse(res.data.canvasStyle)
-    //       );
-    //       this.isPreviewing = res.data.isPreviewing;
-    //       this.loading = false;
-    //     })
-    //     .catch((err) => {
-    //       console.log(err);
-    //     });
-    // },
 
     handleDrop(e) {
       e.preventDefault();
