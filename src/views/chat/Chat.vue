@@ -954,9 +954,9 @@ export default {
         //   console.log(data.files[0].name)
         //   this.rooms.find(room => room.roomId === this.roomId).lastMessage.content = data.files[0].name;
         // }
-        if (!(data.senderId == this.currentUserId)) {
-          this.addNewMessage(data)
-        }
+        // if (!(data.senderId == this.currentUserId)) {
+        //   this.addNewMessage(data)
+        // }
       };
     },
     initChatListEventHandle(socket) {
