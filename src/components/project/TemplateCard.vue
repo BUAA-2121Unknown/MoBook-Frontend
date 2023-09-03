@@ -87,6 +87,7 @@ export default {
         // cola 加载模板
         this.$store.commit("setComponentData", val.canvasData.array);
         this.$store.commit("setCanvasStyle", val.canvasStyle);
+        // this.fatherHandler();
         this.loadHandler();
       } catch (e) {
         console.log(e);
