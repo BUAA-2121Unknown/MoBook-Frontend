@@ -31,6 +31,7 @@ const routers = [
     component: () => import('@/views/welcome/Welcome.vue'),
     meta: {
       title: '开始',
+      noAuthNeed: true,
     },
   },
   {
