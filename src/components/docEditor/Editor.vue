@@ -211,7 +211,7 @@ if (editable.value)
 else
   auth = "1"
 provider.value = new HocuspocusProvider({
-  url: 'ws://localhost:80',
+  url: 'ws://127.0.0.1:3000',
   name: doc_id,
   document: ydoc,
   token: auth,
