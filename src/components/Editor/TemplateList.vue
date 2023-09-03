@@ -133,7 +133,6 @@ export default {
     },
 
     fatherHandler() {
-      this.$store.commit("recordSnapshot");
       this.getList()
     },
 

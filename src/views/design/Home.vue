@@ -86,21 +86,21 @@ const tourSteps = [
   {
     el: () => document.getElementById("tour-prototype-step-2"),
     title: "绘画工具栏",
-    message: "这里是绘画工具栏，你可以在这里拖拽元素到画布上来进行原型设计。",
+    message: "这里是绘画工具栏，你可以在这里拖拽元素到画布上来进行原型设计，调节图层顺序，以及删除元素。",
     mask: {
       color: "rgba(0, 0, 0, .8)",
     },
     placement: "right",
   },
-  {
-    el: () => document.getElementById("tour-prototype-step-3"),
-    title: "图层栏",
-    message: "这里是图层栏，你可以在此查看当前画布中的元素，调节图层顺序，以及删除元素。",
-    mask: {
-      color: "rgba(0, 0, 0, .8)",
-    },
-    placement: "right",
-  },
+  // {
+  //   el: () => document.getElementById("tour-prototype-step-3"),
+  //   title: "图层栏",
+  //   message: "这里是图层栏，你可以在此查看当前画布中的元素，调节图层顺序，以及删除元素。",
+  //   mask: {
+  //     color: "rgba(0, 0, 0, .8)",
+  //   },
+  //   placement: "right",
+  // },
 ]
 
 // 开始指引
