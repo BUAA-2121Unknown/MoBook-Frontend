@@ -69,14 +69,14 @@
 
     <div v-if="showComponent">
       <vue-advanced-chat ref="chatContainer" v-if="showComponent" height="calc(80vh - 20px)"
-        :auto-scroll="JSON.stringify(autoScroll)" :current-user-id="currentUserId" :rooms="JSON.stringify(rooms)"
-        :load-first-room="false" :rooms-loaded="true" :messages="JSON.stringify(messages)"
-        :menu-actions="JSON.stringify(menuActions)" :messages-loaded="messagesLoaded" :show-new-messages-divider="false"
-        @send-message="sendMessage($event.detail[0])" @open-file="openFile($event.detail[0])"
-        @fetch-messages="fetchMessages($event.detail[0])" @menu-action-handler="menuActionHandler($event.detail[0])"
-        :text-messages="JSON.stringify(textDemo)" @add-room="createChatRoom($event.detail[0])"
-        :message-selection-actions="JSON.stringify(messageSelectionActions)" :message-actions="JSON.stringify(messageOps)"
-        :room-info-enabled="true" @room-info="showRoomInfo($event.detail[0])" :show-audio="false"
+        :current-user-id="currentUserId" :rooms="JSON.stringify(rooms)" :load-first-room="false" :rooms-loaded="true"
+        :messages="JSON.stringify(messages)" :menu-actions="JSON.stringify(menuActions)" :messages-loaded="messagesLoaded"
+        :show-new-messages-divider="false" @send-message="sendMessage($event.detail[0])"
+        @open-file="openFile($event.detail[0])" @fetch-messages="fetchMessages($event.detail[0])"
+        @menu-action-handler="menuActionHandler($event.detail[0])" :text-messages="JSON.stringify(textDemo)"
+        @add-room="createChatRoom($event.detail[0])" :message-selection-actions="JSON.stringify(messageSelectionActions)"
+        :message-actions="JSON.stringify(messageOps)" :room-info-enabled="true"
+        @room-info="showRoomInfo($event.detail[0])" :show-audio="false"
         @message-selection-action-handler="messageSelectionActionHandler($event.detail[0])">
       </vue-advanced-chat>
     </div>
@@ -322,16 +322,6 @@ export default {
       centerDialogVisible: false,
       createRoomInput: '',
       allMessages: [],
-      autoScroll: {
-        send: {
-          new: true, // will scroll down after sending a message
-          newAfterScrollUp: false // will not scroll down after sending a message when scrolled up
-        },
-        receive: {
-          new: false, // will not scroll down when receiving a message
-          newAfterScrollUp: true, // will scroll down when receiving a message when scrolled up
-        }
-      },
       atId: "260",
       showForwardMessages: false,
       showSingle: false,
